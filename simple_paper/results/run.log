@@ -1,0 +1,170 @@
+[21:25:54] N=4 J2=0.0 chi=2 eps=0.1
+   done {'gamma': 0.9553418012614796, 'n_bound': None, 'n_emp': None, 'seconds': None}
+[21:25:54] N=4 J2=0.0 chi=2 eps=0.01
+   done {'gamma': 0.9553418012614796, 'n_bound': 88, 'n_emp': 8, 'seconds': 2.819763422012329}
+[21:25:57] N=4 J2=0.4 chi=2 eps=0.1
+   done {'gamma': 0.9959430537157536, 'n_bound': None, 'n_emp': None, 'seconds': None}
+[21:25:57] N=4 J2=0.4 chi=2 eps=0.01
+   done {'gamma': 0.9959430537157536, 'n_bound': None, 'n_emp': None, 'seconds': None}
+[21:25:57] N=6 J2=0.0 chi=2 eps=0.1
+   done {'gamma': 0.8981395043307674, 'n_bound': 85, 'n_emp': 6, 'seconds': 2.338477611541748}
+[21:26:00] N=6 J2=0.0 chi=2 eps=0.01
+   done {'gamma': 0.8981395043307674, 'n_bound': 375, 'n_emp': 18, 'seconds': 9.122751712799072}
+[21:26:09] N=6 J2=0.4 chi=2 eps=0.1
+   done {'gamma': 0.9880373307801371, 'n_bound': None, 'n_emp': None, 'seconds': None}
+[21:26:09] N=6 J2=0.4 chi=2 eps=0.01
+   done {'gamma': 0.9880373307801371, 'n_bound': 405, 'n_emp': 29, 'seconds': 4.915877819061279}
+[21:26:14] N=8 J2=0.0 chi=2 eps=0.1
+   done {'gamma': 0.8371007211143278, 'n_bound': 221, 'n_emp': 11, 'seconds': 4.913503646850586}
+[21:26:19] N=8 J2=0.0 chi=2 eps=0.01
+   done {'gamma': 0.8371007211143278, 'n_bound': 992, 'n_emp': 37, 'seconds': 15.17513132095337}
+[21:26:34] N=8 J2=0.4 chi=2 eps=0.1
+   done {'gamma': 0.9770429046176755, 'n_bound': None, 'n_emp': None, 'seconds': None}
+[21:26:34] N=8 J2=0.4 chi=2 eps=0.01
+   done {'gamma': 0.9770429046176755, 'n_bound': 1075, 'n_emp': 47, 'seconds': 15.16425633430481}
+[21:26:49] N=10 J2=0.0 chi=2 eps=0.1
+   done {'gamma': 0.7760997565182706, 'n_bound': 473, 'n_emp': 18, 'seconds': 12.132502317428589}
+[21:27:02] N=10 J2=0.0 chi=2 eps=0.01
+   done {'gamma': 0.7760997565182706, 'n_bound': 2183, 'n_emp': 74, 'seconds': 34.870917320251465}
+[21:27:36] N=10 J2=0.4 chi=2 eps=0.1
+   done {'gamma': 0.9638186393870497, 'n_bound': None, 'n_emp': None, 'seconds': None}
+[21:27:50] N=10 J2=0.4 chi=2 eps=0.01
+   done {'gamma': 0.9638186393870497, 'n_bound': 2256, 'n_emp': 59, 'seconds': 51.15084671974182}
+[21:28:41] N=12 J2=0.0 chi=2 eps=0.1
+Traceback (most recent call last):
+  File "/home/user/CLAUDE/simple_paper/run_experiments.py", line 144, in <module>
+    r = run_case(N, J2, chi, eps, sweep=(eps == 0.01 and chi == 2))
+  File "/home/user/CLAUDE/simple_paper/run_experiments.py", line 103, in run_case
+    gap_scaled=ch.gap, alpha=ch.alpha, D_trial=float(np.sqrt(1 - gamma)))
+                             ^^^^^^^^
+  File "/home/user/CLAUDE/simple_paper/workflow.py", line 104, in alpha
+    tot += opnorm(C.tocsr())
+           ~~~~~~^^^^^^^^^^^
+  File "/home/user/CLAUDE/simple_paper/workflow.py", line 90, in opnorm
+    return sla.svds(A, k=1, return_singular_vectors=False)[0]
+           ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/scipy/_lib/_util.py", line 306, in wrapper
+    return fun(*args, **kwargs)
+  File "/usr/local/lib/python3.13/dist-packages/scipy/sparse/linalg/_eigen/_svds.py", line 504, in svds
+    _, eigvec = eigsh(XH_X, k=k, tol=tol ** 2, maxiter=maxiter,
+                ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      ncv=ncv, which=which, v0=v0)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/scipy/sparse/linalg/_eigen/arpack/arpack.py", line 1664, in eigsh
+    ret = eigs(A, k, M=M, sigma=sigma, which=which, v0=v0,
+               ncv=ncv, maxiter=maxiter, tol=tol,
+               return_eigenvectors=return_eigenvectors, Minv=Minv,
+               OPinv=OPinv)
+  File "/usr/local/lib/python3.13/dist-packages/scipy/sparse/linalg/_eigen/arpack/arpack.py", line 1438, in eigs
+    params.iterate()
+    ~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/dist-packages/scipy/sparse/linalg/_eigen/arpack/arpack.py", line 852, in iterate
+    raise ArpackError(info=self.arpack_dict['info'],
+                      infodict=self.iterate_infodict)
+scipy.sparse.linalg._eigen.arpack.arpack.ArpackError: ARPACK error -9: Starting vector is zero.
+   done {'gamma': None, 'n_bound': None, 'n_emp': None, 'seconds': None}
+[21:28:41] N=12 J2=0.0 chi=2 eps=0.01
+Traceback (most recent call last):
+  File "/home/user/CLAUDE/simple_paper/run_experiments.py", line 144, in <module>
+    r = run_case(N, J2, chi, eps, sweep=(eps == 0.01 and chi == 2))
+  File "/home/user/CLAUDE/simple_paper/run_experiments.py", line 103, in run_case
+    gap_scaled=ch.gap, alpha=ch.alpha, D_trial=float(np.sqrt(1 - gamma)))
+                             ^^^^^^^^
+  File "/home/user/CLAUDE/simple_paper/workflow.py", line 104, in alpha
+    tot += opnorm(C.tocsr())
+           ~~~~~~^^^^^^^^^^^
+  File "/home/user/CLAUDE/simple_paper/workflow.py", line 90, in opnorm
+    return sla.svds(A, k=1, return_singular_vectors=False)[0]
+           ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/scipy/_lib/_util.py", line 306, in wrapper
+    return fun(*args, **kwargs)
+  File "/usr/local/lib/python3.13/dist-packages/scipy/sparse/linalg/_eigen/_svds.py", line 504, in svds
+    _, eigvec = eigsh(XH_X, k=k, tol=tol ** 2, maxiter=maxiter,
+                ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      ncv=ncv, which=which, v0=v0)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/scipy/sparse/linalg/_eigen/arpack/arpack.py", line 1664, in eigsh
+    ret = eigs(A, k, M=M, sigma=sigma, which=which, v0=v0,
+               ncv=ncv, maxiter=maxiter, tol=tol,
+               return_eigenvectors=return_eigenvectors, Minv=Minv,
+               OPinv=OPinv)
+  File "/usr/local/lib/python3.13/dist-packages/scipy/sparse/linalg/_eigen/arpack/arpack.py", line 1438, in eigs
+    params.iterate()
+    ~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/dist-packages/scipy/sparse/linalg/_eigen/arpack/arpack.py", line 852, in iterate
+    raise ArpackError(info=self.arpack_dict['info'],
+                      infodict=self.iterate_infodict)
+scipy.sparse.linalg._eigen.arpack.arpack.ArpackError: ARPACK error -9: Starting vector is zero.
+   done {'gamma': None, 'n_bound': None, 'n_emp': None, 'seconds': None}
+[21:28:42] N=12 J2=0.4 chi=2 eps=0.1
+Traceback (most recent call last):
+  File "/home/user/CLAUDE/simple_paper/run_experiments.py", line 144, in <module>
+    r = run_case(N, J2, chi, eps, sweep=(eps == 0.01 and chi == 2))
+  File "/home/user/CLAUDE/simple_paper/run_experiments.py", line 103, in run_case
+    gap_scaled=ch.gap, alpha=ch.alpha, D_trial=float(np.sqrt(1 - gamma)))
+                             ^^^^^^^^
+  File "/home/user/CLAUDE/simple_paper/workflow.py", line 104, in alpha
+    tot += opnorm(C.tocsr())
+           ~~~~~~^^^^^^^^^^^
+  File "/home/user/CLAUDE/simple_paper/workflow.py", line 90, in opnorm
+    return sla.svds(A, k=1, return_singular_vectors=False)[0]
+           ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/scipy/_lib/_util.py", line 306, in wrapper
+    return fun(*args, **kwargs)
+  File "/usr/local/lib/python3.13/dist-packages/scipy/sparse/linalg/_eigen/_svds.py", line 504, in svds
+    _, eigvec = eigsh(XH_X, k=k, tol=tol ** 2, maxiter=maxiter,
+                ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      ncv=ncv, which=which, v0=v0)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/scipy/sparse/linalg/_eigen/arpack/arpack.py", line 1664, in eigsh
+    ret = eigs(A, k, M=M, sigma=sigma, which=which, v0=v0,
+               ncv=ncv, maxiter=maxiter, tol=tol,
+               return_eigenvectors=return_eigenvectors, Minv=Minv,
+               OPinv=OPinv)
+  File "/usr/local/lib/python3.13/dist-packages/scipy/sparse/linalg/_eigen/arpack/arpack.py", line 1438, in eigs
+    params.iterate()
+    ~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/dist-packages/scipy/sparse/linalg/_eigen/arpack/arpack.py", line 852, in iterate
+    raise ArpackError(info=self.arpack_dict['info'],
+                      infodict=self.iterate_infodict)
+scipy.sparse.linalg._eigen.arpack.arpack.ArpackError: ARPACK error -9: Starting vector is zero.
+   done {'gamma': None, 'n_bound': None, 'n_emp': None, 'seconds': None}
+[21:28:42] N=12 J2=0.4 chi=2 eps=0.01
+Traceback (most recent call last):
+  File "/home/user/CLAUDE/simple_paper/run_experiments.py", line 144, in <module>
+    r = run_case(N, J2, chi, eps, sweep=(eps == 0.01 and chi == 2))
+  File "/home/user/CLAUDE/simple_paper/run_experiments.py", line 103, in run_case
+    gap_scaled=ch.gap, alpha=ch.alpha, D_trial=float(np.sqrt(1 - gamma)))
+                             ^^^^^^^^
+  File "/home/user/CLAUDE/simple_paper/workflow.py", line 104, in alpha
+    tot += opnorm(C.tocsr())
+           ~~~~~~^^^^^^^^^^^
+  File "/home/user/CLAUDE/simple_paper/workflow.py", line 90, in opnorm
+    return sla.svds(A, k=1, return_singular_vectors=False)[0]
+           ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/scipy/_lib/_util.py", line 306, in wrapper
+    return fun(*args, **kwargs)
+  File "/usr/local/lib/python3.13/dist-packages/scipy/sparse/linalg/_eigen/_svds.py", line 504, in svds
+    _, eigvec = eigsh(XH_X, k=k, tol=tol ** 2, maxiter=maxiter,
+                ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      ncv=ncv, which=which, v0=v0)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/scipy/sparse/linalg/_eigen/arpack/arpack.py", line 1664, in eigsh
+    ret = eigs(A, k, M=M, sigma=sigma, which=which, v0=v0,
+               ncv=ncv, maxiter=maxiter, tol=tol,
+               return_eigenvectors=return_eigenvectors, Minv=Minv,
+               OPinv=OPinv)
+  File "/usr/local/lib/python3.13/dist-packages/scipy/sparse/linalg/_eigen/arpack/arpack.py", line 1438, in eigs
+    params.iterate()
+    ~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/dist-packages/scipy/sparse/linalg/_eigen/arpack/arpack.py", line 852, in iterate
+    raise ArpackError(info=self.arpack_dict['info'],
+                      infodict=self.iterate_infodict)
+scipy.sparse.linalg._eigen.arpack.arpack.ArpackError: ARPACK error -9: Starting vector is zero.
+   done {'gamma': None, 'n_bound': None, 'n_emp': None, 'seconds': None}
+[21:28:43] N=8 J2=0.0 chi=1 eps=0.01
+   done {'gamma': 0.1336342080016384, 'n_bound': 8519, 'n_emp': 93, 'seconds': 19.64832091331482}
+[21:29:03] N=8 J2=0.0 chi=3 eps=0.01
+   done {'gamma': 0.9109974574204187, 'n_bound': 877, 'n_emp': 37, 'seconds': 8.548097848892212}
+[21:29:11] N=8 J2=0.0 chi=4 eps=0.01
+   done {'gamma': 0.9987776708008366, 'n_bound': None, 'n_emp': None, 'seconds': None}
