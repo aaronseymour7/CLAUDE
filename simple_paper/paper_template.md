@@ -6,7 +6,7 @@ date: "7 October 2026"
 
 ## Abstract
 
-A common hybrid recipe for ground-state preparation is to obtain a matrix-product trial state and the low-lying energies classically (DMRG), then repair the trial state's residual excited-state weight on a quantum computer with the ancilla-based projection filter of Stetcu, Baroni and Carlson. We give a short, fully explicit a-priori error bound for this recipe. Writing $D$ for the trace distance between the prepared state and the exact ground state $|E_0\rangle$, the bound is a sum of two terms obtained from the triangle inequality: a *leakage* term, set by the trial-state ground-state weight $\gamma$ and a certified suppression factor $\eta$ of the filter on the excited spectrum, and a *Trotter* term, set by a first-order commutator constant $\alpha$, the total evolution time $T$ and the number of Trotter steps $n$. The bound needs only the trial state's overlap, the spectral gap, the filter and the Hamiltonian's term structure, and it converts to bounds on infidelity ($D^2$) and on the energy error ($W D^2$). We test it on the open spin-½ $J_1$–$J_2$ chain for $N=4$–$12$ with bond-dimension-2 trial states, by exact simulation of the Trotterised filter. All 88 simulated points satisfy every inequality. At the step count the bound prescribes for a target $D\le 0.1$, it overestimates the measured $D$ by $2.7$–$4.9\times$: the leakage term is nearly tight ($1.3$–$2.5\times$) while the Trotter term is conservative ($10$–$39\times$), so the bound asks for $11$–$60\times$ more Trotter steps than are empirically needed. We also show where Pinsker's inequality does and does not enter.
+A common hybrid recipe for ground-state preparation is to obtain a matrix-product trial state and the low-lying energies classically (DMRG), then repair the trial state's residual excited-state weight on a quantum computer with the ancilla-based projection filter of Stetcu, Baroni and Carlson. We give a short, fully explicit a-priori error bound for this recipe. Writing $D$ for the trace distance between the prepared state and the exact ground state $|E_0\rangle$, the bound is a sum of two terms obtained from the triangle inequality: a *leakage* term, set by the trial-state ground-state weight $\gamma$ and a certified suppression factor $\eta$ of the filter on the excited spectrum, and a *Trotter* term, set by a first-order commutator constant $\alpha$, the total evolution time $T$ and the number of Trotter steps $n$. The bound needs only the trial state's overlap, the spectral gap, the filter and the Hamiltonian's term structure, and it converts to bounds on infidelity ($D^2$) and on the energy error ($W D^2$). We test it on the open spin-½ $J_1$–$J_2$ chain for $N=4$–$12$ with bond-dimension-2 trial states, by exact simulation of the Trotterised filter. All 88 simulated points satisfy every inequality. At the step count the bound prescribes for a target $D\le 0.1$, it overestimates the measured $D$ by $2.7$–$4.9\times$: the leakage term is nearly tight ($1.3$–$2.5\times$) while the Trotter term is conservative ($10$–$39\times$), so the bound asks for $11$–$60\times$ more Trotter steps than are empirically needed. Translated to two-qubit gates, the filter costs $2\times10^3$–$6\times10^5$ CX at the bound's step count ($2\times10^2$–$1.4\times10^4$ at the measured step count), growing roughly as $N^{4.6}$–$N^{5.2}$ (bound) and $N^{2.8}$–$N^{3.9}$ (measured) over $N=6$–$12$, against a $4\times$ increase per two qubits for exact generic state preparation. We also show where Pinsker's inequality does and does not enter.
 
 ## 1. Introduction
 
@@ -19,9 +19,10 @@ The question this note answers is the practical one: **given a trial state, the 
 1. A two-term bound $D\le\sqrt{\bar\ell}+\epsilon_T/\sqrt{p_g}$ on the trace distance to the ground state (Theorem 1), proved from three elementary facts: trace distance of pure states is $\sqrt{1-|\langle\cdot|\cdot\rangle|^2}$; it obeys the triangle inequality; and the leakage and Trotter errors can each be bounded separately. Corollaries give infidelity, energy error, and the number of Trotter steps.
 2. An end-to-end workflow (Section 4) from trial state and energies to a certified step count.
 3. An empirical study (Section 5): the bound is never violated, and we quantify which of its two terms is loose.
-4. A short account of where Pinsker's inequality fits (Section 3.5), including why it cannot replace the triangle-inequality argument for a pure target.
+4. CX-count resource scaling of the certified and the measured step counts, on all-to-all and line connectivity (Section 5.8).
+5. A short account of where Pinsker's inequality fits (Section 3.5), including why it cannot replace the triangle-inequality argument for a pure target.
 
-**What is not claimed.** The bound is first-order-Trotter only and assumes the gap, $\gamma$ and the ground energy are known (here: from exact diagonalisation, $N\le12$). Hardware noise and gate synthesis are not modelled. Section 6 lists the consequences. We report Trotter steps, not gate counts; a companion cost study in this repository (`evaluation/`) compares CX counts with direct MPS-circuit preparation and finds no resource advantage for the filter on 1D chains with $N\le12$. This note does not revisit that conclusion.
+**What is not claimed.** The bound is first-order-Trotter only and assumes the gap, $\gamma$ and the ground energy are known (here: from exact diagonalisation, $N\le12$). Hardware noise and gate synthesis are not modelled. Section 6 lists the consequences. Resource counts are CX only (no T counts or synthesis error), noiseless, for the filter alone (the trial-state circuit is not included). A companion cost study in this repository (`evaluation/`) compares the filter with direct MPS-circuit preparation and finds no resource advantage for 1D chains with $N\le12$; Section 5.8 uses a weaker baseline (exact generic state preparation) and does not revisit that conclusion.
 
 ## 2. Setting and notation
 
@@ -103,7 +104,7 @@ $$\mathrm{KL}(q\|p)=\sum_kq_k\ln\frac{F(E_k)^2}{P_{\mathrm{succ}}}\le\ln\frac1{P
 
 while $\mathrm{TV}(p,q)\ge q_0-p_0=1-\ell-\gamma$. Together,
 $$P_{\mathrm{succ}}\;\le\;\exp\!\big(-2(1-\ell-\gamma)^2\big):$$
-post-selection cannot be free if the filter is to move weight from $\gamma$ to $1-\ell$. This is a necessary condition on the cost, not an error bound, and (Section 5.7) it is weak for the cases studied. We include it to mark where relative-entropy tools apply and to be explicit that they do not drive the main result.
+post-selection cannot be free if the filter is to move weight from $\gamma$ to $1-\ell$. This is a necessary condition on the cost, not an error bound, and (Section 5.8) it is weak for the cases studied. We include it to mark where relative-entropy tools apply and to be explicit that they do not drive the main result.
 
 ## 4. The workflow
 
@@ -183,7 +184,22 @@ Figure 3 shows the sweep. Both the Trotter bound and the measured Trotter distan
 
 *Table 4.* A better trial state needs fewer Trotter steps (larger $\gamma$ means a larger $\eta_*$, so a shorter, cheaper filter), and for $\chi=4$ ($\gamma=0.9988$) no filter is needed at this target.
 
-### 5.7 Pinsker numerics
+### 5.7 Resource scaling: CX counts
+
+One Trotter step of one pulse is, for each bond, the three Pauli rotations $XX,YY,ZZ$ on the bond tensored with $Z$ on the ancilla, transpiled with qiskit (optimisation level 3) to $\{\mathrm{CX},\mathrm{Rz},\mathrm{H},\mathrm{S}\}$. Ancilla Hadamards and phase rotations add no CX, so the total is $n\times(\text{CX per step})$. The per-step count was identical for 1 and 3 consecutive steps on all-to-all connectivity (no cross-step cancellation); on a line with the ancilla at the end it grows with repetition, and we use the 3-step average there.
+
+{{resources}}
+
+*Table 5.* $\varepsilon=10^{-2}$, $\chi=2$. CX totals are $n\times$ per-step CX, for the step count prescribed by the bound and for the oracle measured step count. The last column is qiskit's exact preparation of a generic $N$-qubit state (no structure used).
+
+![Figure 4. CX count vs. $N$.](figs/fig_cx.png){width=55%}
+
+* **Per step.** CX per step grows as $N^{{{cxstep0}}}$ ($J_2=0$) and $N^{{{cxstep4}}}$ ($J_2=0.4$): linear in the number of bonds, with $J_2=0.4$ about twice as expensive (twice as many bonds, plus longer-range gates). A line with the ancilla at the end costs about $1.4$–$2.6\times$ more.
+* **Steps.** The bound's $n$ grows as $N^{{{nb0}}}$ ($J_2=0$), the measured one as $N^{{{ne0}}}$: the bound's growth reflects $T^2\propto\Delta^{-2}$, with the scaled gap falling from $0.28$ to $0.036$ over $N=4$–$12$.
+* **Total.** CX at the bound's $n$ grows as $N^{{{cxb0}}}$ ($J_2=0$; $N^{{{cxb4}}}$ at $J_2=0.4$) and at the measured $n$ as $N^{{{cxe0}}}$ ($N^{{{cxe4}}}$). The bound costs {{cxr_lo}}–{{cxr_hi}}$\times$ more than the measured count, as for the steps, since CX per step is the same.
+* **Against exact generic preparation.** Generic preparation grows by a factor {{gen_growth}} per two qubits (exponential). The filter at the *measured* step count falls from {{eg4}}$\times$ the generic cost at $N=4$ to {{eg12}}$\times$ at $N=12$ ($J_2=0$), so a crossover could appear a little above $N=12$ *if* the power laws continued and if one had the oracle step count. At the *bound's* step count the filter stays {{bg_lo}}–{{bg_hi}}$\times$ more expensive than generic preparation throughout. These are fits over $N=6$–$12$ (five points at most) and not a prediction; exact generic preparation is also a weak baseline. Any structured preparation of an MPS (companion study) is cheaper still for these chains.
+
+### 5.8 Pinsker numerics
 
 For $\chi=2$, $\varepsilon=10^{-2}$ and $(N,J_2)\in\{(4,0),(6,0),(8,0),(6,0.4),(8,0.4)\}$, the energy-resolved quantities of Section 3.5 (computed for the continuous filter designs and the exact filter) satisfy $\mathrm{KL}(q\|p)\le\ln(1/P_{\mathrm{succ}})$ and $\mathrm{TV}(p,q)\le\sqrt{\mathrm{KL}/2}$ in every case, as they must. The implied cap on the success probability, $\exp(-2(1-\ell-\gamma)^2)$, is $0.95$–$1.00$, against actual $P_{\mathrm{succ}}$ between $0.36$ and $0.94$. It is true but too weak to be informative for these trial states, which already have large $\gamma$. We therefore treat Pinsker as an explanatory remark, not as part of the guarantee.
 
@@ -194,12 +210,12 @@ For $\chi=2$, $\varepsilon=10^{-2}$ and $(N,J_2)\in\{(4,0),(6,0),(8,0),(6,0.4),(
 * **First order only.** Lemma 2 is a first-order product-formula statement.
 * **Conservatism.** The Trotter term is the loose one (10–39×). Using the Richardson estimate in its place gives a practical, non-rigorous complement.
 * **Noise.** Not modelled; (D2) adds a noise term as in Section 3.5.
-* **Cost.** We report steps, not CX or T counts, and make no claim of advantage over direct MPS-circuit preparation (see the companion study).
+* **Cost.** CX counts are for the filter alone, noiseless, without T-count or synthesis error, and from short power-law fits ($N\le12$). We make no claim of advantage over direct MPS-circuit preparation (see the companion study).
 * **Scale.** $N\le12$, two couplings, dense simulation.
 
 ## 7. Reproducibility
 
-Everything is in `simple_paper/`: `workflow.py` (Hamiltonian, trial state, pulses, bound), `run_experiments.py` (cases, writes `results/case_*.json`), `pinsker_check.py`, `make_report.py` (tables, figures), `build_paper.py` (this document). The filter design and certification are `j1j2_filter/floor.py`. Requirements: numpy, scipy, matplotlib; no qiskit or quimb. The full grid takes a few minutes on one CPU core (the $N=12$ cases dominate). Seeds are fixed (the $N=12$ ground state uses a fixed Lanczos start vector, since $\chi=2$ truncation cuts through degenerate Schmidt values and $\gamma$ otherwise varies in the third digit between runs).
+Everything is in `simple_paper/`: `workflow.py` (Hamiltonian, trial state, pulses, bound), `run_experiments.py` (cases, writes `results/case_*.json`), `pinsker_check.py`, `resources.py` (CX counts; the only script that needs qiskit), `make_report.py` (tables, figures), `build_paper.py` (this document). The filter design and certification are `j1j2_filter/floor.py`. Requirements: numpy, scipy, matplotlib; `resources.py` additionally needs qiskit. No quimb or mps-to-circuit. The full grid takes a few minutes on one CPU core (the $N=12$ cases dominate). Seeds are fixed (the $N=12$ ground state uses a fixed Lanczos start vector, since $\chi=2$ truncation cuts through degenerate Schmidt values and $\gamma$ otherwise varies in the third digit between runs).
 
 ## References
 

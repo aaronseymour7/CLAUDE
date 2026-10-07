@@ -141,3 +141,42 @@ for x, title, body in boxes:
 for x in (18.9, 38.9, 58.9, 78.9):
     ax.annotate("", xy=(x + 2.4, 16), xytext=(x - 0.2, 16), arrowprops=dict(arrowstyle="->", color="#1f4e79", lw=1.2))
 fig.savefig(FIG / "fig_workflow.png", dpi=220, bbox_inches="tight"); plt.close(fig)
+
+# ------------------------------------------------------------------ resource scaling (needs results/resources.json from resources.py)
+rf = RES / "resources.json"
+if rf.exists():
+    R = sorted(json.loads(rf.read_text()), key=lambda r: (r["J2"], r["N"]))
+    rows = ["| $N$ | $J_2$ | CX / step (all-to-all) | CX / step (line) | $n_{\\mathrm{bound}}$ | $n_{\\mathrm{emp}}$ | CX bound (all-to-all) | CX measured-$n$ (all-to-all) | CX bound (line) | exact generic state prep |",
+            "|---|---|---|---|---|---|---|---|---|---|"]
+    for r in R:
+        lc = r["cx_step_line_amortised"]
+        rows.append(f"| {r['N']} | {r['J2']} | {r['cx_step_a2a']} | {lc:.0f} | {r['n_bound']} | {r['n_emp']} | {r['cx_bound']:,} | {r['cx_emp']:,} | {int(round(lc*r['n_bound'])):,} | {r['generic_prep_cx']:,} |")
+    T["resources"] = "\n".join(rows)
+    RS = {}
+    for J2 in (0.0, 0.4):
+        sel_ = [r for r in R if r["J2"] == J2 and r["N"] >= 6]
+        N_ = np.log([r["N"] for r in sel_])
+        RS[f"J2_{J2}"] = dict(
+            cx_step=float(np.polyfit(N_, np.log([r["cx_step_a2a"] for r in sel_]), 1)[0]),
+            n_bound=float(np.polyfit(N_, np.log([r["n_bound"] for r in sel_]), 1)[0]),
+            n_emp=float(np.polyfit(N_, np.log([r["n_emp"] for r in sel_]), 1)[0]),
+            cx_bound=float(np.polyfit(N_, np.log([r["cx_bound"] for r in sel_]), 1)[0]),
+            cx_emp=float(np.polyfit(N_, np.log([r["cx_emp"] for r in sel_]), 1)[0]))
+    RS["generic_growth_per_2qubits"] = float(np.mean([R_["generic_prep_cx"] for R_ in R if R_["N"] == 12 and R_["J2"] == 0.0]) / np.mean([R_["generic_prep_cx"] for R_ in R if R_["N"] == 10 and R_["J2"] == 0.0]))
+    RS["cx_ratio_bound_over_emp"] = r_ = (min(x["cx_bound"] / x["cx_emp"] for x in R), max(x["cx_bound"] / x["cx_emp"] for x in R))
+    RS["emp_over_generic"] = {f"N{x['N']}_J2{x['J2']}": x["cx_emp"] / x["generic_prep_cx"] for x in R}
+    RS["bound_over_generic"] = {f"N{x['N']}_J2{x['J2']}": x["cx_bound"] / x["generic_prep_cx"] for x in R}
+    S["resources"] = RS
+    (RES / "stats.json").write_text(json.dumps(S, indent=1))
+    (RES / "tables.json").write_text(json.dumps(T, indent=1))
+    fig, ax = plt.subplots(figsize=(3.9, 3.1))
+    for J2, mk in [(0.0, "o"), (0.4, "s")]:
+        rr = [r for r in R if r["J2"] == J2]
+        mf = "white" if J2 else None
+        ax.semilogy([r["N"] for r in rr], [r["cx_bound"] for r in rr], mk + "-", color=C["bound"], mfc=mf or C["bound"], label=f"filter, bound $n$, $J_2={J2}$")
+        ax.semilogy([r["N"] for r in rr], [r["cx_emp"] for r in rr], mk + "--", color=C["meas"], mfc=mf or C["meas"], label=f"filter, measured $n$, $J_2={J2}$")
+    g_ = sorted({(r["N"], r["generic_prep_cx"]) for r in R})
+    ax.semilogy([a for a, _ in g_], [b for _, b in g_], "k:", marker="^", label="exact generic state prep")
+    ax.set_xlabel("$N$"); ax.set_ylabel("CX count"); ax.legend(frameon=False, fontsize=6)
+    fig.tight_layout(); fig.savefig(FIG / "fig_cx.png", dpi=200); plt.close(fig)
+    print(json.dumps(RS, indent=1))
