@@ -17,7 +17,7 @@ for key, d in [("total_ratio", 1), ("n_ratio", 0), ("leak_ratio", 1), ("trot_rat
 lo, med, hi = rng("rich_ratio_n_ge_nemp", 2)
 vals.update(rich_lo=lo, rich_med=med, rich_hi=hi)
 R = S["resources"]
-vals.update(resources=T["resources"],
+vals.update(main_short=T["main_short"], cost_short=T["cost_short"],
     cxstep0=f"{R['J2_0.0']['cx_step']:.1f}", cxstep4=f"{R['J2_0.4']['cx_step']:.1f}",
     nb0=f"{R['J2_0.0']['n_bound']:.1f}", ne0=f"{R['J2_0.0']['n_emp']:.1f}",
     cxb0=f"{R['J2_0.0']['cx_bound']:.1f}", cxb4=f"{R['J2_0.4']['cx_bound']:.1f}",

@@ -180,3 +180,22 @@ if rf.exists():
     ax.set_xlabel("$N$"); ax.set_ylabel("CX count"); ax.legend(frameon=False, fontsize=6)
     fig.tight_layout(); fig.savefig(FIG / "fig_cx.png", dpi=200); plt.close(fig)
     print(json.dumps(RS, indent=1))
+
+# ------------------------------------------------------------------ condensed tables used by the paper
+rows = ["| $N$ | $J_2$ | $\\gamma$ | $\\Delta$ | $n_{\\mathrm{bound}}$ | $n_{\\mathrm{meas}}$ | bound $\\bar D$ | measured $D$ | leakage: bound / meas. | Trotter: bound / meas. |",
+        "|---|---|---|---|---|---|---|---|---|---|"]
+for c in main:
+    if c["eps"] != 0.01:
+        continue
+    if "at_n_bound" not in c:
+        rows.append(f"| {c['N']} | {c['J2']} | {c['gamma']:.3f} | {c['gap_scaled']:.3f} | – | – | – | {c['D_trial']:.3f}$^\\dagger$ | – | – |")
+        continue
+    a = c["at_n_bound"]
+    rows.append(f"| {c['N']} | {c['J2']} | {c['gamma']:.3f} | {c['gap_scaled']:.3f} | {c['n_bound']:,} | {c['n_emp']} | {a['bound']:.3f} | {a['meas']:.3f} | {a['bound_leak']/a['meas_leak']:.1f}$\\times$ | {a['bound_trot']/a['meas_trot']:.0f}$\\times$ |")
+T["main_short"] = "\n".join(rows)
+if rf.exists():
+    rows = ["| $N$ | $J_2$ | CX / step | $n_{\\mathrm{bound}}$ | CX at $n_{\\mathrm{bound}}$ | $n_{\\mathrm{meas}}$ | CX at $n_{\\mathrm{meas}}$ | exact generic prep |", "|---|---|---|---|---|---|---|---|"]
+    for r in R:
+        rows.append(f"| {r['N']} | {r['J2']} | {r['cx_step_a2a']} | {r['n_bound']:,} | {r['cx_bound']:,} | {r['n_emp']} | {r['cx_emp']:,} | {r['generic_prep_cx']:,} |")
+    T["cost_short"] = "\n".join(rows)
+(RES / "tables.json").write_text(json.dumps(T, indent=1))
