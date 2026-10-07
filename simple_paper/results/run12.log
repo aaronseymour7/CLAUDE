@@ -1,0 +1,8 @@
+[21:39:52] N=12 J2=0.0 chi=2 eps=0.1
+   done {'gamma': 0.7170912022940749, 'n_bound': 877, 'n_emp': 23, 'seconds': 9.686208724975586}
+[21:40:02] N=12 J2=0.0 chi=2 eps=0.01
+   done {'gamma': 0.7170912022940749, 'n_bound': 6967, 'n_emp': 117, 'seconds': 35.2401385307312}
+[21:40:37] N=12 J2=0.4 chi=2 eps=0.1
+   done {'gamma': 0.9490994015296984, 'n_bound': None, 'n_emp': None, 'seconds': None}
+[21:40:38] N=12 J2=0.4 chi=2 eps=0.01
+   done {'gamma': 0.9490994015296984, 'n_bound': 4060, 'n_emp': 93, 'seconds': 77.27974820137024}
