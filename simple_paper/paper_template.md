@@ -4,22 +4,24 @@ author: "Draft — authors to be added"
 date: "8 October 2026"
 ---
 
+
 ## Abstract
 
-Density-matrix renormalisation group (DMRG) calculations give a matrix-product state and the low-lying energies of a spin chain classically, but a compact trial circuit built from them keeps some excited-state weight. The projection filter of Stetcu, Baroni and Carlson removes it on a quantum computer using one ancilla, controlled time evolution and post-selection. We give a complete workflow around this filter, from the DMRG front end to a verified state, and evaluate it on the open $J_1$–$J_2$ spin-½ chain for $N=4$–$16$ with real DMRG trial states compiled to circuits. The workflow contains a certificate: an a-priori bound on the trace distance $D$ to the exact ground state, $D\le\sqrt{\bar\ell}+\epsilon_T/\sqrt{p_g}$, a leakage term plus a Trotter term joined by the triangle inequality. We find that (i) DMRG supplies the inputs to $10^{-8}$ relative accuracy; (ii) the certificate is never violated ({{npts}} simulated points) and is within {{tot_lo}}–{{tot_hi}}$\times$ of the measured distance, because its leakage term is nearly tight, while its Trotter term is {{trot_lo}}–{{trot_hi}}$\times$ too large; (iii) a non-oracle *hybrid* rule (certified leakage plus a measured $n$-versus-$2n$ Trotter estimate) met every target ({{hyb_met}} of {{hyb_cases}} cases) with {{nbh_lo}}–{{nbh_hi}}$\times$ fewer Trotter steps than the certificate; (iv) the certificate fails predictably if the classical inputs are optimistic (a gap over-estimated by $25\%$ already breaks it); and (v) in gates, the hybrid filter costs $3\times10^{2}$–$4\times10^{4}$ CX including the trial circuit, growing as roughly $N^{2.5}$–$N^{3.1}$, which is {{dir_hyb_lo}}–{{dir_hyb_hi}}$\times$ the cost of preparing the state directly from the MPS at the same fidelity. The workflow is therefore a certified, reproducible way to use the filter, and a calibrated account of its cost, but not a resource advantage on these chains.
+Density-matrix renormalisation group (DMRG) gives a matrix-product state and the low-lying energies of a spin chain classically, but a compact trial circuit built from them keeps some excited-state weight. The projection filter of Stetcu, Baroni and Carlson removes it on a quantum computer using one ancilla, controlled time evolution and post-selection. We give a complete workflow around this filter, from the DMRG front end to a verified state, and evaluate it on the open $J_1$–$J_2$ spin-½ chain for $N=4$–$16$ with real DMRG trial states compiled to circuits. The paper is organised around three questions. **(1) Can the filter be certified without knowing the exact ground state?** Yes, conditionally: an a-priori bound on the trace distance to the ground state, $D\le\sqrt{\bar\ell}+\epsilon_T/\sqrt{p_g}$, needs only DMRG-derived inputs and held on all {{npts}} simulated points, but it fails if the ground-state weight $\gamma$ or the gap $\Delta$ is over-estimated (a gap $25\%$ too large already breaks it). **(2) How conservative is the certificate?** Its leakage term is reasonably tight ({{leak_lo}}–{{leak_hi}}$\times$); its worst-case Trotter term is extremely conservative ({{trot_lo}}–{{trot_hi}}$\times$, growing with $N$), so the certified step count is {{nbm_lo}}–{{nbm_hi}}$\times$ what is empirically sufficient. **(3) Can the practical cost be recovered without the exact ground state?** A hybrid rule, certified leakage plus a measured $n$-versus-$2n$ Trotter estimate, met every target ({{hyb_met}} of {{hyb_cases}}) with {{nbh_lo}}–{{nbh_hi}}$\times$ fewer steps than the certificate, but it is empirical, not rigorous. In gates, the hybrid filter costs $3\times10^{2}$–$4\times10^{4}$ CX including the trial circuit, growing as roughly $N^{2.5}$–$N^{3.1}$, which is {{dir_hyb_lo}}–{{dir_hyb_hi}}$\times$ the cost of preparing the state directly from the MPS at the same fidelity. The workflow is a certified, reproducible way to use the filter and a calibrated account of its cost, not a resource advantage on these chains.
 
 ## 1. Introduction
 
 A standard hybrid route to a ground state is to run DMRG, compile the resulting matrix-product state (MPS) into a shallow circuit, and repair the circuit's residual error with a quantum projection step. The Stetcu–Baroni–Carlson (SBC) projection [1], related to the rodeo algorithm [2], multiplies the trial state's energy components by a filter $F(E)=\prod_i\cos(Et_i+\phi_i)$ realised with pulses of controlled time evolution on a single ancilla. It sits among a family of ground-state projectors that use polynomial or Fourier filters of the Hamiltonian: phase-estimation-based preparation [3], quantum-eigenvalue-transformation filters [4,5] and, more generally, quantum singular value transformation. The SBC filter trades the optimal $\log(1/\varepsilon)$ scaling of those methods for a measurement-based, single-ancilla circuit whose filter can be designed and certified classically.
 
-Someone deciding whether to use it needs to know **what the full workflow is, how much of its guarantee is rigorous and how much is assumed, and what it costs in gates**. This paper answers those questions for one concrete, fully reproducible workflow:
+The practical difficulty is that the guarantee one would like, a bound on how far the prepared state is from the ground state, seems to need the ground state. This paper builds a workflow that avoids that, and asks three questions about it:
 
-1. Section 2 specifies the workflow stage by stage, with the classical inputs it consumes and the certificate it produces.
-2. Section 3 describes the experiments. Section 4 reports accuracy: the quality of the DMRG inputs, how tight the certificate is, how the step count should be chosen, how the trial state matters, what happens when inputs are wrong, and how sensitive the result is to design choices.
-3. Section 5 reports cost in CX gates, including the trial circuit, how it scales, and how it compares with preparing the state directly from the MPS.
-4. Section 6 states what the workflow does and does not establish.
+| | Question | Short answer | Where |
+|---|---|---|---|
+| **Q1** | Can SBC filtering be certified without knowing the exact ground state? | **Yes, conditionally** on conservative bounds for the ground-state weight $\gamma$ and the gap $\Delta$. A certificate built from DMRG-derived inputs was never violated, and it fails if $\gamma$ or $\Delta$ is over-estimated. | Section 4 |
+| **Q2** | How conservative is that certificate? | **Leakage is reasonably tight; worst-case Trotter error is extremely conservative** (and more so as $N$ grows). | Section 5 |
+| **Q3** | Can we recover the practical cost without the exact ground state? | **Largely, with the $n$-versus-$2n$ hybrid rule**, which met every target, but it is empirical rather than rigorous. | Section 6 |
 
-We do not claim a resource advantage; Section 5 shows there is none at these sizes.
+Section 2 specifies the workflow and the certificate, Section 3 the experiments, and Section 7 the remaining practical questions: which trial state to use, how sensitive the result is to design choices, and what the whole thing costs in CX gates, including against preparing the state directly from the MPS. Section 8 states the limitations. We do not claim a resource advantage; Section 7 shows there is none at these sizes.
 
 ## 2. The workflow
 
@@ -53,7 +55,7 @@ $D$ is the trace distance between the implemented and the exact ground state. Th
 | $\alpha$ | exact operator norms of commutators | rigorous |
 | leakage and Trotter terms | Lemmas 1 and 2 | rigorous *given* the inputs above |
 
-The certificate is therefore as trustworthy as $\Delta$ and $\gamma$; Section 4.5 quantifies what happens when they are wrong.
+The certificate is therefore as trustworthy as $\Delta$ and $\gamma$; Section 4.3 quantifies what happens when they are wrong.
 
 ## 3. Experiments
 
@@ -65,7 +67,9 @@ The certificate is therefore as trustworthy as $\Delta$ and $\gamma$; Section 4.
 * **Cost.** One Trotter step of one pulse (for each bond, the $XX,YY,ZZ$ rotations tensored with $Z$ on the ancilla) is transpiled once with qiskit (level 3) to $\{\mathrm{CX},\mathrm{Rz},\mathrm{H},\mathrm{S}\}$; total CX is trial CX plus $n\times$ CX per step. All-to-all connectivity unless stated. The trial circuit is the exact `mps-to-circuit` compilation, transpiled the same way.
 * **Direct-preparation baseline.** Preparing the state directly from the MPS: `mps-to-circuit` sequential (exact) circuits for the reference MPS truncated to $\chi\in\{1,2,4,8,16\}$, $L$-layer approximate circuits ($L\le8$), and generic state preparation of the exact ground state ($N\le12$). Each is measured against the exact ground state; the baseline for a target $\varepsilon$ is the cheapest with infidelity $\le\varepsilon$.
 
-## 4. Accuracy
+## 4. Q1: Can the filter be certified without knowing the exact ground state?
+
+**Short answer: yes, conditionally.** Every quantity in the certificate, $\gamma$, $\Delta$, $W$, $\eta$, $F(0)$, $\alpha$ and $T$, can be computed from DMRG output and the circuit, with no access to the exact ground state. The certificate is then a theorem *given* $\gamma$ and $\Delta$ (Appendix A), and it is only as safe as those two inputs.
 
 ### 4.1 The classical front end supplies the inputs
 
@@ -73,63 +77,80 @@ The certificate is therefore as trustworthy as $\Delta$ and $\gamma$; Section 4.
 
 *Table 1.* DMRG-derived inputs against exact diagonalisation. $\chi_{\mathrm{ref}}$ is the bond dimension the reference MPS used.
 
-DMRG reproduces $E_0$, $E_1$ and the gap to better than {{max_E}} (absolute) and {{max_gap}} (relative), and the estimated $\gamma$ differs from the exact overlap by at most {{max_gam}}. At these sizes the certificate computed from DMRG inputs is therefore indistinguishable from the one computed from exact inputs. This is an empirical statement about well-behaved chains, not a guarantee: DMRG does not certify these numbers (Section 2) and the penalty $E_1$ is variationally on the unsafe side. Section 4.5 shows what an error of that sign does.
+DMRG reproduces $E_0$, $E_1$ and the gap to better than {{max_E}} (absolute) and {{max_gap}} (relative), and the estimated $\gamma$ differs from the exact overlap by at most {{max_gam}}. At these sizes the certificate computed from DMRG inputs is therefore indistinguishable from the one computed from exact inputs. This is an empirical statement about well-behaved chains: DMRG does not certify these numbers (Section 2), and the penalty-method $E_1$ is variationally on the unsafe side.
 
-### 4.2 The certificate is accurate, mostly because leakage is tight
+### 4.2 The certificate computed from DMRG inputs was never violated
+
+Across {{npts}} simulated points (every case at the certified step count plus the $n$-sweeps of Section 5), with the certificate computed from DMRG inputs only, the total certificate, its leakage term, its Trotter term, the triangle inequality, the energy bound $\langle H\rangle-E_0\le W\bar D^2$ and the success-rate bound $P_{\mathrm{succ}}\ge\gamma F(0)^2$ each held {{npts}} out of {{npts}} times. The exact ground state was used only afterwards, to measure $D$. This checks the derivation and the code; the proofs are in Appendix A.
+
+### 4.3 What happens when the inputs are wrong
+
+The condition in the short answer is not a formality. We design and certify with deliberately wrong values and measure the true distance ($N=8$ and $12$, $J_2=0$, $\varepsilon=10^{-2}$):
+
+{{sens}}
+
+*Table 2.* "Claimed" is the certificate computed from the (wrong) inputs; "with true inputs" recomputes it with the true gap and overlap; "measured" is the actual distance.
+
+* **Under-estimating the gap is safe**: the filter is designed for a wider window and costs more steps.
+* **Over-estimating the gap is not.** At $+10\%$ the claimed bound still holds, but the bound recomputed with the true gap is already $30$–$45\%$ above the claim; at $+25\%$ the claim is violated and the target missed at both sizes.
+* **Over-estimating $\gamma$** behaves the same way, with a threshold that depends on how much excited weight is hidden.
+* **Practical rule.** The penalty-method $E_1$ is an *upper* bound on the true $E_1$, the wrong side for a gap lower bound. In this study it was accurate to $10^{-8}$, but the workflow should either certify $\Delta$ independently or design with a deliberately *reduced* gap: a $20\%$ reduction was safe and cost $1.55\times$ more steps at both sizes.
+
+**Answer to Q1.** Yes: the certificate needs no ground state, and it held on every point when built from DMRG inputs. It is conditional on $\gamma$ and $\Delta$ not being optimistic, and nothing in the workflow certifies those two numbers; the experiments quantify the cost of getting them wrong.
+
+## 5. Q2: How conservative is the certificate?
+
+**Short answer: the leakage term is reasonably tight, the worst-case Trotter term is extremely conservative.**
 
 {{main}}
 
-*Table 2.* $\varepsilon=10^{-2}$, $\chi=2$. $^\dagger$$1-\gamma\le\varepsilon$: no filter needed, and the entry is the trial state's own distance. $D$ is at $n_{\mathrm{bound}}$. The last two columns compare the certificate with the measurement, term by term.
+*Table 3.* $\varepsilon=10^{-2}$, $\chi=2$. $^\dagger$$1-\gamma\le\varepsilon$: no filter needed, and the entry is the trial state's own distance. $D$ is the measured distance at $n_{\mathrm{bound}}$. The last two columns compare the certificate with the measurement, term by term. $n_{\mathrm{hyb}}$ is discussed in Section 6.
 
-* **Never violated.** Across {{npts}} simulated points (every case at $n_{\mathrm{bound}}$ plus the $n$-sweeps) the total certificate, its leakage term, its Trotter term, the triangle inequality, the energy bound and $P_{\mathrm{succ}}\ge\gamma F(0)^2$ each held {{npts}} out of {{npts}} times. This checks the derivation and the code; the proofs are in Appendix A.
 * **Close in total.** At $n_{\mathrm{bound}}$ the certificate exceeds the measured $D$ by {{tot_lo}}–{{tot_hi}}$\times$ (median {{tot_med}}$\times$).
-* **Leakage is nearly tight; Trotter is not.** The leakage term is within {{leak_lo}}–{{leak_hi}}$\times$; the Trotter term is {{trot_lo}}–{{trot_hi}}$\times$ too large and the discrepancy grows with $N$ (from $9\times$ at $N=6$ to $52$–$77\times$ at $N=14$), because $\alpha$ is a worst case over all states. The measured $D$ at $n_{\mathrm{bound}}$ is dominated by leakage ({{leak_meas_lo}}–{{leak_meas_hi}}, against a Trotter part of at most {{trot_meas_max}}).
-* **Scaling in $n$.** The Trotter certificate and the measured Trotter distance both fall as $1/n$ (fitted log–log slopes {{slope_b_lo}} to {{slope_b_hi}} and {{slope_m_lo}} to {{slope_m_hi}}), so the certificate has the right scaling in $n$ and is off by a roughly constant factor (Figure 2). The measured total saturates at the leakage floor.
+* **Leakage is reasonably tight.** The leakage term is within {{leak_lo}}–{{leak_hi}}$\times$ of the measured leakage distance. The only slack is that every excited component is charged the worst-case filter value $\eta F(0)$.
+* **Trotter is extremely conservative.** The Trotter term is {{trot_lo}}–{{trot_hi}}$\times$ too large and the discrepancy grows with $N$ (from $9\times$ at $N=6$ to $52$–$77\times$ at $N=14$), because $\alpha$ is a worst case over all states. The measured $D$ at $n_{\mathrm{bound}}$ is dominated by leakage ({{leak_meas_lo}}–{{leak_meas_hi}}, against a Trotter part of at most {{trot_meas_max}}).
+* **Consequence for step counts.** The certified step count is {{nbm_lo}}–{{nbm_hi}}$\times$ (median {{nbm_med}}$\times$) the smallest count that empirically meets the target.
+* **Scaling in $n$ is right, the constant is not.** The Trotter certificate and the measured Trotter distance both fall as $1/n$ (fitted log–log slopes {{slope_b_lo}} to {{slope_b_hi}} and {{slope_m_lo}} to {{slope_m_hi}}), so the certificate has the right scaling and is off by a roughly constant factor at each $N$ (Figure 2). The measured total saturates at the leakage floor.
 * **Other observables.** The energy bound $W\bar D^2$ holds but is {{en_lo}}–{{en_hi}}$\times$ above the measured energy error. The success rate matches the lower bound $\gamma F(0)^2$ to {{psucc_max}}% or better, so $1/(\gamma F(0)^2)$ is an accurate estimate of the repetition overhead.
 
 ![Figure 2. Dependence on $n$ at fixed design ($\varepsilon=10^{-2}$, $J_2=0$, $N=4,6,8,10$ as solid, dashed, dotted, dash-dotted). (a) Certificate (blue) and measured distance (red). (b) Trotter part only: certificate (blue) and measurement (green).](figs/fig_sweep.png){width=100%}
 
-### 4.3 Choosing $n$: certified, hybrid, measured
-
-{{hybrid}}
-
-*Table 3.* The hybrid rule against the certificate and the oracle. $D$ is measured at $n_{\mathrm{hyb}}$ against the exact ground state, which the rule itself never uses.
-
-* The hybrid rule met the target in {{hyb_met}} of {{hyb_cases}} cases, with a margin $\sqrt\varepsilon/D$ of {{hmarg_lo}}–{{hmarg_hi}}$\times$.
-* It uses {{nbh_lo}}–{{nbh_hi}}$\times$ (median {{nbh_med}}$\times$) fewer steps than the certificate and only {{nhm_lo}}–{{nhm_hi}}$\times$ (median {{nhm_med}}$\times$) more than the oracle. The gap to the oracle is mostly the coarse geometric grid and the requirement of confirmation at the next grid point.
-* The n-versus-$2n$ estimate of the Trotter distance matched the measured one to within [{{rich_lo}}, {{rich_hi}}] over {{rich_n}} sweep points with $n\ge n_{\mathrm{meas}}$.
-* The hybrid rule is not a theorem. It assumes the $1/n$ regime, which held in all runs here, and inherits the assumptions on $\gamma$ and $\Delta$ through its leakage term.
-
-Step counts scale with the target roughly as the first-order theory predicts for the certificate ($n\propto\varepsilon^{-1/2}$ at fixed filter; observed ratios $n(10^{-3})/n(10^{-2})$ of $4$–$7$ include the tightening of the filter itself):
+Step counts also scale with the target roughly as first-order theory predicts for the certificate ($n\propto\varepsilon^{-1/2}$ at a fixed filter; the observed ratios $n(10^{-3})/n(10^{-2})$ of $4$–$7$ include the tightening of the filter itself):
 
 {{eps}}
 
 *Table 4.* Certified step counts at three targets, and hybrid and measured counts at $10^{-2}$ and $10^{-3}$.
 
-### 4.4 The choice of trial state
+**Answer to Q2.** The certificate is within a factor of about {{tot_med}} in distance, because leakage dominates the error and is bounded tightly. The price of a worst-case proof is in the Trotter term: it is one to two orders of magnitude too large, increasingly so with $N$, which turns directly into an order-of-magnitude excess in circuit length (Section 7).
+
+## 6. Q3: Can the practical cost be recovered without the exact ground state?
+
+**Short answer: largely, with the $n$-versus-$2n$ hybrid rule, which is empirical rather than rigorous.** The hybrid rule keeps the rigorous leakage term and replaces the worst-case Trotter term by a measured one (Section 2, Stage 4). It never uses the ground state.
+
+{{hybrid}}
+
+*Table 5.* The hybrid rule against the certificate and the oracle. $D$ is measured at $n_{\mathrm{hyb}}$ against the exact ground state, which the rule itself never uses.
+
+* **It met the target** in {{hyb_met}} of {{hyb_cases}} cases, with a margin $\sqrt\varepsilon/D$ of {{hmarg_lo}}–{{hmarg_hi}}$\times$.
+* **It is close to the oracle.** It uses {{nbh_lo}}–{{nbh_hi}}$\times$ (median {{nbh_med}}$\times$) fewer steps than the certificate and only {{nhm_lo}}–{{nhm_hi}}$\times$ (median {{nhm_med}}$\times$) more than the oracle. The gap to the oracle is mostly the coarse geometric grid and the requirement of confirmation at the next grid point.
+* **The Trotter estimate is accurate.** The $n$-versus-$2n$ estimate of the Trotter distance matched the measured one to within [{{rich_lo}}, {{rich_hi}}] over {{rich_n}} sweep points with $n\ge n_{\mathrm{meas}}$.
+* **It is not a theorem.** It assumes the $1/n$ error regime, which held in every run here (Section 5), and it inherits the assumptions on $\gamma$ and $\Delta$ through its leakage term, so Section 4.3 applies to it unchanged. The evidence is 25 cases on one chain.
+
+**Answer to Q3.** Yes, to a good approximation: the hybrid rule recovers all but a factor of about {{nhm_med}} of the empirically sufficient cost with no ground state, and met every target. What it gives up is the proof: its Trotter part is a measurement under an assumed scaling, not a bound.
+
+## 7. Using the workflow: trial state, design choices and cost
+
+### 7.1 The choice of trial state
 
 At $N=8$, $\varepsilon=10^{-2}$:
 
 {{trials}}
 
-*Table 5.* Trial state against total CX (trial plus filter). "Approx." is the $L$-layer `mps-to-circuit` brickwork compilation of the reference MPS.
+*Table 6.* Trial state against total CX (trial plus filter). "Approx." is the $L$-layer `mps-to-circuit` brickwork compilation of the reference MPS.
 
 A better trial state needs a much shorter filter: going from $\chi=1$ ($\gamma=0.13$ at $J_2=0$) to $\chi=2$ cuts the certified step count by $7.7\times$ ($31\times$ at $J_2=0.4$, where $\chi=1$ gives $\gamma=0.04$). For $\chi=4$ the DMRG state already meets the target and no filter is needed. A trial state produced by approximate compilation behaves like a DMRG state of the same $\gamma$: the filter only sees $\gamma$.
 
-### 4.5 When the classical inputs are wrong
-
-The certificate assumes $\Delta$ and $\gamma$ are known. We design and certify with deliberately wrong values and measure the true distance ($N=8$ and $12$, $J_2=0$, $\varepsilon=10^{-2}$):
-
-{{sens}}
-
-*Table 6.* "Claimed" is the certificate computed from the (wrong) inputs; "with true inputs" recomputes it with the true gap and overlap; "measured" is the actual distance.
-
-* **Under-estimating the gap is safe** (the filter is designed for a wider window and costs more steps).
-* **Over-estimating the gap is not.** At $+10\%$ the claimed bound still holds, but the guaranteed distance with true inputs is already $30$–$45\%$ above the claim; at $+25\%$ the claim is violated and the target missed at both sizes.
-* **Over-estimating $\gamma$** behaves the same way, at a threshold that depends on how much of the excited weight is hidden.
-* This is why the penalty-method $E_1$, which is an *upper* bound, must be treated with care: in this study it was accurate to $10^{-8}$, but the workflow should either certify $\Delta$ independently or design with a deliberately *reduced* gap: a $20\%$ reduction was safe and cost $1.55\times$ more steps at both sizes.
-
-### 4.6 Sensitivity to design choices
+### 7.2 Sensitivity to design choices
 
 At $N=8$, $J_2=0$, $\varepsilon=10^{-2}$, certified $n$ against the leakage share $\varepsilon_\ell/\varepsilon$ and the number of pulses $m$ (the solver searched $x=T\Delta/\pi\in\{0.6,1,1.5,2\}$):
 
@@ -139,7 +160,7 @@ At $N=8$, $J_2=0$, $\varepsilon=10^{-2}$, certified $n$ against the leakage shar
 
 The certified $n$ varies by $3\times$ ({{des_lo}}–{{des_hi}}) over the shares tried, with a minimum near the $1/4$ used elsewhere; six and eight pulses are equivalent. The leakage share is the one design parameter worth tuning.
 
-## 5. Cost
+### 7.3 Gate cost
 
 {{cost}}
 
@@ -159,9 +180,9 @@ The direct-preparation baselines for each size:
 
 *Table 9.* Direct preparation CX (infidelity to the exact ground state in parentheses), at $\chi=2,4,8$, $L=1,3$ approximate layers, and generic preparation ($N\le12$).
 
-## 6. Discussion
+## 8. Discussion
 
-**What the workflow gives.** A single procedure from DMRG output to a Trotter step count, with a certificate that held on every point tested, an explicit statement of which inputs it trusts, and a practical hybrid rule that is much cheaper than the certificate and met all targets. The certificate's leakage half is tight; its Trotter half is the price of a worst-case proof.
+**The three answers together.** The filter can be certified without the exact ground state, as long as $\gamma$ and $\Delta$ are not optimistic (Q1); the certificate is accurate where it matters for the distance, because leakage dominates and is tight, but its Trotter half is one to two orders of magnitude too large (Q2); and a measured $n$-versus-$2n$ Trotter estimate recovers nearly all of the practical cost without the ground state, at the price of being empirical (Q3). The recommended practice is therefore: certify $\gamma$, $\Delta$ and the leakage rigorously, choose $n$ by the hybrid rule, and report the certified count as the conservative fallback.
 
 **What it costs.** At $\varepsilon=10^{-2}$ the hybrid circuit costs roughly $10^3$–$4\times10^4$ CX at $N=6$–$16$ against $30$–$1{,}100$ for direct MPS preparation. The filter is not competitive on these chains.
 
@@ -169,13 +190,14 @@ The direct-preparation baselines for each size:
 
 **Limitations.**
 
-* *Inputs.* The certificate needs $\gamma$ and $\Delta$. Here DMRG supplies them to $10^{-8}$ and exact diagonalisation validates them ($N\le16$). At larger $N$ there is no validation, and Section 4.5 shows the certificate breaks if the gap is optimistic. Certifying $\Delta$ at large $N$ is the main open point.
+* *Inputs.* The certificate needs $\gamma$ and $\Delta$. Here DMRG supplies them to $10^{-8}$ and exact diagonalisation validates them ($N\le16$). At larger $N$ there is no validation, and Section 4.3 shows the certificate breaks if the gap is optimistic. Certifying $\Delta$ at large $N$ is the main open point.
 * *Models.* Two couplings of one chain.
 * *Trotter order.* First order only; higher-order formulas would shrink the Trotter term but need a different constant.
 * *Noise.* Not simulated; the triangle inequality gives an additive noise term.
 * *Cost model.* CX only, all-to-all (a line costs about $2$–$3\times$ more), no T-count, no synthesis error; the CX per step is for a Heisenberg bond decomposition into three Pauli rotations and is not the cheapest possible.
 * *Simulation.* Dense statevectors, so the large-$N$ reach of DMRG is not exercised, and the largest certified circuits are not simulated.
 * *Hybrid rule.* An empirical rule that assumed the $1/n$ regime and had 25 test cases.
+
 
 **Reproducibility.** All code is in `simple_paper/`: `dmrg_inputs.py` (DMRG front end and trial circuits), `workflow.py` (Hamiltonian, pulses, certificate), `run_experiments.py` (main grid), `run_extras.py` (trial states, wrong inputs, design choices, direct-preparation baseline), `resources.py` (CX counts), `pinsker_check.py`, `make_report.py`, `build_paper.py`; filter design is `j1j2_filter/floor.py`. They run in a Python 3.12 environment with `numpy`, `scipy`, `quimb`, `qiskit` and `mps-to-circuit`; set `OMP_NUM_THREADS=1` when running processes in parallel. The full set (all tables here) runs in one to two hours on four cores. Seeds are fixed, including the Lanczos start vector used for the exact ground state at $N\ge12$ (a $\chi=2$ cut passes through degenerate Schmidt values, so $\gamma$ is otherwise only reproducible to the third digit).
 

@@ -33,50 +33,54 @@ Accuracy and Gate Cost</h1>
 <p class="date">8 October 2026</p>
 </header>
 <h2 id="abstract">Abstract</h2>
-<p>Density-matrix renormalisation group (DMRG) calculations give a
-matrix-product state and the low-lying energies of a spin chain
-classically, but a compact trial circuit built from them keeps some
-excited-state weight. The projection filter of Stetcu, Baroni and
-Carlson removes it on a quantum computer using one ancilla, controlled
-time evolution and post-selection. We give a complete workflow around
-this filter, from the DMRG front end to a verified state, and evaluate
-it on the open
+<p>Density-matrix renormalisation group (DMRG) gives a matrix-product
+state and the low-lying energies of a spin chain classically, but a
+compact trial circuit built from them keeps some excited-state weight.
+The projection filter of Stetcu, Baroni and Carlson removes it on a
+quantum computer using one ancilla, controlled time evolution and
+post-selection. We give a complete workflow around this filter, from the
+DMRG front end to a verified state, and evaluate it on the open
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>J</mi><mn>1</mn></msub><annotation encoding="application/x-tex">J_1</annotation></semantics></math>–<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>J</mi><mn>2</mn></msub><annotation encoding="application/x-tex">J_2</annotation></semantics></math>
 spin-½ chain for
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>=</mo><mn>4</mn></mrow><annotation encoding="application/x-tex">N=4</annotation></semantics></math>–<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>16</mn><annotation encoding="application/x-tex">16</annotation></semantics></math>
-with real DMRG trial states compiled to circuits. The workflow contains
-a certificate: an a-priori bound on the trace distance
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>D</mi><annotation encoding="application/x-tex">D</annotation></semantics></math>
-to the exact ground state,
+with real DMRG trial states compiled to circuits. The paper is organised
+around three questions. <strong>(1) Can the filter be certified without
+knowing the exact ground state?</strong> Yes, conditionally: an a-priori
+bound on the trace distance to the ground state,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>D</mi><mo>≤</mo><msqrt><mover><mo>ℓ</mo><mo accent="true">‾</mo></mover></msqrt><mo>+</mo><msub><mi>ϵ</mi><mi>T</mi></msub><mi>/</mi><msqrt><msub><mi>p</mi><mi>g</mi></msub></msqrt></mrow><annotation encoding="application/x-tex">D\le\sqrt{\bar\ell}+\epsilon_T/\sqrt{p_g}</annotation></semantics></math>,
-a leakage term plus a Trotter term joined by the triangle inequality. We
-find that (i) DMRG supplies the inputs to
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mo>−</mo><mn>8</mn></mrow></msup><annotation encoding="application/x-tex">10^{-8}</annotation></semantics></math>
-relative accuracy; (ii) the certificate is never violated (97 simulated
-points) and is within
-2.2–5.1<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>×</mo><annotation encoding="application/x-tex">\times</annotation></semantics></math>
-of the measured distance, because its leakage term is nearly tight,
-while its Trotter term is
-9–77<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>×</mo><annotation encoding="application/x-tex">\times</annotation></semantics></math>
-too large; (iii) a non-oracle <em>hybrid</em> rule (certified leakage
-plus a measured
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>-versus-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>n</mi></mrow><annotation encoding="application/x-tex">2n</annotation></semantics></math>
-Trotter estimate) met every target (25 of 25 cases) with
-6–66<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>×</mo><annotation encoding="application/x-tex">\times</annotation></semantics></math>
-fewer Trotter steps than the certificate; (iv) the certificate fails
-predictably if the classical inputs are optimistic (a gap over-estimated
-by
+needs only DMRG-derived inputs and held on all 97 simulated points, but
+it fails if the ground-state weight
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
+or the gap
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>
+is over-estimated (a gap
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>25</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">25\%</annotation></semantics></math>
-already breaks it); and (v) in gates, the hybrid filter costs
+too large already breaks it). <strong>(2) How conservative is the
+certificate?</strong> Its leakage term is reasonably tight
+(1.1–2.7<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>×</mo><annotation encoding="application/x-tex">\times</annotation></semantics></math>);
+its worst-case Trotter term is extremely conservative
+(9–77<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>×</mo><annotation encoding="application/x-tex">\times</annotation></semantics></math>,
+growing with
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math>),
+so the certified step count is
+11–168<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>×</mo><annotation encoding="application/x-tex">\times</annotation></semantics></math>
+what is empirically sufficient. <strong>(3) Can the practical cost be
+recovered without the exact ground state?</strong> A hybrid rule,
+certified leakage plus a measured
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>-versus-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>n</mi></mrow><annotation encoding="application/x-tex">2n</annotation></semantics></math>
+Trotter estimate, met every target (25 of 25) with
+6–66<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>×</mo><annotation encoding="application/x-tex">\times</annotation></semantics></math>
+fewer steps than the certificate, but it is empirical, not rigorous. In
+gates, the hybrid filter costs
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>3</mn><mo>×</mo><msup><mn>10</mn><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">3\times10^{2}</annotation></semantics></math>–<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>4</mn><mo>×</mo><msup><mn>10</mn><mn>4</mn></msup></mrow><annotation encoding="application/x-tex">4\times10^{4}</annotation></semantics></math>
 CX including the trial circuit, growing as roughly
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>N</mi><mn>2.5</mn></msup><annotation encoding="application/x-tex">N^{2.5}</annotation></semantics></math>–<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>N</mi><mn>3.1</mn></msup><annotation encoding="application/x-tex">N^{3.1}</annotation></semantics></math>,
 which is
 28–151<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>×</mo><annotation encoding="application/x-tex">\times</annotation></semantics></math>
 the cost of preparing the state directly from the MPS at the same
-fidelity. The workflow is therefore a certified, reproducible way to use
-the filter, and a calibrated account of its cost, but not a resource
-advantage on these chains.</p>
+fidelity. The workflow is a certified, reproducible way to use the
+filter and a calibrated account of its cost, not a resource advantage on
+these chains.</p>
 <h2 id="introduction">1. Introduction</h2>
 <p>A standard hybrid route to a ground state is to run DMRG, compile the
 resulting matrix-product state (MPS) into a shallow circuit, and repair
@@ -94,25 +98,71 @@ the optimal
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>log</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mi>/</mi><mi>ε</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\log(1/\varepsilon)</annotation></semantics></math>
 scaling of those methods for a measurement-based, single-ancilla circuit
 whose filter can be designed and certified classically.</p>
-<p>Someone deciding whether to use it needs to know <strong>what the
-full workflow is, how much of its guarantee is rigorous and how much is
-assumed, and what it costs in gates</strong>. This paper answers those
-questions for one concrete, fully reproducible workflow:</p>
-<ol type="1">
-<li>Section 2 specifies the workflow stage by stage, with the classical
-inputs it consumes and the certificate it produces.</li>
-<li>Section 3 describes the experiments. Section 4 reports accuracy: the
-quality of the DMRG inputs, how tight the certificate is, how the step
-count should be chosen, how the trial state matters, what happens when
-inputs are wrong, and how sensitive the result is to design
-choices.</li>
-<li>Section 5 reports cost in CX gates, including the trial circuit, how
-it scales, and how it compares with preparing the state directly from
-the MPS.</li>
-<li>Section 6 states what the workflow does and does not establish.</li>
-</ol>
-<p>We do not claim a resource advantage; Section 5 shows there is none
-at these sizes.</p>
+<p>The practical difficulty is that the guarantee one would like, a
+bound on how far the prepared state is from the ground state, seems to
+need the ground state. This paper builds a workflow that avoids that,
+and asks three questions about it:</p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>Question</th>
+<th>Short answer</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Q1</strong></td>
+<td>Can SBC filtering be certified without knowing the exact ground
+state?</td>
+<td><strong>Yes, conditionally</strong> on conservative bounds for the
+ground-state weight
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
+and the gap
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>.
+A certificate built from DMRG-derived inputs was never violated, and it
+fails if
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
+or
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>
+is over-estimated.</td>
+<td>Section 4</td>
+</tr>
+<tr class="even">
+<td><strong>Q2</strong></td>
+<td>How conservative is that certificate?</td>
+<td><strong>Leakage is reasonably tight; worst-case Trotter error is
+extremely conservative</strong> (and more so as
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math>
+grows).</td>
+<td>Section 5</td>
+</tr>
+<tr class="odd">
+<td><strong>Q3</strong></td>
+<td>Can we recover the practical cost without the exact ground
+state?</td>
+<td><strong>Largely, with the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>-versus-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>n</mi></mrow><annotation encoding="application/x-tex">2n</annotation></semantics></math>
+hybrid rule</strong>, which met every target, but it is empirical rather
+than rigorous.</td>
+<td>Section 6</td>
+</tr>
+</tbody>
+</table>
+<p>Section 2 specifies the workflow and the certificate, Section 3 the
+experiments, and Section 7 the remaining practical questions: which
+trial state to use, how sensitive the result is to design choices, and
+what the whole thing costs in CX gates, including against preparing the
+state directly from the MPS. Section 8 states the limitations. We do not
+claim a resource advantage; Section 7 shows there is none at these
+sizes.</p>
 <h2 id="the-workflow">2. The workflow</h2>
 <figure>
 <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABRoAAAFtCAYAAABoTdZBAAAAOnRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjExLjIsIGh0dHBzOi8vbWF0cGxvdGxpYi5vcmcvgI3uAAAAAAlwSFlzAAAh1QAAIdUBBJy0nQABAABJREFUeJzs3XV0E2kXBvCn7k5LaYEKUNzdXReXxWVZnAUWX1iBhcXd3d3d3d1aoIW6ATXqLvn+SDPtNElbSEvLx/M7h3OYyczkTZqxO/e9r5pEIpGAiIiIiIiIiIiISAXqBd0AIiIiIiIiIiIi+v4x0EhEREREREREREQqY6CRiIiIiIiIiIiIVMZAIxEREREREREREamMgUYiIiIiIiIiIiJSGQONREREREREREREpDIGGomIiIiIiIiIiEhlDDQSERERERERERGRyhhoJCIiIiIiIiIiIpUx0EhEREREREREREQqY6CRiIiIiIiIiIiIVMZAIxEREREREREREamMgUYiIiIiIiIiIiJSGQONREREREREREREpDIGGomIiIiIiIiIiEhlDDQSERERERERERGRyhhoJCIiIiIiIiIiIpUx0EhEREREREREREQqY6CRiIiIiIiIiIiIVMZAIxEREREREREREamMgUYiIiIiIiIiIiJSGQONREREREREREREpDIGGomIiIiIiIiIiEhlDDQSERERERERERGRyhhoJCIiIiIiIiIiIpUx0EhEREREREREREQqY6CRiIiIiIiIiIiIVMZAIxEREREREREREamMgUYiIiIiIiIiIiJSGQONREREREREREREpDIGGomIiIiIiIiIiEhlDDQSERERERERERGRyhhoJCIiIiIiIiIiIpUx0EhEREREREREREQqY6CRiIiIiIiIiIiIVMZAIxEREREREREREamMgUYiIiIiIiIiIiJSGQONREREREREREREpDIGGomIiIiIiIiIiEhlDDQSERERERERERGRyhhoJCIiIiIiIiIiIpUx0EhEREREREREREQqY6CRiIiIiIiIiIiIVMZAIxEREREREREREamMgUYiIiIiIiIiIiJSGQONREREREREREREpDIGGomIiIiIiIiIiEhlmgXdgJykpKbirddHeH8MQ3RsAqLjEhATl4jUtLSCbhpRoaWurgZDPV0YGejAWF8XxYuao0ppW2hp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0EhEREREREREREQqY6CRiIiIiIiIiIiIVMZAIxEREREREREREamMgUYiIiIiIiIiIiJSGQONREREREREREREpDIGGomIiIiIiIiIiEhlDDQSERERERERERGRyhhoJCIiIiIiIiIiIpUx0EhEREREREREREQqY6CRiIiIiIiIiIiIVMZAIxEREREREREREamMgUYiIiIiIiIiIiJSGQONREREREREREREpDIGGomIiIiIiIiIiEhlDDQSERERERERERGRyhhoJCIiIiIiIiIiIpUx0EhEREREREREREQqY6CRiIiIiIiIiIiIVMZAIxEREREREREREamMgUYiIiIiIiIiIiJSGQONREREREREREREpDIGGomIiIiIiIiIiEhlDDQSERERERERERGRyhhoJCIiIiIiIiIiIpUx0EhEREREREREREQqY6CRiIiIiIiIiIiIVMZAIxEREREREREREamMgUYiIiIiIiIiIiJSGQONREREREREREREpDIGGomIiIiIiIiIiEhlDDQSERERERERERGRyhhoJCIiIiIiIiIiIpUx0EhEREREREREREQqY6CRiIiIiIiIiIiIVMZAIxEREREREREREamMgUYiIiIiIiIiIiJSGQONREREREREREREpDIGGomIiIiIiIiIiEhlDDQSERERERERERGRyhhoJCIiIiIiIiIiIpUx0EhEREREREREREQqY6CRiIiIiIiIiIiIVMZAIxEREREREREREamMgUYiIiIiIiIiIiJSGQONREREREREREREpDIGGomIiIiIiIiIiEhlDDQSERERERERERGRyhhoJCIiIiIiIiIiIpUx0EhEREREREREREQqY6CRiIiIiIiIiIiIVMZAIxEREREREREREamMgUYiIiIiIiIiIiJSGQONREREREREREREpDLNgm4AEREREeXs7p1bWLtqpUrbsC1eHMtWrsmbBhERERERZcFAIxEREdF34ENgIC5fuqDSNsqUccqj1hARERERyWPXaSIiIiIiIiIiIlIZMxqJiIiIvjPa2tq4//hFrpbdtmUTNqxbnc8tIiIiIiJioJGIiIjou6OmpgbHUqVytayZuVk+t4aIiIiISIqBRiIiIvq/FRYaii2bN6BV67aoVbvOV2/HxfkVzp09jUFDhsLGxjYPW0hrV6+Eja0tuvfoVdBNyRNJSUlYsnAe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" style="width:100.0%" alt="Figure 1. The workflow." />
@@ -326,7 +376,7 @@ reference MPS</td>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>
 and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>;
-Section 4.5 quantifies what happens when they are wrong.</p>
+Section 4.3 quantifies what happens when they are wrong.</p>
 <h2 id="experiments">3. Experiments</h2>
 <ul>
 <li><strong>System.</strong> Open spin-½
@@ -393,7 +443,25 @@ target
 is the cheapest with infidelity
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>≤</mo><mi>ε</mi></mrow><annotation encoding="application/x-tex">\le\varepsilon</annotation></semantics></math>.</li>
 </ul>
-<h2 id="accuracy">4. Accuracy</h2>
+<h2 id="q1-can-the-filter-be-certified-without-knowing-the-exact-ground-state">4.
+Q1: Can the filter be certified without knowing the exact ground
+state?</h2>
+<p><strong>Short answer: yes, conditionally.</strong> Every quantity in
+the certificate,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>W</mi><annotation encoding="application/x-tex">W</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>η</mi><annotation encoding="application/x-tex">\eta</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>F</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">F(0)</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi><annotation encoding="application/x-tex">T</annotation></semantics></math>,
+can be computed from DMRG output and the circuit, with no access to the
+exact ground state. The certificate is then a theorem <em>given</em>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>
+(Appendix A), and it is only as safe as those two inputs.</p>
 <h3 id="the-classical-front-end-supplies-the-inputs">4.1 The classical
 front end supplies the inputs</h3>
 <table style="width:100%;">
@@ -608,13 +676,296 @@ estimated
 differs from the exact overlap by at most 6e-8. At these sizes the
 certificate computed from DMRG inputs is therefore indistinguishable
 from the one computed from exact inputs. This is an empirical statement
-about well-behaved chains, not a guarantee: DMRG does not certify these
-numbers (Section 2) and the penalty
+about well-behaved chains: DMRG does not certify these numbers (Section
+2), and the penalty-method
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>E</mi><mn>1</mn></msub><annotation encoding="application/x-tex">E_1</annotation></semantics></math>
-is variationally on the unsafe side. Section 4.5 shows what an error of
-that sign does.</p>
-<h3 id="the-certificate-is-accurate-mostly-because-leakage-is-tight">4.2
-The certificate is accurate, mostly because leakage is tight</h3>
+is variationally on the unsafe side.</p>
+<h3 id="the-certificate-computed-from-dmrg-inputs-was-never-violated">4.2
+The certificate computed from DMRG inputs was never violated</h3>
+<p>Across 97 simulated points (every case at the certified step count
+plus the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>-sweeps
+of Section 5), with the certificate computed from DMRG inputs only, the
+total certificate, its leakage term, its Trotter term, the triangle
+inequality, the energy bound
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">⟨</mo><mi>H</mi><mo stretchy="false" form="postfix">⟩</mo><mo>−</mo><msub><mi>E</mi><mn>0</mn></msub><mo>≤</mo><mi>W</mi><msup><mover><mi>D</mi><mo accent="true">‾</mo></mover><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\langle H\rangle-E_0\le W\bar D^2</annotation></semantics></math>
+and the success-rate bound
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>P</mi><mrow><mi mathvariant="normal">s</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">c</mi></mrow></msub><mo>≥</mo><mi>γ</mi><mi>F</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">P_{\mathrm{succ}}\ge\gamma F(0)^2</annotation></semantics></math>
+each held 97 out of 97 times. The exact ground state was used only
+afterwards, to measure
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>D</mi><annotation encoding="application/x-tex">D</annotation></semantics></math>.
+This checks the derivation and the code; the proofs are in Appendix
+A.</p>
+<h3 id="what-happens-when-the-inputs-are-wrong">4.3 What happens when
+the inputs are wrong</h3>
+<p>The condition in the short answer is not a formality. We design and
+certify with deliberately wrong values and measure the true distance
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>=</mo><mn>8</mn></mrow><annotation encoding="application/x-tex">N=8</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>12</mn><annotation encoding="application/x-tex">12</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>J</mi><mn>2</mn></msub><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">J_2=0</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ε</mi><mo>=</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>2</mn></mrow></msup></mrow><annotation encoding="application/x-tex">\varepsilon=10^{-2}</annotation></semantics></math>):</p>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math></th>
+<th>input error</th>
+<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mrow><mi mathvariant="normal">b</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">n</mi><mi mathvariant="normal">d</mi></mrow></msub><annotation encoding="application/x-tex">n_{\mathrm{bound}}</annotation></semantics></math></th>
+<th>claimed
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>D</mi><mo accent="true">‾</mo></mover><annotation encoding="application/x-tex">\bar D</annotation></semantics></math></th>
+<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>D</mi><mo accent="true">‾</mo></mover><annotation encoding="application/x-tex">\bar D</annotation></semantics></math>
+with true inputs</th>
+<th>measured
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>D</mi><annotation encoding="application/x-tex">D</annotation></semantics></math></th>
+<th>claim violated?</th>
+<th>target
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msqrt><mi>ε</mi></msqrt><annotation encoding="application/x-tex">\sqrt\varepsilon</annotation></semantics></math>
+missed?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>8</td>
+<td>gap -20%</td>
+<td>1,734</td>
+<td>0.100</td>
+<td>0.100</td>
+<td>0.022</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td>gap +0%</td>
+<td>1,108</td>
+<td>0.100</td>
+<td>0.100</td>
+<td>0.045</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr class="odd">
+<td>8</td>
+<td>gap +10%</td>
+<td>910</td>
+<td>0.100</td>
+<td>0.130</td>
+<td>0.069</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td>gap +25%</td>
+<td>711</td>
+<td>0.099</td>
+<td>0.171</td>
+<td>0.103</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr class="odd">
+<td>8</td>
+<td>gap +50%</td>
+<td>488</td>
+<td>0.100</td>
+<td>0.229</td>
+<td>0.151</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td>gap +100%</td>
+<td>261</td>
+<td>0.100</td>
+<td>0.311</td>
+<td>0.221</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr class="odd">
+<td>8</td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
+over-estimated (0.831 vs 0.775)</td>
+<td>1,009</td>
+<td>0.099</td>
+<td>0.111</td>
+<td>0.053</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
+over-estimated (0.887 vs 0.775)</td>
+<td>910</td>
+<td>0.100</td>
+<td>0.128</td>
+<td>0.067</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr class="odd">
+<td>8</td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
+over-estimated (0.944 vs 0.775)</td>
+<td>800</td>
+<td>0.100</td>
+<td>0.164</td>
+<td>0.100</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr class="even">
+<td>12</td>
+<td>gap -20%</td>
+<td>11,951</td>
+<td>0.100</td>
+<td>0.100</td>
+<td>0.034</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr class="odd">
+<td>12</td>
+<td>gap +0%</td>
+<td>7,712</td>
+<td>0.099</td>
+<td>0.099</td>
+<td>0.046</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr class="even">
+<td>12</td>
+<td>gap +10%</td>
+<td>6,760</td>
+<td>0.100</td>
+<td>0.145</td>
+<td>0.085</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr class="odd">
+<td>12</td>
+<td>gap +25%</td>
+<td>4,881</td>
+<td>0.100</td>
+<td>0.224</td>
+<td>0.155</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr class="even">
+<td>12</td>
+<td>gap +50%</td>
+<td>3,386</td>
+<td>0.100</td>
+<td>0.326</td>
+<td>0.248</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr class="odd">
+<td>12</td>
+<td>gap +100%</td>
+<td>1,902</td>
+<td>0.100</td>
+<td>0.456</td>
+<td>0.368</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr class="even">
+<td>12</td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
+over-estimated (0.693 vs 0.591)</td>
+<td>7,070</td>
+<td>0.100</td>
+<td>0.116</td>
+<td>0.056</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr class="odd">
+<td>12</td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
+over-estimated (0.796 vs 0.591)</td>
+<td>3,570</td>
+<td>0.100</td>
+<td>0.139</td>
+<td>0.075</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr class="even">
+<td>12</td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
+over-estimated (0.898 vs 0.591)</td>
+<td>2,934</td>
+<td>0.099</td>
+<td>0.182</td>
+<td>0.114</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<p><em>Table 2.</em> “Claimed” is the certificate computed from the
+(wrong) inputs; “with true inputs” recomputes it with the true gap and
+overlap; “measured” is the actual distance.</p>
+<ul>
+<li><strong>Under-estimating the gap is safe</strong>: the filter is
+designed for a wider window and costs more steps.</li>
+<li><strong>Over-estimating the gap is not.</strong> At
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>+</mo><mn>10</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">+10\%</annotation></semantics></math>
+the claimed bound still holds, but the bound recomputed with the true
+gap is already
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>30</mn><annotation encoding="application/x-tex">30</annotation></semantics></math>–<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>45</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">45\%</annotation></semantics></math>
+above the claim; at
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>+</mo><mn>25</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">+25\%</annotation></semantics></math>
+the claim is violated and the target missed at both sizes.</li>
+<li><strong>Over-estimating
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math></strong>
+behaves the same way, with a threshold that depends on how much excited
+weight is hidden.</li>
+<li><strong>Practical rule.</strong> The penalty-method
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>E</mi><mn>1</mn></msub><annotation encoding="application/x-tex">E_1</annotation></semantics></math>
+is an <em>upper</em> bound on the true
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>E</mi><mn>1</mn></msub><annotation encoding="application/x-tex">E_1</annotation></semantics></math>,
+the wrong side for a gap lower bound. In this study it was accurate to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mo>−</mo><mn>8</mn></mrow></msup><annotation encoding="application/x-tex">10^{-8}</annotation></semantics></math>,
+but the workflow should either certify
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>
+independently or design with a deliberately <em>reduced</em> gap: a
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>20</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">20\%</annotation></semantics></math>
+reduction was safe and cost
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1.55</mn><mo>×</mo></mrow><annotation encoding="application/x-tex">1.55\times</annotation></semantics></math>
+more steps at both sizes.</li>
+</ul>
+<p><strong>Answer to Q1.</strong> Yes: the certificate needs no ground
+state, and it held on every point when built from DMRG inputs. It is
+conditional on
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>
+not being optimistic, and nothing in the workflow certifies those two
+numbers; the experiments quantify the cost of getting them wrong.</p>
+<h2 id="q2-how-conservative-is-the-certificate">5. Q2: How conservative
+is the certificate?</h2>
+<p><strong>Short answer: the leakage term is reasonably tight, the
+worst-case Trotter term is extremely conservative.</strong></p>
 <table>
 <colgroup>
 <col style="width: 9%" />
@@ -832,27 +1183,19 @@ at
 </tr>
 </tbody>
 </table>
-<p><em>Table 2.</em>
+<p><em>Table 3.</em>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ε</mi><mo>=</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>2</mn></mrow></msup></mrow><annotation encoding="application/x-tex">\varepsilon=10^{-2}</annotation></semantics></math>,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>χ</mi><mo>=</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">\chi=2</annotation></semantics></math>.
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mo>†</mo></msup><annotation encoding="application/x-tex">^\dagger</annotation></semantics></math><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>−</mo><mi>γ</mi><mo>≤</mo><mi>ε</mi></mrow><annotation encoding="application/x-tex">1-\gamma\le\varepsilon</annotation></semantics></math>:
 no filter needed, and the entry is the trial state’s own distance.
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>D</mi><annotation encoding="application/x-tex">D</annotation></semantics></math>
-is at
+is the measured distance at
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mrow><mi mathvariant="normal">b</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">n</mi><mi mathvariant="normal">d</mi></mrow></msub><annotation encoding="application/x-tex">n_{\mathrm{bound}}</annotation></semantics></math>.
 The last two columns compare the certificate with the measurement, term
-by term.</p>
+by term.
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mrow><mi mathvariant="normal">h</mi><mi mathvariant="normal">y</mi><mi mathvariant="normal">b</mi></mrow></msub><annotation encoding="application/x-tex">n_{\mathrm{hyb}}</annotation></semantics></math>
+is discussed in Section 6.</p>
 <ul>
-<li><strong>Never violated.</strong> Across 97 simulated points (every
-case at
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mrow><mi mathvariant="normal">b</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">n</mi><mi mathvariant="normal">d</mi></mrow></msub><annotation encoding="application/x-tex">n_{\mathrm{bound}}</annotation></semantics></math>
-plus the
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>-sweeps)
-the total certificate, its leakage term, its Trotter term, the triangle
-inequality, the energy bound and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>P</mi><mrow><mi mathvariant="normal">s</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">c</mi></mrow></msub><mo>≥</mo><mi>γ</mi><mi>F</mi><msup><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">P_{\mathrm{succ}}\ge\gamma F(0)^2</annotation></semantics></math>
-each held 97 out of 97 times. This checks the derivation and the code;
-the proofs are in Appendix A.</li>
 <li><strong>Close in total.</strong> At
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mrow><mi mathvariant="normal">b</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">n</mi><mi mathvariant="normal">d</mi></mrow></msub><annotation encoding="application/x-tex">n_{\mathrm{bound}}</annotation></semantics></math>
 the certificate exceeds the measured
@@ -861,10 +1204,14 @@ by
 2.2–5.1<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>×</mo><annotation encoding="application/x-tex">\times</annotation></semantics></math>
 (median
 3.9<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>×</mo><annotation encoding="application/x-tex">\times</annotation></semantics></math>).</li>
-<li><strong>Leakage is nearly tight; Trotter is not.</strong> The
-leakage term is within
-1.1–2.7<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>×</mo><annotation encoding="application/x-tex">\times</annotation></semantics></math>;
-the Trotter term is
+<li><strong>Leakage is reasonably tight.</strong> The leakage term is
+within
+1.1–2.7<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>×</mo><annotation encoding="application/x-tex">\times</annotation></semantics></math>
+of the measured leakage distance. The only slack is that every excited
+component is charged the worst-case filter value
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>η</mi><mi>F</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\eta F(0)</annotation></semantics></math>.</li>
+<li><strong>Trotter is extremely conservative.</strong> The Trotter term
+is
 9–77<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>×</mo><annotation encoding="application/x-tex">\times</annotation></semantics></math>
 too large and the discrepancy grows with
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math>
@@ -884,15 +1231,22 @@ at
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mrow><mi mathvariant="normal">b</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">n</mi><mi mathvariant="normal">d</mi></mrow></msub><annotation encoding="application/x-tex">n_{\mathrm{bound}}</annotation></semantics></math>
 is dominated by leakage (0.018–0.046, against a Trotter part of at most
 0.006).</li>
+<li><strong>Consequence for step counts.</strong> The certified step
+count is
+11–168<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>×</mo><annotation encoding="application/x-tex">\times</annotation></semantics></math>
+(median
+35<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>×</mo><annotation encoding="application/x-tex">\times</annotation></semantics></math>)
+the smallest count that empirically meets the target.</li>
 <li><strong>Scaling in
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>.</strong>
-The Trotter certificate and the measured Trotter distance both fall as
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>
+is right, the constant is not.</strong> The Trotter certificate and the
+measured Trotter distance both fall as
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mi>/</mi><mi>n</mi></mrow><annotation encoding="application/x-tex">1/n</annotation></semantics></math>
 (fitted log–log slopes -1.01 to -0.99 and -1.17 to -0.93), so the
-certificate has the right scaling in
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>
-and is off by a roughly constant factor (Figure 2). The measured total
-saturates at the leakage floor.</li>
+certificate has the right scaling and is off by a roughly constant
+factor at each
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math>
+(Figure 2). The measured total saturates at the leakage floor.</li>
 <li><strong>Other observables.</strong> The energy bound
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>W</mi><msup><mover><mi>D</mi><mo accent="true">‾</mo></mover><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">W\bar D^2</annotation></semantics></math>
 holds but is
@@ -916,9 +1270,119 @@ as solid, dashed, dotted, dash-dotted). (a) Certificate (blue) and
 measured distance (red). (b) Trotter part only: certificate (blue) and
 measurement (green).</figcaption>
 </figure>
-<h3 id="choosing-n-certified-hybrid-measured">4.3 Choosing
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>:
-certified, hybrid, measured</h3>
+<p>Step counts also scale with the target roughly as first-order theory
+predicts for the certificate
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>∝</mo><msup><mi>ε</mi><mrow><mo>−</mo><mn>1</mn><mi>/</mi><mn>2</mn></mrow></msup></mrow><annotation encoding="application/x-tex">n\propto\varepsilon^{-1/2}</annotation></semantics></math>
+at a fixed filter; the observed ratios
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>3</mn></mrow></msup><mo stretchy="true" form="postfix">)</mo></mrow><mi>/</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>2</mn></mrow></msup><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">n(10^{-3})/n(10^{-2})</annotation></semantics></math>
+of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>4</mn><annotation encoding="application/x-tex">4</annotation></semantics></math>–<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>7</mn><annotation encoding="application/x-tex">7</annotation></semantics></math>
+include the tightening of the filter itself):</p>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math></th>
+<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>J</mi><mn>2</mn></msub><annotation encoding="application/x-tex">J_2</annotation></semantics></math></th>
+<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mrow><mi mathvariant="normal">b</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">n</mi><mi mathvariant="normal">d</mi></mrow></msub><annotation encoding="application/x-tex">n_{\mathrm{bound}}</annotation></semantics></math>
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ε</mi><mo>=</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow><annotation encoding="application/x-tex">\varepsilon=10^{-1}</annotation></semantics></math>)</th>
+<th>(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mo>−</mo><mn>2</mn></mrow></msup><annotation encoding="application/x-tex">10^{-2}</annotation></semantics></math>)</th>
+<th>(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mo>−</mo><mn>3</mn></mrow></msup><annotation encoding="application/x-tex">10^{-3}</annotation></semantics></math>)</th>
+<th>ratio
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>10</mn><mrow><mo>−</mo><mn>3</mn></mrow></msup><mi>/</mi><msup><mn>10</mn><mrow><mo>−</mo><mn>2</mn></mrow></msup></mrow><annotation encoding="application/x-tex">10^{-3}/10^{-2}</annotation></semantics></math></th>
+<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mrow><mi mathvariant="normal">h</mi><mi mathvariant="normal">y</mi><mi mathvariant="normal">b</mi></mrow></msub><annotation encoding="application/x-tex">n_{\mathrm{hyb}}</annotation></semantics></math>
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mo>−</mo><mn>2</mn></mrow></msup><annotation encoding="application/x-tex">10^{-2}</annotation></semantics></math>
+/
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mo>−</mo><mn>3</mn></mrow></msup><annotation encoding="application/x-tex">10^{-3}</annotation></semantics></math>)</th>
+<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mrow><mi mathvariant="normal">m</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">s</mi></mrow></msub><annotation encoding="application/x-tex">n_{\mathrm{meas}}</annotation></semantics></math>
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mo>−</mo><mn>2</mn></mrow></msup><annotation encoding="application/x-tex">10^{-2}</annotation></semantics></math>
+/
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mo>−</mo><mn>3</mn></mrow></msup><annotation encoding="application/x-tex">10^{-3}</annotation></semantics></math>)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>4</td>
+<td>0.0</td>
+<td>–</td>
+<td>89</td>
+<td>380</td>
+<td>4.3</td>
+<td>14 / 47</td>
+<td>8 / 11</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>0.0</td>
+<td>87</td>
+<td>386</td>
+<td>2,651</td>
+<td>6.9</td>
+<td>59 / 184</td>
+<td>23 / 117</td>
+</tr>
+<tr class="odd">
+<td>8</td>
+<td>0.0</td>
+<td>247</td>
+<td>1,108</td>
+<td>7,577</td>
+<td>6.8</td>
+<td>74 / 567</td>
+<td>47 / 567</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>0.4</td>
+<td>–</td>
+<td>405</td>
+<td>1,790</td>
+<td>4.4</td>
+<td>47 / 74</td>
+<td>29 / 23</td>
+</tr>
+<tr class="odd">
+<td>8</td>
+<td>0.4</td>
+<td>–</td>
+<td>1,091</td>
+<td>4,881</td>
+<td>4.5</td>
+<td>74 / 74</td>
+<td>37 / 29</td>
+</tr>
+</tbody>
+</table>
+<p><em>Table 4.</em> Certified step counts at three targets, and hybrid
+and measured counts at
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mo>−</mo><mn>2</mn></mrow></msup><annotation encoding="application/x-tex">10^{-2}</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mo>−</mo><mn>3</mn></mrow></msup><annotation encoding="application/x-tex">10^{-3}</annotation></semantics></math>.</p>
+<p><strong>Answer to Q2.</strong> The certificate is within a factor of
+about 3.9 in distance, because leakage dominates the error and is
+bounded tightly. The price of a worst-case proof is in the Trotter term:
+it is one to two orders of magnitude too large, increasingly so with
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math>,
+which turns directly into an order-of-magnitude excess in circuit length
+(Section 7).</p>
+<h2 id="q3-can-the-practical-cost-be-recovered-without-the-exact-ground-state">6.
+Q3: Can the practical cost be recovered without the exact ground
+state?</h2>
+<p><strong>Short answer: largely, with the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>-versus-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>n</mi></mrow><annotation encoding="application/x-tex">2n</annotation></semantics></math>
+hybrid rule, which is empirical rather than rigorous.</strong> The
+hybrid rule keeps the rigorous leakage term and replaces the worst-case
+Trotter term by a measured one (Section 2, Stage 4). It never uses the
+ground state.</p>
 <table style="width:100%;">
 <colgroup>
 <col style="width: 11%" />
@@ -1158,18 +1622,18 @@ at
 </tr>
 </tbody>
 </table>
-<p><em>Table 3.</em> The hybrid rule against the certificate and the
+<p><em>Table 5.</em> The hybrid rule against the certificate and the
 oracle.
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>D</mi><annotation encoding="application/x-tex">D</annotation></semantics></math>
 is measured at
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mrow><mi mathvariant="normal">h</mi><mi mathvariant="normal">y</mi><mi mathvariant="normal">b</mi></mrow></msub><annotation encoding="application/x-tex">n_{\mathrm{hyb}}</annotation></semantics></math>
 against the exact ground state, which the rule itself never uses.</p>
 <ul>
-<li>The hybrid rule met the target in 25 of 25 cases, with a margin
+<li><strong>It met the target</strong> in 25 of 25 cases, with a margin
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msqrt><mi>ε</mi></msqrt><mi>/</mi><mi>D</mi></mrow><annotation encoding="application/x-tex">\sqrt\varepsilon/D</annotation></semantics></math>
 of
 1.5–4.5<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>×</mo><annotation encoding="application/x-tex">\times</annotation></semantics></math>.</li>
-<li>It uses
+<li><strong>It is close to the oracle.</strong> It uses
 6–66<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>×</mo><annotation encoding="application/x-tex">\times</annotation></semantics></math>
 (median
 18<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>×</mo><annotation encoding="application/x-tex">\times</annotation></semantics></math>)
@@ -1180,117 +1644,29 @@ fewer steps than the certificate and only
 more than the oracle. The gap to the oracle is mostly the coarse
 geometric grid and the requirement of confirmation at the next grid
 point.</li>
-<li>The
-n-versus-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>n</mi></mrow><annotation encoding="application/x-tex">2n</annotation></semantics></math>
+<li><strong>The Trotter estimate is accurate.</strong> The
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>-versus-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>n</mi></mrow><annotation encoding="application/x-tex">2n</annotation></semantics></math>
 estimate of the Trotter distance matched the measured one to within
 [0.998, 1.061] over 61 sweep points with
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>≥</mo><msub><mi>n</mi><mrow><mi mathvariant="normal">m</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">s</mi></mrow></msub></mrow><annotation encoding="application/x-tex">n\ge n_{\mathrm{meas}}</annotation></semantics></math>.</li>
-<li>The hybrid rule is not a theorem. It assumes the
+<li><strong>It is not a theorem.</strong> It assumes the
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mi>/</mi><mi>n</mi></mrow><annotation encoding="application/x-tex">1/n</annotation></semantics></math>
-regime, which held in all runs here, and inherits the assumptions on
+error regime, which held in every run here (Section 5), and it inherits
+the assumptions on
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
 and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>
-through its leakage term.</li>
+through its leakage term, so Section 4.3 applies to it unchanged. The
+evidence is 25 cases on one chain.</li>
 </ul>
-<p>Step counts scale with the target roughly as the first-order theory
-predicts for the certificate
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>∝</mo><msup><mi>ε</mi><mrow><mo>−</mo><mn>1</mn><mi>/</mi><mn>2</mn></mrow></msup></mrow><annotation encoding="application/x-tex">n\propto\varepsilon^{-1/2}</annotation></semantics></math>
-at fixed filter; observed ratios
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>3</mn></mrow></msup><mo stretchy="true" form="postfix">)</mo></mrow><mi>/</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>2</mn></mrow></msup><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">n(10^{-3})/n(10^{-2})</annotation></semantics></math>
-of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>4</mn><annotation encoding="application/x-tex">4</annotation></semantics></math>–<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>7</mn><annotation encoding="application/x-tex">7</annotation></semantics></math>
-include the tightening of the filter itself):</p>
-<table>
-<colgroup>
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math></th>
-<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>J</mi><mn>2</mn></msub><annotation encoding="application/x-tex">J_2</annotation></semantics></math></th>
-<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mrow><mi mathvariant="normal">b</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">n</mi><mi mathvariant="normal">d</mi></mrow></msub><annotation encoding="application/x-tex">n_{\mathrm{bound}}</annotation></semantics></math>
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ε</mi><mo>=</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow><annotation encoding="application/x-tex">\varepsilon=10^{-1}</annotation></semantics></math>)</th>
-<th>(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mo>−</mo><mn>2</mn></mrow></msup><annotation encoding="application/x-tex">10^{-2}</annotation></semantics></math>)</th>
-<th>(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mo>−</mo><mn>3</mn></mrow></msup><annotation encoding="application/x-tex">10^{-3}</annotation></semantics></math>)</th>
-<th>ratio
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>10</mn><mrow><mo>−</mo><mn>3</mn></mrow></msup><mi>/</mi><msup><mn>10</mn><mrow><mo>−</mo><mn>2</mn></mrow></msup></mrow><annotation encoding="application/x-tex">10^{-3}/10^{-2}</annotation></semantics></math></th>
-<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mrow><mi mathvariant="normal">h</mi><mi mathvariant="normal">y</mi><mi mathvariant="normal">b</mi></mrow></msub><annotation encoding="application/x-tex">n_{\mathrm{hyb}}</annotation></semantics></math>
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mo>−</mo><mn>2</mn></mrow></msup><annotation encoding="application/x-tex">10^{-2}</annotation></semantics></math>
-/
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mo>−</mo><mn>3</mn></mrow></msup><annotation encoding="application/x-tex">10^{-3}</annotation></semantics></math>)</th>
-<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mrow><mi mathvariant="normal">m</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">s</mi></mrow></msub><annotation encoding="application/x-tex">n_{\mathrm{meas}}</annotation></semantics></math>
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mo>−</mo><mn>2</mn></mrow></msup><annotation encoding="application/x-tex">10^{-2}</annotation></semantics></math>
-/
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mo>−</mo><mn>3</mn></mrow></msup><annotation encoding="application/x-tex">10^{-3}</annotation></semantics></math>)</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>4</td>
-<td>0.0</td>
-<td>–</td>
-<td>89</td>
-<td>380</td>
-<td>4.3</td>
-<td>14 / 47</td>
-<td>8 / 11</td>
-</tr>
-<tr class="even">
-<td>6</td>
-<td>0.0</td>
-<td>87</td>
-<td>386</td>
-<td>2,651</td>
-<td>6.9</td>
-<td>59 / 184</td>
-<td>23 / 117</td>
-</tr>
-<tr class="odd">
-<td>8</td>
-<td>0.0</td>
-<td>247</td>
-<td>1,108</td>
-<td>7,577</td>
-<td>6.8</td>
-<td>74 / 567</td>
-<td>47 / 567</td>
-</tr>
-<tr class="even">
-<td>6</td>
-<td>0.4</td>
-<td>–</td>
-<td>405</td>
-<td>1,790</td>
-<td>4.4</td>
-<td>47 / 74</td>
-<td>29 / 23</td>
-</tr>
-<tr class="odd">
-<td>8</td>
-<td>0.4</td>
-<td>–</td>
-<td>1,091</td>
-<td>4,881</td>
-<td>4.5</td>
-<td>74 / 74</td>
-<td>37 / 29</td>
-</tr>
-</tbody>
-</table>
-<p><em>Table 4.</em> Certified step counts at three targets, and hybrid
-and measured counts at
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mo>−</mo><mn>2</mn></mrow></msup><annotation encoding="application/x-tex">10^{-2}</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mo>−</mo><mn>3</mn></mrow></msup><annotation encoding="application/x-tex">10^{-3}</annotation></semantics></math>.</p>
-<h3 id="the-choice-of-trial-state">4.4 The choice of trial state</h3>
+<p><strong>Answer to Q3.</strong> Yes, to a good approximation: the
+hybrid rule recovers all but a factor of about 2.0 of the empirically
+sufficient cost with no ground state, and met every target. What it
+gives up is the proof: its Trotter part is a measurement under an
+assumed scaling, not a bound.</p>
+<h2 id="using-the-workflow-trial-state-design-choices-and-cost">7. Using
+the workflow: trial state, design choices and cost</h2>
+<h3 id="the-choice-of-trial-state">7.1 The choice of trial state</h3>
 <p>At
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>=</mo><mn>8</mn></mrow><annotation encoding="application/x-tex">N=8</annotation></semantics></math>,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ε</mi><mo>=</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>2</mn></mrow></msup></mrow><annotation encoding="application/x-tex">\varepsilon=10^{-2}</annotation></semantics></math>:</p>
@@ -1458,7 +1834,7 @@ and
 </tr>
 </tbody>
 </table>
-<p><em>Table 5.</em> Trial state against total CX (trial plus filter).
+<p><em>Table 6.</em> Trial state against total CX (trial plus filter).
 “Approx.” is the
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>-layer
 <code>mps-to-circuit</code> brickwork compilation of the reference
@@ -1487,268 +1863,7 @@ the same
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>:
 the filter only sees
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>.</p>
-<h3 id="when-the-classical-inputs-are-wrong">4.5 When the classical
-inputs are wrong</h3>
-<p>The certificate assumes
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
-are known. We design and certify with deliberately wrong values and
-measure the true distance
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>=</mo><mn>8</mn></mrow><annotation encoding="application/x-tex">N=8</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>12</mn><annotation encoding="application/x-tex">12</annotation></semantics></math>,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>J</mi><mn>2</mn></msub><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">J_2=0</annotation></semantics></math>,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ε</mi><mo>=</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>2</mn></mrow></msup></mrow><annotation encoding="application/x-tex">\varepsilon=10^{-2}</annotation></semantics></math>):</p>
-<table>
-<colgroup>
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math></th>
-<th>input error</th>
-<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mrow><mi mathvariant="normal">b</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">n</mi><mi mathvariant="normal">d</mi></mrow></msub><annotation encoding="application/x-tex">n_{\mathrm{bound}}</annotation></semantics></math></th>
-<th>claimed
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>D</mi><mo accent="true">‾</mo></mover><annotation encoding="application/x-tex">\bar D</annotation></semantics></math></th>
-<th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>D</mi><mo accent="true">‾</mo></mover><annotation encoding="application/x-tex">\bar D</annotation></semantics></math>
-with true inputs</th>
-<th>measured
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>D</mi><annotation encoding="application/x-tex">D</annotation></semantics></math></th>
-<th>claim violated?</th>
-<th>target
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msqrt><mi>ε</mi></msqrt><annotation encoding="application/x-tex">\sqrt\varepsilon</annotation></semantics></math>
-missed?</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>8</td>
-<td>gap -20%</td>
-<td>1,734</td>
-<td>0.100</td>
-<td>0.100</td>
-<td>0.022</td>
-<td>no</td>
-<td>no</td>
-</tr>
-<tr class="even">
-<td>8</td>
-<td>gap +0%</td>
-<td>1,108</td>
-<td>0.100</td>
-<td>0.100</td>
-<td>0.045</td>
-<td>no</td>
-<td>no</td>
-</tr>
-<tr class="odd">
-<td>8</td>
-<td>gap +10%</td>
-<td>910</td>
-<td>0.100</td>
-<td>0.130</td>
-<td>0.069</td>
-<td>no</td>
-<td>no</td>
-</tr>
-<tr class="even">
-<td>8</td>
-<td>gap +25%</td>
-<td>711</td>
-<td>0.099</td>
-<td>0.171</td>
-<td>0.103</td>
-<td>yes</td>
-<td>yes</td>
-</tr>
-<tr class="odd">
-<td>8</td>
-<td>gap +50%</td>
-<td>488</td>
-<td>0.100</td>
-<td>0.229</td>
-<td>0.151</td>
-<td>yes</td>
-<td>yes</td>
-</tr>
-<tr class="even">
-<td>8</td>
-<td>gap +100%</td>
-<td>261</td>
-<td>0.100</td>
-<td>0.311</td>
-<td>0.221</td>
-<td>yes</td>
-<td>yes</td>
-</tr>
-<tr class="odd">
-<td>8</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
-over-estimated (0.831 vs 0.775)</td>
-<td>1,009</td>
-<td>0.099</td>
-<td>0.111</td>
-<td>0.053</td>
-<td>no</td>
-<td>no</td>
-</tr>
-<tr class="even">
-<td>8</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
-over-estimated (0.887 vs 0.775)</td>
-<td>910</td>
-<td>0.100</td>
-<td>0.128</td>
-<td>0.067</td>
-<td>no</td>
-<td>no</td>
-</tr>
-<tr class="odd">
-<td>8</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
-over-estimated (0.944 vs 0.775)</td>
-<td>800</td>
-<td>0.100</td>
-<td>0.164</td>
-<td>0.100</td>
-<td>yes</td>
-<td>yes</td>
-</tr>
-<tr class="even">
-<td>12</td>
-<td>gap -20%</td>
-<td>11,951</td>
-<td>0.100</td>
-<td>0.100</td>
-<td>0.034</td>
-<td>no</td>
-<td>no</td>
-</tr>
-<tr class="odd">
-<td>12</td>
-<td>gap +0%</td>
-<td>7,712</td>
-<td>0.099</td>
-<td>0.099</td>
-<td>0.046</td>
-<td>no</td>
-<td>no</td>
-</tr>
-<tr class="even">
-<td>12</td>
-<td>gap +10%</td>
-<td>6,760</td>
-<td>0.100</td>
-<td>0.145</td>
-<td>0.085</td>
-<td>no</td>
-<td>no</td>
-</tr>
-<tr class="odd">
-<td>12</td>
-<td>gap +25%</td>
-<td>4,881</td>
-<td>0.100</td>
-<td>0.224</td>
-<td>0.155</td>
-<td>yes</td>
-<td>yes</td>
-</tr>
-<tr class="even">
-<td>12</td>
-<td>gap +50%</td>
-<td>3,386</td>
-<td>0.100</td>
-<td>0.326</td>
-<td>0.248</td>
-<td>yes</td>
-<td>yes</td>
-</tr>
-<tr class="odd">
-<td>12</td>
-<td>gap +100%</td>
-<td>1,902</td>
-<td>0.100</td>
-<td>0.456</td>
-<td>0.368</td>
-<td>yes</td>
-<td>yes</td>
-</tr>
-<tr class="even">
-<td>12</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
-over-estimated (0.693 vs 0.591)</td>
-<td>7,070</td>
-<td>0.100</td>
-<td>0.116</td>
-<td>0.056</td>
-<td>no</td>
-<td>no</td>
-</tr>
-<tr class="odd">
-<td>12</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
-over-estimated (0.796 vs 0.591)</td>
-<td>3,570</td>
-<td>0.100</td>
-<td>0.139</td>
-<td>0.075</td>
-<td>no</td>
-<td>no</td>
-</tr>
-<tr class="even">
-<td>12</td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
-over-estimated (0.898 vs 0.591)</td>
-<td>2,934</td>
-<td>0.099</td>
-<td>0.182</td>
-<td>0.114</td>
-<td>yes</td>
-<td>yes</td>
-</tr>
-</tbody>
-</table>
-<p><em>Table 6.</em> “Claimed” is the certificate computed from the
-(wrong) inputs; “with true inputs” recomputes it with the true gap and
-overlap; “measured” is the actual distance.</p>
-<ul>
-<li><strong>Under-estimating the gap is safe</strong> (the filter is
-designed for a wider window and costs more steps).</li>
-<li><strong>Over-estimating the gap is not.</strong> At
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>+</mo><mn>10</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">+10\%</annotation></semantics></math>
-the claimed bound still holds, but the guaranteed distance with true
-inputs is already
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>30</mn><annotation encoding="application/x-tex">30</annotation></semantics></math>–<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>45</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">45\%</annotation></semantics></math>
-above the claim; at
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>+</mo><mn>25</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">+25\%</annotation></semantics></math>
-the claim is violated and the target missed at both sizes.</li>
-<li><strong>Over-estimating
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math></strong>
-behaves the same way, at a threshold that depends on how much of the
-excited weight is hidden.</li>
-<li>This is why the penalty-method
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>E</mi><mn>1</mn></msub><annotation encoding="application/x-tex">E_1</annotation></semantics></math>,
-which is an <em>upper</em> bound, must be treated with care: in this
-study it was accurate to
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mo>−</mo><mn>8</mn></mrow></msup><annotation encoding="application/x-tex">10^{-8}</annotation></semantics></math>,
-but the workflow should either certify
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>
-independently or design with a deliberately <em>reduced</em> gap: a
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>20</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">20\%</annotation></semantics></math>
-reduction was safe and cost
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1.55</mn><mo>×</mo></mrow><annotation encoding="application/x-tex">1.55\times</annotation></semantics></math>
-more steps at both sizes.</li>
-</ul>
-<h3 id="sensitivity-to-design-choices">4.6 Sensitivity to design
+<h3 id="sensitivity-to-design-choices">7.2 Sensitivity to design
 choices</h3>
 <p>At
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>=</mo><mn>8</mn></mrow><annotation encoding="application/x-tex">N=8</annotation></semantics></math>,
@@ -1815,7 +1930,7 @@ varies by
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mi>/</mi><mn>4</mn></mrow><annotation encoding="application/x-tex">1/4</annotation></semantics></math>
 used elsewhere; six and eight pulses are equivalent. The leakage share
 is the one design parameter worth tuning.</p>
-<h2 id="cost">5. Cost</h2>
+<h3 id="gate-cost">7.3 Gate cost</h3>
 <table style="width:100%;">
 <colgroup>
 <col style="width: 10%" />
@@ -2296,13 +2411,26 @@ ground state in parentheses), at
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mo>=</mo><mn>1</mn><mo>,</mo><mn>3</mn></mrow><annotation encoding="application/x-tex">L=1,3</annotation></semantics></math>
 approximate layers, and generic preparation
 (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>≤</mo><mn>12</mn></mrow><annotation encoding="application/x-tex">N\le12</annotation></semantics></math>).</p>
-<h2 id="discussion">6. Discussion</h2>
-<p><strong>What the workflow gives.</strong> A single procedure from
-DMRG output to a Trotter step count, with a certificate that held on
-every point tested, an explicit statement of which inputs it trusts, and
-a practical hybrid rule that is much cheaper than the certificate and
-met all targets. The certificate’s leakage half is tight; its Trotter
-half is the price of a worst-case proof.</p>
+<h2 id="discussion">8. Discussion</h2>
+<p><strong>The three answers together.</strong> The filter can be
+certified without the exact ground state, as long as
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>
+are not optimistic (Q1); the certificate is accurate where it matters
+for the distance, because leakage dominates and is tight, but its
+Trotter half is one to two orders of magnitude too large (Q2); and a
+measured
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>-versus-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>n</mi></mrow><annotation encoding="application/x-tex">2n</annotation></semantics></math>
+Trotter estimate recovers nearly all of the practical cost without the
+ground state, at the price of being empirical (Q3). The recommended
+practice is therefore: certify
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>
+and the leakage rigorously, choose
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>n</mi><annotation encoding="application/x-tex">n</annotation></semantics></math>
+by the hybrid rule, and report the certified count as the conservative
+fallback.</p>
 <p><strong>What it costs.</strong> At
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ε</mi><mo>=</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>2</mn></mrow></msup></mrow><annotation encoding="application/x-tex">\varepsilon=10^{-2}</annotation></semantics></math>
 the hybrid circuit costs roughly
@@ -2337,7 +2465,7 @@ and exact diagonalisation validates them
 (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>≤</mo><mn>16</mn></mrow><annotation encoding="application/x-tex">N\le16</annotation></semantics></math>).
 At larger
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math>
-there is no validation, and Section 4.5 shows the certificate breaks if
+there is no validation, and Section 4.3 shows the certificate breaks if
 the gap is optimistic. Certifying
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>
 at large
