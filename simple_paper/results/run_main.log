@@ -1,0 +1,57 @@
+[00:09:19] start N=4 J2=0.0
+[00:09:19] start N=4 J2=0.4
+[00:09:19] start N=6 J2=0.0
+[00:09:19] start N=6 J2=0.4
+   N=4 J2=0.0 eps=0.1: n_bound=None n_hyb=None n_meas=None
+   N=4 J2=0.4 eps=0.1: n_bound=None n_hyb=None n_meas=None
+   N=4 J2=0.4 eps=0.01: n_bound=None n_hyb=None n_meas=None
+   N=6 J2=0.4 eps=0.1: n_bound=None n_hyb=None n_meas=None
+   N=6 J2=0.0 eps=0.1: n_bound=87 n_hyb=11 n_meas=6
+   N=4 J2=0.4 eps=0.001: n_bound=363 n_hyb=37 n_meas=18
+[00:10:47] done N=4 J2=0.4 (88s)
+[00:10:47] start N=8 J2=0.0
+   N=4 J2=0.0 eps=0.01: n_bound=89 n_hyb=14 n_meas=8
+   N=6 J2=0.4 eps=0.01: n_bound=405 n_hyb=47 n_meas=29
+   N=4 J2=0.0 eps=0.001: n_bound=380 n_hyb=47 n_meas=11
+[00:13:28] done N=4 J2=0.0 (249s)
+[00:13:28] start N=8 J2=0.4
+   N=6 J2=0.0 eps=0.01: n_bound=386 n_hyb=59 n_meas=23
+   N=6 J2=0.4 eps=0.001: n_bound=1790 n_hyb=74 n_meas=23
+[00:14:04] done N=6 J2=0.4 (285s)
+[00:14:04] start N=10 J2=0.0
+   N=8 J2=0.0 eps=0.1: n_bound=247 n_hyb=18 n_meas=11
+   N=8 J2=0.4 eps=0.1: n_bound=None n_hyb=None n_meas=None
+   N=6 J2=0.0 eps=0.001: n_bound=2651 n_hyb=184 n_meas=117
+[00:18:29] done N=6 J2=0.0 (550s)
+[00:18:29] start N=10 J2=0.4
+   N=8 J2=0.4 eps=0.01: n_bound=1091 n_hyb=74 n_meas=37
+   N=8 J2=0.0 eps=0.01: n_bound=1108 n_hyb=74 n_meas=47
+   N=8 J2=0.4 eps=0.001: n_bound=4881 n_hyb=74 n_meas=29
+[00:26:53] done N=8 J2=0.4 (805s)
+[00:26:53] start N=12 J2=0.0
+   N=8 J2=0.0 eps=0.001: n_bound=7577 n_hyb=567 n_meas=567
+[00:28:34] done N=8 J2=0.0 (1066s)
+[00:28:34] start N=12 J2=0.4
+   N=12 J2=0.4 eps=0.1: n_bound=None n_hyb=None n_meas=None
+   N=12 J2=0.0 eps=0.1: n_bound=1058 n_hyb=59 n_meas=59
+Traceback (most recent call last):
+  File "/home/user/CLAUDE/simple_paper/run_experiments.py", line 229, in job
+    r = run_size(N, J2, epss=epss)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/CLAUDE/simple_paper/run_experiments.py", line 214, in run_size
+    c = run_eps(cx, tr, eps, steps, sweep=(eps == 0.01 and N <= 12))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/CLAUDE/simple_paper/run_experiments.py", line 149, in run_eps
+    base = design(gamma, cx.delta_est, eps)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/CLAUDE/simple_paper/run_experiments.py", line 31, in design
+    raise RuntimeError("no feasible filter")
+RuntimeError: no feasible filter
+   N=12 J2=0.4 eps=0.01: n_bound=4121 n_hyb=93 n_meas=74
+[00:42:09] done N=12 J2=0.4 (816s)
+   N=10 J2=0.0 eps=0.1: n_bound=557 n_hyb=37 n_meas=23
+   N=10 J2=0.0 eps=0.01: n_bound=4182 n_hyb=147 n_meas=93
+[00:46:54] done N=10 J2=0.0 (1970s)
+   N=10 J2=0.4 eps=0.1: n_bound=None n_hyb=None n_meas=None
+   N=10 J2=0.4 eps=0.01: n_bound=2292 n_hyb=93 n_meas=59
+[00:47:36] done N=10 J2=0.4 (1746s)

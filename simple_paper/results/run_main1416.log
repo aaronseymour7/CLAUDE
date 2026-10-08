@@ -1,0 +1,16 @@
+[00:49:51] start N=14 J2=0.0
+[00:49:51] start N=14 J2=0.4
+[00:49:51] start N=16 J2=0.0
+[00:49:52] start N=16 J2=0.4
+   N=14 J2=0.4 eps=0.1: n_bound=None n_hyb=None n_meas=None
+   N=16 J2=0.4 eps=0.1: n_bound=None n_hyb=None n_meas=None
+   N=14 J2=0.0 eps=0.1: n_bound=1846 n_hyb=93 n_meas=47
+   N=14 J2=0.4 eps=0.01: n_bound=6656 n_hyb=147 n_meas=59
+[00:51:56] done N=14 J2=0.4 (125s)
+   N=14 J2=0.0 eps=0.01: n_bound=12807 n_hyb=289 n_meas=147
+[00:52:42] done N=14 J2=0.0 (171s)
+   N=16 J2=0.4 eps=0.01: n_bound=10026 n_hyb=184 n_meas=93
+[00:53:04] done N=16 J2=0.4 (193s)
+   N=16 J2=0.0 eps=0.1: n_bound=2934 n_hyb=117 n_meas=59
+   N=16 J2=0.0 eps=0.01: n_bound=20198 n_hyb=362 n_meas=184
+[00:55:52] done N=16 J2=0.0 (360s)

@@ -1,0 +1,4 @@
+[00:47:47] start N=12 J2=0.0
+   N=12 J2=0.0 eps=0.1: n_bound=1075 n_hyb=59 n_meas=59
+   N=12 J2=0.0 eps=0.01: n_bound=7712 n_hyb=231 n_meas=117
+[00:49:23] done N=12 J2=0.0 (96s)
