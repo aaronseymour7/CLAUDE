@@ -65,16 +65,19 @@ def spectrum_and_ground_state(Hs):
 class Chain:
     """Scaled Hamiltonian Hs = (H - E0)/W = sum_g H_g + c0 with H_g = (J_g/W) S_i.S_j and c0 = -E0/W."""
 
-    def __init__(self, N, J2=0.0, J1=1.0):
+    def __init__(self, N, J2=0.0, J1=1.0, E0_used=None, W_used=None):
+        """E0_used / W_used: shift and bandwidth the practitioner actually uses (e.g. from DMRG); default = exact (ED)."""
         self.N, self.J2 = N, J2
         self.bonds = bonds(N, J1, J2)
         H = sum(Jg * bond_matrix(i, j, N) for i, j, Jg in self.bonds)
         self.E0, self.E1, self.Etop, g, self.allE = spectrum_and_ground_state(H.tocsr())
         g = g / np.linalg.norm(g)
         self.g = g
-        self.W = self.Etop - self.E0
-        self.gap = (self.E1 - self.E0) / self.W            # scaled gap Delta
-        self.c0 = -self.E0 / self.W
+        self.E0_exact, self.W_exact = self.E0, self.Etop - self.E0
+        self.W = W_used if W_used is not None else self.W_exact
+        e0u = E0_used if E0_used is not None else self.E0
+        self.gap = (self.E1 - self.E0) / self.W            # true scaled gap Delta
+        self.c0 = -e0u / self.W
         self.coef = [Jg / self.W for _, _, Jg in self.bonds]  # H_g = coef_g * S.S
         self.Hg = [c * bond_matrix(i, j, N) for (i, j, _), c in zip(self.bonds, self.coef)]
         self.Hs = sum(self.Hg) + self.c0 * sp.identity(2 ** N, format="csr")
