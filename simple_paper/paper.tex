@@ -75,9 +75,7 @@
   hidelinks,
   pdfcreator={LaTeX via pandoc}}
 
-\title{From DMRG to a Certified Ground State: A Workflow for
-Stetcu--Baroni Filtering of Matrix-Product Trial States, with Its
-Accuracy and Gate Cost}
+\title{Title}
 \author{Draft --- authors to be added}
 \date{8 October 2026}
 
@@ -1161,66 +1159,36 @@ reproducible to the third digit).
 \end{enumerate}
 
 \hypertarget{appendix-a.-proof-of-the-certificate}{%
-\subsection{Appendix A. Proof of the
+\subsection{Appendix A. Derivation of the filter and proof of the
 certificate}\label{appendix-a.-proof-of-the-certificate}}
-
-Write \(D(\rho,\sigma)=\tfrac12\|\rho-\sigma\|_1\). For pure states
-\(D=\sqrt{1-|\langle a|b\rangle|^2}=\sin\theta_{ab}\), with
-\(\theta_{ab}\) the angle between the rays. \(D\) obeys the triangle
-inequality. For any state \(\rho\) and pure \(g\),
-\(1-\langle g|\rho|g\rangle\le D(\rho,g)\le\sqrt{1-\langle g|\rho|g\rangle}\);
-for pure \(\rho\) the right side is an equality, so infidelity is
-\(D^2\). Let \(\varphi=F(H_s)\psi/\|F(H_s)\psi\|\) be the ideal filtered
-state and \(\tilde\varphi\) the implemented one. The certificate follows
-from \(D(\tilde\varphi,g)\le D(\tilde\varphi,\varphi)+D(\varphi,g)\) and
-two lemmas.
-
-\textbf{Lemma 1 (leakage).} \(D(\varphi,g)^2=\ell\le\bar\ell\).
-\emph{Proof.} The ground state sits at \(E=0\), so
-\(|\langle g|\varphi\rangle|^2=\gamma F(0)^2/(\gamma F(0)^2+y)\) with
-\(y=\sum_{k\ge1}|c_k|^2F(E_k)^2\). All \(E_k\), \(k\ge1\), lie in
-\([\Delta,1]\), so \(F(E_k)^2\le\eta^2F(0)^2\) and
-\(y\le(1-\gamma)\eta^2F(0)^2\). Since \(\ell=y/(\gamma F(0)^2+y)\) is
-increasing in \(y\), the bound follows. \(\square\)
-
-\textbf{Lemma 2 (Trotter).}
-\(D(\tilde\varphi,\varphi)\le\min\{1,\epsilon_T/\sqrt{p_g}\}\) with
-\(\epsilon_T=\sum_i\alpha t_i^2/(2k_i)=\alpha T^2/(2n)\). \emph{Proof.}
-Let \(A_i=\langle0_{\mathrm{a}}|\mathcal W_i|0_{\mathrm{a}}\rangle\) and
-\(\tilde A_i\) the Trotterised block; \(a=A_m\cdots A_1\psi\),
-\(b=\tilde A_m\cdots\tilde A_1\psi\). The first-order product-formula
-bound (below) gives
-\(\|\mathcal W_i-\widetilde{\mathcal W}_i\|\le\alpha t_i^2/(2k_i)\); the
-blocks are compressions, so \(\|A_i-\tilde A_i\|\) is no larger, and all
-blocks have norm \(\le1\). Telescoping,
-\(a-b=\sum_i(A_m\cdots A_{i+1})(A_i-\tilde A_i)(\tilde A_{i-1}\cdots\tilde A_1\psi)\),
-so \(\|a-b\|\le\epsilon_T\). The rays of \(a,b\) are
-\(\varphi,\tilde\varphi\), so
-\(D=\sin\angle(a,b)=\mathrm{dist}(a,\mathrm{span}\,b)/\|a\|\le\|a-b\|/\|a\|\),
-and \(\|a\|^2=P_{\mathrm{succ}}\ge p_g\). \(\square\)
-
-\textbf{Corollaries.} Infidelity \(=D^2\le\bar D^2\). Energy: with
-\(\tilde c_k\) the components of \(\tilde\varphi\),
-\(\langle H\rangle-E_0=\sum_{k\ge1}|\tilde c_k|^2(E_k-E_0)\le W(1-|\tilde c_0|^2)=WD^2\).
-Step count: for \(\bar\ell\le\varepsilon/4\),
-\(\bar D\le\sqrt\varepsilon\) holds if
-\(n\ge\alpha T^2/\sqrt{\gamma F(0)^2\varepsilon}\); with
-\(T=x\pi/\Delta\) the certified cost scales as \(\alpha/\Delta^2\).
-
-\textbf{First-order Trotter bound.} For Hermitian \(A,B\),
-\(U(s)=e^{-is(A+B)}\), \(V(s)=e^{-isA}e^{-isB}\):
-\(\frac{d}{ds}[U(\delta-s)V(s)]=iU(\delta-s)(B-e^{-isA}Be^{isA})V(s)\),
-so
-\(U(\delta)-V(\delta)=-i\int_0^\delta U(\delta-s)(B-e^{-isA}Be^{isA})V(s)\,ds\).
-Since \(\|B-e^{-isA}Be^{isA}\|\le s\|[A,B]\|\) and \(U,V\) are unitary,
-\(\|U(\delta)-V(\delta)\|\le\tfrac{\delta^2}2\|[A,B]\|\). For many terms
-apply this with \(A=H_1\), \(B=\sum_{g>1}H_g\) and recurse, giving
-\(\frac{\delta^2}{2}\alpha\) per step; with \(k\) steps of size \(t/k\)
-the error is \(\alpha t^2/(2k)\) {[}6{]}. The reversed product order
-gives the reversed sum, hence the maximum over orders. For
-\(H_s\otimes Z\): \([H_gZ,H_{g'}Z]=[H_g,H_{g'}]\otimes\mathbb 1\), so
-\(\alpha\) is unchanged; the constant shift commutes with everything and
-is applied exactly.
+ 
+Throughout, \(H_s=(H-E_0)/W\) has eigenpairs
+\(H_s|E_k\rangle=E_k|E_k\rangle\) with \(E_0=0\) and \(E_k\in[\Delta,1]\)
+for \(k\ge1\). The trial state is \(|\psi\rangle=\sum_kc_k|E_k\rangle\)
+with \(\gamma=|c_0|^2\). \(\|\cdot\|\) is the vector 2-norm or the
+operator norm. System states are written first and the ancilla second,
+as in \(H_s\otimes Z_{\mathrm a}\).
+ 
+\subsubsection{A.1 One pulse}
+ 
+A pulse is
+\(\mathcal W(t,\phi)=\mathsf H_{\mathrm a}\,e^{-itH_s\otimes Z_{\mathrm a}}\,\mathrm{Rz}_{\mathrm a}(2\phi)\,\mathsf H_{\mathrm a}\),
+with \(\mathrm{Rz}(2\phi)=\mathrm{diag}(e^{-i\phi},e^{i\phi})\). We follow
+\(|E\rangle|0\rangle_{\mathrm a}\), where \(|E\rangle\) is any eigenstate
+of \(H_s\), through the four gates, applied right to left.
+ 
+\emph{Step 1 (Hadamard).}
+\(|E\rangle|0\rangle\mapsto\tfrac1{\sqrt2}|E\rangle\big(|0\rangle+|1\rangle\big)\).
+ 
+\emph{Step 2 (phase).}
+\(\mapsto\tfrac1{\sqrt2}|E\rangle\big(e^{-i\phi}|0\rangle+e^{i\phi}|1\rangle\big)\).
+ 
+\emph{Step 3 (controlled evolution).} Since
+\((H_s\otimes Z)\,|E\rangle|j\rangle=(-1)^jE\,|E\rangle|j\rangle\), the
+branch \(|0\rangle\) acquires \(e^{-iEt}\) and the branch \(|1\rangle\)
+acquires \(e^{+iEt}\). With \(\theta=Et+\phi\):
+\[\mapsto\tfrac1{\sqrt2}|E\rangle\big(e^{-i\theta}|0\rangle+e^{i\theta}|1\rangle\big).\]
+The two branches have rotated by \(\
 
 \hypertarget{appendix-b.-where-pinskers-inequality-applies}{%
 \subsection{Appendix B. Where Pinsker's inequality
