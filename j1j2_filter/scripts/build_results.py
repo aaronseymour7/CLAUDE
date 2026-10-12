@@ -1,0 +1,570 @@
+"""
+build_results.py -- turn results/data/*.json (written by run_results.py) into results/RESULTS.md,
+CSV tables and figures.   usage: python scripts/build_results.py        (html/docx via pandoc if available)
+"""
+import csv
+import glob
+import json
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import numpy as np
+
+ROOT = Path(__file__).resolve().parents[1]
+RES = ROOT / "results"
+FIG, TAB = RES / "figures", RES / "tables"
+for d in (FIG, TAB):
+    d.mkdir(parents=True, exist_ok=True)
+
+R = [json.load(open(f)) for f in sorted(glob.glob(str(RES / "data" / "*.json")))]
+ERR = [json.load(open(f)) for f in sorted(glob.glob(str(RES / "data" / "*.err")))]
+EPS_MAIN = 1e-2
+ST = json.load(open(RES / "dmrg_status.json")) if (RES / "dmrg_status.json").exists() else {}
+
+
+def conv_str(r):
+    """DMRG convergence of the three runs (ground / top / excited-by-penalty), from the data file or dmrg_status.json."""
+    runs = r["inputs"].get("dmrg_runs") or ST.get(f"N{r['N']}_J2{r['J2']:g}", [])
+    if not runs:
+        return "–"
+    bad = [x["role"] for x in runs if not x["converged"]]
+    return "yes" if not bad else "NO (" + ", ".join(bad) + ")"
+
+
+def sel(source=None, N=None, J2=None, eps=None):
+    return [r for r in R if (source is None or r["source"] == source) and (N is None or r["N"] == N)
+            and (J2 is None or abs(r["J2"] - J2) < 1e-9) and (eps is None or abs(r["eps"] - eps) < 1e-12)]
+
+
+def one(source, N, J2, eps):
+    s = sel(source, N, J2, eps)
+    return s[0] if s else None
+
+
+def D(r, which):
+    return None if r is None else r["designs"].get(which)
+
+
+def ok(d):
+    return d is not None and "n" in d
+
+
+# ------------------------------------------------------------------ formatting
+def f(x, spec=".3g", dash="–"):
+    if x is None or (isinstance(x, float) and not np.isfinite(x)):
+        return dash
+    if spec == "int":
+        return f"{int(round(x)):,}"
+    return format(x, spec)
+
+
+def md(headers, rows):
+    out = ["| " + " | ".join(headers) + " |", "|" + "|".join("---" for _ in headers) + "|"]
+    out += ["| " + " | ".join(str(c) for c in r) + " |" for r in rows]
+    return "\n".join(out)
+
+
+def ks(k):
+    return "[" + ", ".join(str(x) for x in k) + "]"
+
+
+def csv_dump(name, headers, rows):
+    with open(TAB / name, "w", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(headers)
+        w.writerows(rows)
+
+
+J2_ORDER = (0.0, 0.2411, 0.4)
+jl = lambda j: f"{j:g}"
+tot = lambda d, topo="a2a": d[f"counts_{topo}"]["total"]
+fil = lambda d, topo="a2a": d[f"counts_{topo}"]["filter"]
+
+L = []
+A = L.append
+
+# ------------------------------------------------------------------ 0 header
+Ns_large = sorted({r["N"] for r in R if r["N"] > 14})
+A("# Results: resource costs of the cosine-filter pipeline for the open J1–J2 chain")
+A("")
+A("*Produced by `scripts/run_results.py` + `scripts/build_results.py` from the pipeline in this directory "
+  "(`pipeline.py`, `floor.py`, `core/*`). Every number below is read from `results/data/*.json`; "
+  "raw tables are in `results/tables/*.csv`.*")
+A("")
+A("## 0. How to read this document")
+A("")
+A("* **Pipeline.** DMRG (`get_energies`) → spectrum (`get_spectrum`) → L-layer approximate trial circuit "
+  "(`mps-to-circuit`, L = 1) → filter design (`floor.py`, certified η) → snapped Trotter grid → counts. "
+  "Settings are those in `pipeline.py`: first-order Lie–Trotter, ε targets as given, `SWEEP_L = 1`, `BANDWIDTH = \"certified\"` "
+  "for the DMRG path, `SYNTH_EPS = 1e-3`.")
+A("* **Two designs per case.** *Guaranteed* = smallest n whose a-priori rigorous bound on 1−F is ≤ ε. "
+  "*Empirical* = smallest n whose **measured** 1−F (against the exact ground state) is ≤ ε. The empirical design "
+  "uses the exact ground state, so it is an oracle lower envelope, not something a practitioner can know in advance; "
+  "it needs simulation and is therefore only available for N ≤ 14.")
+A("* **Everything uses the DMRG spectrum.** E0, E1 (penalty method) and E_top from DMRG; the bandwidth is the **certified** "
+  "W = (c_I + Σ|c_β|) − E0, which is 1.6–1.9× larger than E_top − E0 here (XX+YY+ZZ is bounded term by term), so the scaled gap "
+  "is smaller and T longer (Section 5). The DMRG gap is **not certified**.")
+A("* **N ≤ 14 versus N > 14.** For N ≤ 14 an exact-diagonalisation cross-check and statevector simulation of the filter are available: "
+  "γ is the overlap with the ED ground state, and measured 1−F, P_succ and the state error are reported. "
+  "For **N > 14 there is no ED, no statevector and no dense or sparse 2^N operator**: γ is the overlap of the DMRG MPS with the "
+  "trial circuit simulated as an MPS (Aer matrix-product-state), the energy variance comes from MPO contractions, α is the "
+  "triangle-inequality constant (Section 5), and circuits are **counted, not simulated** (no measured 1−F or P_succ; only the rigorous bound).")
+A("* **Time.** `T (scaled)` is the total evolution time Σtᵢ in units of 1/W; `T (phys)` = T/W in units of 1/J1 "
+  "(H = Σ J S·S, J1 = 1). Pulses with kᵢ = 0 on the grid are dropped.")
+A("* **Counting.** One Trotter step of one pulse (all bonds, ancilla-controlled) is transpiled once with qiskit "
+  "(`optimization_level=3`, basis cx/h/s/rz); filter counts = n × per-step + per pulse (one Rz(2φ), two H). "
+  "At small n this was checked against a full transpile of the real early-abort circuit (Section 8). "
+  "`RZ` counts every `rz` gate in the basis; `RZ (non-Cliff.)` only those whose angle is not a multiple of π/2 "
+  "(these drive the T-count). The T-count is the pipeline's rough estimate (1.15·log2(1/ε_synth)+9.2 T per rotation, "
+  "ε_synth = 1e-3); its constants are unverified. "
+  "**Totals include the trial circuit.** Connectivity is all-to-all unless marked *line* "
+  "(ancilla at the end of a line: pessimistic).")
+A("* **Success path.** All counts are for the all-zeros (success) path. The expected cost per accepted run is "
+  "total ÷ P_succ (early abort makes it lower).")
+A("")
+A(f"Data present: {len(R)} (N, J2, ε) points, N from {min(r['N'] for r in R)} to {max(r['N'] for r in R)}; {len(ERR)} failed point(s).")
+A("")
+
+# ------------------------------------------------------------------ 1 inputs
+A("## 1. Case inputs (DMRG spectrum, certified bandwidth)")
+A("")
+rows, hd = [], ["N", "J2", "E0 (DMRG)", "E1", "E_top", "E_top−E0", "W (certified)", "W / (E_top−E0)", "Δ (scaled gap)", "γ (trial)", "γ source",
+                "1−γ", "α used", "Pauli terms", "trial CX", "trial RZ", "trial RZ (non-Cliff.)", "trial depth", "overlap DMRG–ED", "DMRG converged"]
+for J2 in J2_ORDER:
+    for N in (4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 28, 32):
+        r = one("dmrg", N, J2, EPS_MAIN)
+        if r is None:
+            continue
+        i = r["inputs"]
+        tc = i["trial_cost"]
+        rows.append([N, jl(J2), f(i["E0"], ".6f"), f(i["E1"], ".6f"), f(i["Etop"], ".4f"), f(i["W_exact_dmrg"], ".4f"), f(i["W"], ".4f"),
+                     f(i["W"] / i["W_exact_dmrg"], ".2f"), f(i["gap_scaled"], ".5f"), f(i["gamma"], ".5f"), i["gamma_src"],
+                     f(1 - i["gamma"], ".2e"), f(i["alpha"], ".4f"), i["n_pauli_terms"], f(tc["cx"], "int"), f(tc["rz"], "int"),
+                     f(tc["rz_nonclifford"], "int"), f(tc["depth"], "int"),
+                     f(i["dmrg_ed_overlap"], ".10f") if i["dense"] else "not computed (N > 14)", conv_str(r)])
+A(md(hd, rows))
+csv_dump("inputs.csv", hd, rows)
+A("")
+A("*Table 1.* *DMRG converged*: the ground-state, top-state and penalty-method excited-state DMRG runs each reached the sweep tolerance within 60 sweeps; "
+  "a **NO** means that quantity (for the excited state, E1 and hence the gap Δ) is not converged and the design is only indicative. "
+  "Trial circuit = L = 1 approximate brickwork circuit from the DMRG MPS. α is in scaled units: the tight commutator constant "
+  "(exact spectral norms) for N ≤ 14, the triangle-inequality constant for N > 14. W is the certified bandwidth; the scaled gap Δ = (E1−E0)/W "
+  "is correspondingly 1.6–1.9× smaller than with the exact bandwidth.")
+A("")
+rows, hd = [], ["N", "J2", "α tight (exact norms)", "α triangle", "triangle / tight"]
+for J2 in J2_ORDER:
+    for N in (4, 6, 8, 10, 12, 14):
+        r = one("dmrg", N, J2, EPS_MAIN)
+        if r is not None and r["inputs"]["dense"]:
+            i = r["inputs"]
+            rows.append([N, jl(J2), f(i["alpha"], ".5f"), f(i["alpha_tri"], ".5f"), f(i["alpha_tri"] / i["alpha"], ".3f")])
+if rows:
+    A("**α: exact norms against the triangle bound (N ≤ 14)**")
+    A("")
+    A(md(hd, rows))
+    csv_dump("alpha_check.csv", hd, rows)
+    A("")
+    A("*Table 1b.* The triangle-inequality α is rigorous and needs no 2^N operator; it is exact at J2 = 0 and about 1.0–1.25× the tight value otherwise. "
+      "It is what the N > 14 rows use, so their step counts are at most about 1.25× (J2 = 0.4), 1.19× (J2 = 0.2411) or 1.0× (J2 = 0) larger than with exact norms.")
+    A("")
+
+
+def design_tables(source, which, N_list, title_prefix, eps=EPS_MAIN, tag=""):
+    """Three tables: design/time, resource counts, measured quality."""
+    out = []
+    rows1, rows2, rows3 = [], [], []
+    h1 = ["N", "J2", "pulses", "n (steps)", "kᵢ", "T (scaled)", "T (phys)", "η cert.", "ε bound", "P_succ lb"]
+    h2 = ["N", "J2", "CX trial", "CX filter", "CX total", "RZ total", "RZ (non-Cliff.)", "H total", "depth total",
+          "T-count (est.)", "E[CX]/accept", "CX total (line)"]
+    h3 = ["N", "J2", "measured 1−F", "F (ED)", "P_succ meas.", "state err vs exact", "bound holds", "full-transpile CX (n ≤ 200)"]
+    for J2 in J2_ORDER:
+        for N in N_list:
+            r = one(source, N, J2, eps)
+            d = D(r, which)
+            if not ok(d):
+                continue
+            c = tot(d)
+            ps = d["p_succ"] if d.get("simulated") else d["p_succ_lb"]
+            rows1.append([N, jl(J2), d["n_pulses_used"], f(d["n"], "int"), ks(d["k"]), f(d["T_scaled"], ".2f"),
+                          f(d["T_phys"], ".2f"), f(d["eta"], ".3f"), f(d["eps_bound"], ".2e"), f(d["p_succ_lb"], ".3f")])
+            rows2.append([N, jl(J2), f(r["inputs"]["trial_cost"]["cx"], "int"), f(fil(d)["cx"], "int"), f(c["cx"], "int"),
+                          f(c["rz"], "int"), f(c["rz_nonclifford"], "int"), f(c["h"], "int"), f(c["depth"], "int"),
+                          f(c["t_count_est"], ".3g"), f(c["cx"] / ps, "int"), f(tot(d, "line")["cx"], "int")])
+            ft = d.get("full_transpile_check")
+            rows3.append([N, jl(J2), f(d.get("eps_actual"), ".2e"), f(d.get("F_ed"), ".5f"), f(d.get("p_succ"), ".3f"),
+                          f(d.get("state_err"), ".2e"),
+                          ("yes" if d["eps_actual"] <= d["eps_bound"] + 1e-9 else "NO") if d.get("simulated") else "not simulated",
+                          f(ft["cx"], "int") if ft and "cx" in ft else "–"])
+    if rows1:
+        out += [f"**{title_prefix}: design and evolution time**", "", md(h1, rows1), "",
+                f"**{title_prefix}: gate counts (incl. trial circuit)**", "", md(h2, rows2), "",
+                f"**{title_prefix}: measured quality (noiseless)**", "", md(h3, rows3), ""]
+        csv_dump(f"{source}_{which}_{tag}eps{eps:g}_design.csv", h1, rows1)
+        csv_dump(f"{source}_{which}_{tag}eps{eps:g}_counts.csv", h2, rows2)
+        csv_dump(f"{source}_{which}_{tag}eps{eps:g}_measured.csv", h3, rows3)
+    return out
+
+
+A("## 2. Guaranteed designs, N ≤ 14, ε = 10⁻²")
+A("")
+L += design_tables("dmrg", "guaranteed", (4, 6, 8, 10, 12, 14), "Guaranteed")
+A("*Tables 2a–c.* Rigorous a-priori n: the bound on 1−F is ≤ ε. Measured 1−F is typically far below ε (the bound is conservative).")
+A("")
+
+A("## 3. Empirical (oracle) designs, N ≤ 14, ε = 10⁻²")
+A("")
+L += design_tables("dmrg", "empirical", (4, 6, 8, 10, 12, 14), "Empirical")
+A("*Tables 3a–c.* Smallest n on the sweep whose *measured* 1−F ≤ ε; an oracle (uses the exact ground state). "
+  "At very small n the first-order Trotter error can be accidentally small, so the empirical n is a lower envelope, "
+  "not a design a practitioner could trust.")
+A("")
+
+# ------------------------------------------------------------------ 4 per step
+A("## 4. Cost of one Trotter step")
+A("")
+rows, hd = [], ["N", "J2", "bonds", "Pauli terms", "CX", "H", "RZ", "RZ (non-Cliff.)", "depth", "CX (line, 3-step avg)", "line / a2a"]
+for J2 in J2_ORDER:
+    for N in sorted({r["N"] for r in R}):
+        r = (sel("dmrg", N, J2, EPS_MAIN) or sel("dmrg", N, J2) or [None])[0]
+        if r is None:
+            continue
+        s1, sl = r["per_step"]["a2a"]["one"], r["per_step"]["line"]["avg3"]
+        rows.append([N, jl(J2), (N - 1) + ((N - 2) if J2 else 0), r["inputs"]["n_pauli_terms"], f(s1["cx"], "int"),
+                     f(s1["h"], "int"), f(s1["rz"], "int"), f(s1["rz_nonclifford"], "int"), f(s1["depth"], "int"),
+                     f(sl["cx"], ".1f"), f(sl["cx"] / s1["cx"], ".2f")])
+A(md(hd, rows))
+csv_dump("per_step.csv", hd, rows)
+A("")
+A("*Table 4.* Transpiled counts of one Trotter step of one pulse (all bonds, ancilla-controlled), all-to-all, plus the "
+  "line-connectivity cost. CX per step grows linearly with the number of bonds; J2 ≠ 0 roughly doubles it (J2 = 0.2411 and 0.4 have identical circuits per step, only the angles differ). "
+  "The line-connectivity figure depends on the transpiler's routing, which is not smooth in N (e.g. N = 24, J2 = 0.2411); treat it as indicative.")
+A("")
+
+# ------------------------------------------------------------------ 5 certified bandwidth
+A("## 5. Effect of the certified bandwidth and of the MPS-only path")
+A("")
+A("The certified bandwidth W = (c_I + Σ|c_β|) − E0 is a rigorous upper bound on E_top − E0 that does not rely on DMRG's E_top. "
+  "It is larger than E_top − E0 (ratio in Table 1, column *W / (E_top−E0)*), which shrinks the scaled gap Δ = (E1−E0)/W, lengthens the "
+  "total scaled time T ≈ xπ/Δ and multiplies the step count n ∝ α T². In physical units (1/J1) T is unchanged by the choice of W only "
+  "if the filter window could use the exact bandwidth; here the window [Δ, 1] is wider than needed.")
+A("")
+rows, hd = [], ["N", "J2", "W / (E_top−E0)", "Δ certified", "Δ with exact bandwidth", "ratio"]
+for J2 in J2_ORDER:
+    for N in (4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 28, 32):
+        r = one("dmrg", N, J2, EPS_MAIN)
+        if r is None:
+            continue
+        i = r["inputs"]
+        rows.append([N, jl(J2), f(i["W"] / i["W_exact_dmrg"], ".2f"), f(i["gap_scaled"], ".5f"),
+                     f(i["gap_scaled"] * i["W"] / i["W_exact_dmrg"], ".5f"), f(i["W"] / i["W_exact_dmrg"], ".2f")])
+A(md(hd, rows))
+csv_dump("bandwidth.csv", hd, rows)
+A("")
+A("*Table 5.* Certified versus exact bandwidth: the scaled gap is smaller by the factor W / (E_top−E0). Because n ∝ T² ∝ Δ⁻², "
+  "using the exact bandwidth would reduce the guaranteed step count by roughly the square of that ratio (not re-run here).")
+A("")
+vg = ROOT / "results" / "validation_gamma_ed.json"
+if vg.exists():
+    ref = json.load(open(vg))
+    rows, hd = [], ["N", "J2", "γ from MPS contraction (no ED, no statevector)", "γ from ED overlap (earlier run)", "difference"]
+    for key, g_ed in sorted(ref.items()):
+        N, J2 = int(key.split("_")[0][1:]), float(key.split("J2")[1])
+        r = one("dmrg", N, J2, EPS_MAIN) or one("dmrg", N, J2, 1e-1)
+        if r is not None:
+            rows.append([N, jl(J2), f(r["inputs"]["gamma"], ".6f"), f(g_ed, ".6f"), f"{r['inputs']['gamma'] - g_ed:+.1e}"])
+    if rows:
+        A("**Validation of the MPS-based γ (N > 14) against an earlier ED-based run**")
+        A("")
+        A(md(hd, rows))
+        A("")
+        A("*Table 5b.* The MPS-overlap γ agrees with the ED overlap to ~1e-6 at N = 16–18 (and to 1e-15 against the dense overlap at N ≤ 10 in a separate test). "
+          "The ED values come from a first pass of this study that used ED and statevectors for these sizes; they are kept only as this check.")
+        A("")
+
+# ------------------------------------------------------------------ 6 larger systems
+A(f"## 6. Larger J1–J2 chains (N = 14–{max(Ns_large) if Ns_large else 14}): resource costs")
+A("")
+A("N ≥ 16 is **DMRG/MPS only**: γ is the DMRG-MPS overlap of the trial circuit (uncertified), the gap is DMRG's (uncertified), W is certified, "
+  "α is the triangle-inequality constant, and there is no ED, no statevector and no dense operator anywhere. The designs are therefore rigorous "
+  "*given* γ and the DMRG gap. Circuits are **not simulated**; their counts are n × the transpiled per-step cost plus the trial circuit, validated "
+  "against full transpiles at n = 48 (Section 8). N = 14 (statevector-simulated, ED cross-checked) is included for continuity.")
+A("")
+Nl = [N for N in (14, 16, 18, 20, 24, 28, 32) if sel("dmrg", N)]
+for eps in (EPS_MAIN, 1e-1):
+    rows, hd = [], ["N", "J2", "γ", "Δ", "W", "α", "pulses", "n (steps)", "T (scaled)", "T (phys)", "CX trial", "CX filter", "CX total",
+                    "RZ total", "RZ (non-Cliff.)", "H total", "depth", "T-count (est.)", "P_succ lb", "ε bound", "CX total (line)", "DMRG converged"]
+    for J2 in J2_ORDER:
+        for N in Nl:
+            r = one("dmrg", N, J2, eps)
+            d = D(r, "guaranteed")
+            if not ok(d):
+                continue
+            i, c = r["inputs"], tot(d)
+            rows.append([N, jl(J2), f(i["gamma"], ".4f"), f(i["gap_scaled"], ".4f"), f(i["W"], ".2f"), f(i["alpha"], ".4f"),
+                         d["n_pulses_used"], f(d["n"], "int"), f(d["T_scaled"], ".1f"), f(d["T_phys"], ".2f"),
+                         f(i["trial_cost"]["cx"], "int"), f(fil(d)["cx"], "int"), f(c["cx"], "int"), f(c["rz"], "int"),
+                         f(c["rz_nonclifford"], "int"), f(c["h"], "int"), f(c["depth"], "int"), f(c["t_count_est"], ".3g"),
+                         f(d["p_succ_lb"], ".3f"), f(d["eps_bound"], ".2e"), f(tot(d, "line")["cx"], "int"), conv_str(r)])
+    if rows:
+        A(f"**Guaranteed designs, ε = {eps:g}**")
+        A("")
+        A(md(hd, rows))
+        csv_dump(f"large_guaranteed_eps{eps:g}.csv", hd, rows)
+        A("")
+rows, hd = [], ["N", "J2", "kᵢ (guaranteed)", "largest block kmax", "CX in largest block"]
+for J2 in J2_ORDER:
+    for N in Nl:
+        r = one("dmrg", N, J2, EPS_MAIN)
+        d = D(r, "guaranteed")
+        if ok(d):
+            rows.append([N, jl(J2), ks(d["k"]), d["kmax"], f(d["kmax"] * r["per_step"]["a2a"]["one"]["cx"], "int")])
+if rows:
+    A("**Pulse structure of the guaranteed designs (ε = 10⁻²)**")
+    A("")
+    A(md(hd, rows))
+    A("")
+
+# empirical at N = 14
+rows, hd = [], ["N", "J2", "design", "n", "pulses", "T (phys)", "CX total", "RZ (non-Cliff.)", "measured 1−F", "P_succ", "ε bound (rigorous)"]
+for J2 in J2_ORDER:
+    for N in (12, 14):
+        for src in ("dmrg",):
+            r = one(src, N, J2, EPS_MAIN)
+            for which in ("guaranteed", "empirical"):
+                d = D(r, which)
+                if ok(d) and d.get("simulated"):
+                    c = tot(d)
+                    rows.append([N, jl(J2), which, f(d["n"], "int"), d["n_pulses_used"], f(d["T_phys"], ".2f"), f(c["cx"], "int"),
+                                 f(c["rz_nonclifford"], "int"), f(d["eps_actual"], ".2e"), f(d["p_succ"], ".3f"), f(d["eps_bound"], ".2e")])
+if rows:
+    A("**Measured (statevector-simulated) points, N = 12 and 14**")
+    A("")
+    A(md(hd, rows))
+    A("")
+    A("*Empirical* rows are the oracle lower envelope; *guaranteed* rows show how far below ε the measured error sits.")
+    A("")
+
+# scaling fits
+A("### Scaling with N")
+A("")
+
+
+def fit(xs, ys):
+    xs, ys = np.log(np.asarray(xs, float)), np.log(np.asarray(ys, float))
+    if len(xs) < 3:
+        return None
+    p, c = np.polyfit(xs, ys, 1)
+    pred = p * xs + c
+    ss = float(np.sum((ys - ys.mean()) ** 2))
+    return p, (1 - float(np.sum((ys - pred) ** 2)) / ss) if ss > 0 else 1.0
+
+
+rows, hd = [], ["quantity", "J2", "source", "N range", "p in y ~ N^p", "R²", "points"]
+FITS = {}
+metrics = [("n (steps)", lambda r, d: d["n"]), ("T (scaled)", lambda r, d: d["T_scaled"]), ("CX per step", lambda r, d: r["per_step"]["a2a"]["one"]["cx"]),
+           ("CX total", lambda r, d: tot(d)["cx"]), ("RZ non-Cliff. total", lambda r, d: tot(d)["rz_nonclifford"]),
+           ("depth total", lambda r, d: tot(d)["depth"])]
+for src, Nrange in (("dmrg", (6, 32)),):
+    for J2 in J2_ORDER:
+        pts = [(N, one(src, N, J2, EPS_MAIN)) for N in range(Nrange[0], Nrange[1] + 1, 2)]
+        pts = [(N, r, D(r, "guaranteed")) for N, r in pts if r is not None and ok(D(r, "guaranteed")) and r["inputs"].get("dmrg_converged", True)]
+        for name, fn in metrics:
+            if len(pts) >= 3:
+                fr = fit([N for N, _, _ in pts], [fn(r, d) for N, r, d in pts])
+                FITS[(name, J2, src)] = (fr, pts)
+                rows.append([name, jl(J2), src, f"{pts[0][0]}–{pts[-1][0]}", f(fr[0], ".2f"), f(fr[1], ".3f"), len(pts)])
+if rows:
+    A(md(hd, rows))
+    csv_dump("scaling_fits.csv", hd, rows)
+    A("")
+    A("*Table 7.* Power-law fits of guaranteed-design quantities (ε = 10⁻²) over points with converged DMRG and a feasible certified design. Few points: indicative, not asymptotic.")
+    A("")
+
+# ------------------------------------------------------------------ 7 eps scan
+A("## 7. Dependence on the target ε")
+A("")
+for (N, J2) in ((6, 0.0), (8, 0.0), (6, 0.4)):
+    rows, hd = [], ["ε", "design", "n", "pulses", "T (phys)", "CX total", "RZ (non-Cliff.)", "depth", "measured 1−F", "ε bound", "P_succ"]
+    for eps in (1e-1, 3e-2, 1e-2, 3e-3, 1e-3):
+        r = one("dmrg", N, J2, eps)
+        for which in ("guaranteed", "empirical"):
+            d = D(r, which)
+            if ok(d):
+                c = tot(d)
+                rows.append([f(eps, ".0e"), which, f(d["n"], "int"), d["n_pulses_used"], f(d["T_phys"], ".2f"), f(c["cx"], "int"),
+                             f(c["rz_nonclifford"], "int"), f(c["depth"], "int"), f(d.get("eps_actual"), ".2e"), f(d["eps_bound"], ".2e"),
+                             f(d.get("p_succ", d["p_succ_lb"]), ".3f")])
+    if rows:
+        A(f"**N = {N}, J2 = {J2:g}**")
+        A("")
+        A(md(hd, rows))
+        csv_dump(f"eps_scan_N{N}_J2{J2:g}.csv", hd, rows)
+        A("")
+
+# ------------------------------------------------------------------ 8 validation + timing
+A("## 8. Checks and classical compute cost")
+A("")
+rows, hd = [], ["source", "N", "J2", "n", "estimate CX (per-step × n)", "full-transpile CX", "CX error", "estimate depth", "full-transpile depth"]
+for r in sorted(R, key=lambda r: (r["source"], r["N"], r["J2"])):
+    v = r.get("validation")
+    if v and "full_cx" in v and abs(r["eps"] - EPS_MAIN) < 1e-12:
+        rows.append([r["source"], r["N"], jl(r["J2"]), v["n"], f(v["est_cx"], "int"), f(v["full_cx"], "int"),
+                     f"{v['cx_err_pct']:+.1f}%", f(v["est_depth"], "int"), f(v["full_depth"], "int")])
+if rows:
+    A("**Per-step × n estimate against a full transpile of the real circuit (n = 48)**")
+    A("")
+    A(md(hd, rows))
+    csv_dump("validation.csv", hd, rows)
+    A("")
+rows, hd = [], ["source", "N", "J2", "ε", "context build (DMRG+ED+trial+per-step) s", "filter design s", "guaranteed search s", "empirical search s"]
+for r in sorted(R, key=lambda r: (r["source"], r["N"], r["J2"], -r["eps"])):
+    rows.append([r["source"], r["N"], jl(r["J2"]), f(r["eps"], ".0e"), f(r["inputs"]["build_s"], ".0f"), f(r["design"]["design_s"], ".0f"),
+                 f((D(r, "guaranteed") or {}).get("search_s"), ".0f"), f((D(r, "empirical") or {}).get("search_s"), ".0f")])
+if rows:
+    A("**Classical compute (single core)**")
+    A("")
+    A(md(hd, rows))
+    csv_dump("timing.csv", hd, rows)
+    A("")
+viol = [(r["source"], r["N"], r["J2"], r["eps"], w) for r in R for w, d in r["designs"].items()
+        if ok(d) and d.get("simulated") and d["eps_actual"] > d["eps_bound"] + 1e-9]
+A(f"Bound violations among simulated points: **{len(viol)}**" + (f" — {viol}" if viol else "") + ".")
+A("")
+errs = [(r["source"], r["N"], r["J2"], r["eps"], w, d["error"] + (f" [design source: {r['design']['source']}; the floor solver (<= 8 pulses, t_max_frac 0.5) found no feasible filter for gamma = {r['inputs']['gamma']:.3f}]" if r["design"]["source"] == "builder" else "")) for r in R for w, d in r["designs"].items() if not ok(d)]
+if errs or ERR:
+    A("**Points without a result**")
+    A("")
+    for e in errs:
+        A(f"* {e[0]} N={e[1]} J2={e[2]:g} ε={e[3]:g} {e[4]}: {e[5]}")
+    for e in ERR:
+        A(f"* {e['source']} N={e['N']} J2={e['J2']:g} ε={e['eps']:g}: {e['error']}")
+    A("")
+
+# ------------------------------------------------------------------ figures
+plt.rcParams.update({"font.size": 9, "axes.spines.top": False, "axes.spines.right": False})
+COL = {0.0: "#1f4e79", 0.2411: "#2e8b57", 0.4: "#c0392b"}
+
+
+def series(src, J2, which, fn, Nmin=4, Nmax=34):
+    xs, ys = [], []
+    for N in range(Nmin, Nmax + 1, 2):
+        r = one(src, N, J2, EPS_MAIN)
+        d = D(r, which)
+        if ok(d) and r["inputs"].get("dmrg_converged", True):          # unconverged excited-state DMRG: not plotted
+            xs.append(N); ys.append(fn(r, d))
+    return xs, ys
+
+
+panels = [("n (Trotter steps)", lambda r, d: d["n"]), ("T (physical, 1/J1)", lambda r, d: d["T_phys"]),
+          ("total CX", lambda r, d: tot(d)["cx"]), ("non-Clifford RZ", lambda r, d: tot(d)["rz_nonclifford"])]
+fig, axes = plt.subplots(1, 4, figsize=(14, 3.3))
+for ax, (title, fn) in zip(axes, panels):
+    for J2 in J2_ORDER:
+        xs, ys = series("dmrg", J2, "guaranteed", fn)
+        if xs:
+            ax.semilogy(xs, ys, "-", marker="o", color=COL[J2], ms=4, label=f"J2={J2:g}")
+    ax.set_xlabel("N"); ax.set_title(title, fontsize=9)
+axes[0].legend(fontsize=6, frameon=False)
+fig.suptitle("Guaranteed designs, ε = 10⁻² (DMRG spectrum, certified bandwidth; N > 14 counted, not simulated; converged-DMRG points only)", fontsize=9)
+fig.tight_layout(); fig.savefig(FIG / "fig_scaling_guaranteed.png", dpi=170); plt.close(fig)
+
+fig, ax = plt.subplots(1, 2, figsize=(9, 3.3))
+for J2 in J2_ORDER:
+    for which, ls in (("guaranteed", "-"), ("empirical", ":")):
+        xs, ys = series("dmrg", J2, which, lambda r, d: tot(d)["cx"])
+        if xs:
+            ax[0].semilogy(xs, ys, ls, marker="o", ms=4, color=COL[J2], label=f"J2={J2:g} {which}")
+        xs, ys = series("dmrg", J2, which, lambda r, d: d["n"])
+        if xs:
+            ax[1].semilogy(xs, ys, ls, marker="o", ms=4, color=COL[J2])
+ax[0].set_title("total CX (N ≤ 14)", fontsize=9); ax[1].set_title("Trotter steps n (N ≤ 14)", fontsize=9)
+for a in ax:
+    a.set_xlabel("N")
+ax[0].legend(fontsize=6, frameon=False)
+fig.tight_layout(); fig.savefig(FIG / "fig_guaranteed_vs_empirical.png", dpi=170); plt.close(fig)
+
+fig, ax = plt.subplots(figsize=(4.6, 3.3))
+for (N, J2), mk in zip(((6, 0.0), (8, 0.0), (6, 0.4)), "osd"):
+    for which, ls in (("guaranteed", "-"), ("empirical", ":")):
+        xs, ys = [], []
+        for eps in (1e-1, 3e-2, 1e-2, 3e-3, 1e-3):
+            d = D(one("dmrg", N, J2, eps), which)
+            if ok(d):
+                xs.append(eps); ys.append(tot(d)["cx"])
+        if xs:
+            ax.loglog(xs, ys, ls, marker=mk, ms=4, label=f"N={N}, J2={J2:g}, {which}")
+ax.invert_xaxis(); ax.set_xlabel("target ε"); ax.set_ylabel("total CX"); ax.legend(fontsize=6, frameon=False)
+fig.tight_layout(); fig.savefig(FIG / "fig_eps_scan.png", dpi=170); plt.close(fig)
+
+A("## Figures")
+A("")
+A("![Guaranteed designs vs N](figures/fig_scaling_guaranteed.png)")
+A("")
+A("![Guaranteed vs empirical](figures/fig_guaranteed_vs_empirical.png)")
+A("")
+A("![ε scan](figures/fig_eps_scan.png)")
+A("")
+A("## Reproducing")
+A("")
+A("```")
+A("export OMP_NUM_THREADS=1")
+A("for i in 0 1 2 3; do python scripts/run_results.py --worker $i --of 4 & done; wait   # resumable")
+A("python scripts/build_results.py")
+A("```")
+A("")
+A("Environment: Python 3.12, qiskit, qiskit-aer, quimb, mps-to-circuit, scipy, numpy, matplotlib (see `results/data/*.json` for the "
+  "exact settings of each point: order, bandwidth, trial layers, seed).")
+
+# ------------------------------------------------------------------ summary (inserted after section 0)
+S = ["## Summary", ""]
+g_small = [(r, D(r, "guaranteed"), D(r, "empirical")) for r in sel("dmrg", eps=EPS_MAIN) if r["N"] <= 14]
+g_small = [(r, g, e) for r, g, e in g_small if ok(g)]
+g_large_all = [(r, D(r, "guaranteed")) for r in sel("dmrg", eps=EPS_MAIN) if r["N"] > 14 and ok(D(r, "guaranteed"))]
+g_large = [(r, g) for r, g in g_large_all if r["inputs"].get("dmrg_converged", True)]
+if g_small:
+    ns = [g["n"] for _, g, _ in g_small]
+    cxs = [tot(g)["cx"] for _, g, _ in g_small]
+    S.append(f"* **N ≤ 14, guaranteed designs, ε = 10⁻²:** {f(min(ns), 'int')}–{f(max(ns), 'int')} Trotter steps, "
+             f"{f(min(cxs), 'int')}–{f(max(cxs), 'int')} total CX, "
+             f"T (phys) {f(min(g['T_phys'] for _, g, _ in g_small), '.1f')}–{f(max(g['T_phys'] for _, g, _ in g_small), '.1f')} (1/J1).")
+    pairs = [(g, e) for _, g, e in g_small if ok(e)]
+    if pairs:
+        rn = [g["n"] / e["n"] for g, e in pairs]
+        rc = [tot(g)["cx"] / tot(e)["cx"] for g, e in pairs]
+        S.append(f"* **Guaranteed versus empirical (oracle):** the guaranteed design uses {f(min(rn), '.0f')}–{f(max(rn), '.0f')}× the steps and "
+                 f"{f(min(rc), '.0f')}–{f(max(rc), '.0f')}× the CX of the smallest n that empirically meets ε (median {f(float(np.median(rc)), '.0f')}×).")
+if g_large:
+    cxs = [tot(g)["cx"] for _, g in g_large]
+    nunc = len(g_large_all) - len(g_large)
+    S.append(f"* **N = {min(r['N'] for r, _ in g_large)}–{max(r['N'] for r, _ in g_large)} (DMRG/MPS only, counted not simulated), ε = 10⁻²:** {f(min(g['n'] for _, g in g_large), 'int')}–"
+             f"{f(max(g['n'] for _, g in g_large), 'int')} steps, {min(cxs):.2e}–{max(cxs):.2e} total CX, "
+             f"{min(tot(g)['rz_nonclifford'] for _, g in g_large):.2e}–{max(tot(g)['rz_nonclifford'] for _, g in g_large):.2e} non-Clifford RZ, "
+             f"T (phys) {f(min(g['T_phys'] for _, g in g_large), '.1f')}–{f(max(g['T_phys'] for _, g in g_large), '.1f')} "
+             f"(converged-DMRG points only; {nunc} further point(s) have an unconverged excited-state DMRG and are flagged in Section 6).")
+for J2 in J2_ORDER:
+    k = ("CX total", J2, "dmrg")
+    if k in FITS:
+        S.append(f"* **Scaling, J2 = {jl(J2)}:** guaranteed total CX ~ N^{FITS[k][0][0]:.1f} (R² {FITS[k][0][1]:.3f}), "
+                 f"steps ~ N^{FITS[('n (steps)', J2, 'dmrg')][0][0]:.1f}, CX per step ~ N^{FITS[('CX per step', J2, 'dmrg')][0][0]:.1f} "
+                 f"(fits over N = {FITS[k][1][0][0]}–{FITS[k][1][-1][0]}).")
+ratios = [r["inputs"]["W"] / r["inputs"]["W_exact_dmrg"] for r in R]
+S.append(f"* **Certified bandwidth:** W is {min(ratios):.2f}–{max(ratios):.2f}× E_top − E0, so the scaled gap is that much smaller and T longer than with the exact bandwidth.")
+S.append(f"* **Bound violations among simulated points:** {len(viol)}.")
+S.append("")
+i1 = next(i for i, l in enumerate(L) if l.startswith("## 1. Case inputs"))
+L[i1:i1] = S
+
+text = "\n".join(L)
+(RES / "RESULTS.md").write_text(text)
+print(f"wrote {RES / 'RESULTS.md'} ({len(text.split())} words), {len(list(TAB.glob('*.csv')))} csv tables, {len(list(FIG.glob('*.png')))} figures")
+(RES / "style.css").write_text("body{max-width:none!important;margin:0 auto;padding:1.5em 2em;font:15px/1.45 Georgia,serif}"
+                               "table{display:block;overflow-x:auto;border-collapse:collapse;font-size:.74em;margin:1em 0}"
+                               "td,th{border-bottom:1px solid #ccc;padding:2px 7px;white-space:nowrap}img{max-width:100%}")
+if shutil.which("pandoc"):
+    subprocess.run(["pandoc", "RESULTS.md", "-o", "RESULTS.html", "--standalone", "--embed-resources", "--metadata", "title=Filter pipeline: resource results",
+                    "--from=markdown+pipe_tables", "--css=style.css"], cwd=RES, check=False)
