@@ -24,7 +24,7 @@ SECTOR_MAX_N = 12                          # dense symmetry-resolved ED
 
 
 def get_spectrum(N, j1=1.0, j2=0.0, source="dmrg", res=None, H_mpo=None,
-                 bandwidth="certified", gap_mode="any"):
+                 bandwidth="certified", gap_mode="any", use_dense=True):
     """Spectrum for FilterBuilder, rescaled to (E - shift)/W with shift = E0.
 
     res: output of get_energies (pass it in -> DMRG runs once, A9). If None and
@@ -84,9 +84,14 @@ def get_spectrum(N, j1=1.0, j2=0.0, source="dmrg", res=None, H_mpo=None,
         gap_raw = gap_any
 
     var = 0.0
-    if res.get("psi0") is not None:
+    if res.get("psi0") is not None and use_dense:
         v = reorder_axes(np.asarray(res["psi0"].to_dense()).reshape(-1))
         var = max(energy_variance(H_p.to_matrix(sparse=True), v), 0.0)
+    elif res.get("psi0") is not None:           # MPS/MPO only: Var = <H^2> - E^2 = ||H psi||^2 - E^2
+        if H_mpo is None:
+            H_mpo = MPO_ham_j1j2(N, j1=j1, j2=j2)
+        Hpsi = H_mpo.apply(res["psi0"])
+        var = max(float(np.real(Hpsi.H @ Hpsi)) - E0 ** 2, 0.0)
     gap = gap_raw / W
     print(f"[spectrum] E0={E0:.8f} E1={E1:.8f} Etop={Etop:.8f}  "
           f"W({bandwidth})={W:.6f} (W_cert={W_cert:.6f})  gap_any={gap_any:.6f} "

@@ -35,6 +35,7 @@ from core.simulate import (
 from core.spectrum import get_spectrum
 from core.trotter import (
     _trotter_run,
+    alpha_comm,
     lie_trotter_order,
     steps_needed,
     total_error_bound,
@@ -68,6 +69,8 @@ FLOOR_KW = dict(t_max_frac=0.5)
 FLOOR_JOBS = 1
 GAMMA_EXACT_TOL = 1e-9                # 1-gamma below this: trial state already exact, no filter
 DENSE_CHECK_MAX_N = 12                # dense eigvalsh sanity check of the scaled spectrum
+STATEVECTOR_MAX_N = 14                # above this: DMRG/MPS only -- no ED, no statevector, no dense Hamiltonian;
+                                      # gamma from an MPS-simulated trial circuit, circuits are counted, not simulated
 
 
 def run_global_checks():
@@ -93,6 +96,33 @@ def per_step_costs(H, cmap):
     return dict(cx=c["cx"], depth=c["depth"], rz_nc=c["rz_nonclifford"])
 
 
+def _aer_mps(qc):
+    """MPS (quimb, 'lpr' arrays) of the state prepared by qc, via Aer's matrix-product-state simulator.
+    No statevector is formed; cost is polynomial for the low-entanglement trial circuits used here."""
+    import quimb.tensor as qtn
+    from qiskit import transpile
+    from qiskit_aer import AerSimulator
+    sim = AerSimulator(method="matrix_product_state")
+    q2 = qc.copy()
+    q2.save_matrix_product_state(label="mps")
+    G, Lam = sim.run(transpile(q2, sim)).result().data(0)["mps"]
+    arr = []
+    for k in range(len(G)):
+        T = np.stack([G[k][0], G[k][1]], axis=1)                 # (left, phys, right)
+        if k < len(G) - 1:
+            T = T * np.asarray(Lam[k])[None, None, :]
+        arr.append(T)
+    arr[0], arr[-1] = arr[0][0], arr[-1][:, :, 0]
+    t = qtn.MatrixProductState(arr, shape="lpr")
+    t.normalize()
+    return t
+
+
+def mps_gamma(trial_qc, psi0_mps):
+    """|<psi0_DMRG|trial>|^2 by MPS contraction (validated against the dense overlap to 1e-15 for N <= 14)."""
+    return float(abs(psi0_mps.H @ _aer_mps(trial_qc)) ** 2)
+
+
 def build_ctx(N, j1, j2):
     ctx = dict(N=N, j1=j1, j2=j2)
     banner(f"CASE  N={N}  J1={j1:g}  J2={j2:g}")
@@ -101,21 +131,28 @@ def build_ctx(N, j1, j2):
         if ctx["mpo_err"] > 1e-9:
             print(f"  [warning] MPO vs Pauli mismatch: {ctx['mpo_err']:.2e}")
 
+    dense = N <= STATEVECTOR_MAX_N          # False: DMRG/MPS only (no ED, no statevector)
+    ctx["dense"] = dense
     H_mpo = MPO_ham_j1j2(N, j1=j1, j2=j2, cyclic=False)
-    res = run_quiet(get_energies, H_mpo, N=N, j1=j1, j2=j2, run_ed_check=True)
+    res = run_quiet(get_energies, H_mpo, N=N, j1=j1, j2=j2, run_ed_check=dense)
     ed = res["ed"]
     psi0_ed = ed.get("psi0_ed") if ed else None
-    psi0_dmrg = np.asarray(res["psi0"].to_dense()).reshape(-1)
-    psi0_dmrg = psi0_dmrg / np.linalg.norm(psi0_dmrg)
-    dmrg_ed = (float(abs(np.vdot(psi0_ed, psi0_dmrg)) ** 2)
-               if psi0_ed is not None else float("nan"))
+    if dense:
+        psi0_dmrg = np.asarray(res["psi0"].to_dense()).reshape(-1)
+        psi0_dmrg = psi0_dmrg / np.linalg.norm(psi0_dmrg)
+        dmrg_ed = (float(abs(np.vdot(psi0_ed, psi0_dmrg)) ** 2)
+                   if psi0_ed is not None else float("nan"))
+    else:
+        psi0_dmrg, dmrg_ed = None, float("nan")
 
     H_qk = j1j2_hamiltonian(N, j1=j1, j2=j2)
     spec = run_quiet(get_spectrum, N, j1=j1, j2=j2, source=SPECTRUM_SOURCE, res=res,
-                     bandwidth=BANDWIDTH, gap_mode=GAP_MODE)
+                     bandwidth=BANDWIDTH, gap_mode=GAP_MODE, H_mpo=H_mpo, use_dense=dense)
     H_scaled = scale_hamiltonian(H_qk, spec["shift"], spec["W"])
-    Hs = H_scaled.to_matrix(sparse=True)
-    if N <= DENSE_CHECK_MAX_N:
+    Hs = H_scaled.to_matrix(sparse=True) if dense else None
+    if not dense:                            # no dense/sparse 2^N operator: spectrum check skipped
+        lo, hi = float("nan"), float("nan")
+    elif N <= DENSE_CHECK_MAX_N:
         w = np.linalg.eigvalsh(Hs.toarray())
         lo, hi = float(w[0]), float(w[-1])
     else:                                    # extremal eigenvalues only (no dense 2^N x 2^N)
@@ -131,14 +168,20 @@ def build_ctx(N, j1, j2):
     if trial_qc.num_qubits != N:
         raise ValueError(f"trial circuit has {trial_qc.num_qubits} qubits, "
                          f"expected {N}")
-    trial_vec = Statevector(trial_qc).data
-    g_dmrg, g_ed = overlaps(trial_vec, psi0_dmrg, psi0_ed)
+    if dense:
+        trial_vec = Statevector(trial_qc).data
+        g_dmrg, g_ed = overlaps(trial_vec, psi0_dmrg, psi0_ed)
+        gamma_src = "ED" if np.isfinite(g_ed) else "DMRG (uncertified)"
+    else:
+        trial_vec = None
+        g_dmrg, g_ed = mps_gamma(trial_qc, res["psi0"]), float("nan")
+        gamma_src = "DMRG-MPS overlap (uncertified)"
     gamma = min(g_ed if np.isfinite(g_ed) else g_dmrg, 1.0)
-    gamma_src = "ED" if np.isfinite(g_ed) else "DMRG (uncertified)"
 
     cmap = CouplingMap.from_line(N + 1) if COST_TOPOLOGY == "line" else None
-    alpha = trotter_alpha(H_scaled, tight=True)
-    ctx.update(
+    alpha = trotter_alpha(H_scaled, tight=dense)       # tight: sparse 2^N eigsh; else triangle bound (Pauli algebra only)
+    alpha_tri = max(alpha_comm(H_scaled, False, False), alpha_comm(H_scaled, False, True))   # Pauli algebra only
+    ctx.update(alpha_tri=alpha_tri,
         spec=spec, H_qk=H_qk, H_scaled=H_scaled, Hs=Hs, trial_qc=trial_qc,
         trial_vec=trial_vec, psi0_dmrg=psi0_dmrg, psi0_ed=psi0_ed,
         gamma=gamma, gamma_src=gamma_src, g_dmrg=g_dmrg, g_ed=g_ed,
