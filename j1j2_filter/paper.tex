@@ -1,0 +1,1214 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={From DMRG to a Certified Ground State: A Workflow for Stetcu--Baroni Filtering of Matrix-Product Trial States, with Its Accuracy and Gate Cost},
+  pdfauthor={Draft --- authors to be added},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Title}
+\author{Draft --- authors to be added}
+\date{8 October 2026}
+
+\begin{document}
+\maketitle
+
+\hypertarget{abstract}{%
+\subsection{Abstract}\label{abstract}}
+
+Density-matrix renormalisation group (DMRG) calculations give a
+matrix-product state and the low-lying energies of a spin chain
+classically, but a compact trial circuit built from them keeps some
+excited-state weight. The projection filter of Stetcu, Baroni and
+Carlson removes it on a quantum computer using one ancilla, controlled
+time evolution and post-selection. We give a complete workflow around
+this filter, from the DMRG front end to a verified state, and evaluate
+it on the open \(J_1\)--\(J_2\) spin-½ chain for \(N=4\)--\(16\) with
+real DMRG trial states compiled to circuits. The workflow contains a
+certificate: an a-priori bound on the trace distance \(D\) to the exact
+ground state, \(D\le\sqrt{\bar\ell}+\epsilon_T/\sqrt{p_g}\), a leakage
+term plus a Trotter term joined by the triangle inequality. We find that
+(i) DMRG supplies the inputs to \(10^{-8}\) relative accuracy; (ii) the
+certificate is never violated (97 simulated points) and is within
+2.2--5.1\(\times\) of the measured distance, because its leakage term is
+nearly tight, while its Trotter term is 9--77\(\times\) too large; (iii)
+a non-oracle \emph{hybrid} rule (certified leakage plus a measured
+\(n\)-versus-\(2n\) Trotter estimate) met every target (25 of 25 cases)
+with 6--66\(\times\) fewer Trotter steps than the certificate; (iv) the
+certificate fails predictably if the classical inputs are optimistic (a
+gap over-estimated by \(25\%\) already breaks it); and (v) in gates, the
+hybrid filter costs \(3\times10^{2}\)--\(4\times10^{4}\) CX including
+the trial circuit, growing as roughly \(N^{2.5}\)--\(N^{3.1}\), which is
+28--151\(\times\) the cost of preparing the state directly from the MPS
+at the same fidelity. The workflow is therefore a certified,
+reproducible way to use the filter, and a calibrated account of its
+cost, but not a resource advantage on these chains.
+
+\hypertarget{introduction}{%
+\subsection{1. Introduction}\label{introduction}}
+
+A standard hybrid route to a ground state is to run DMRG, compile the
+resulting matrix-product state (MPS) into a shallow circuit, and repair
+the circuit's residual error with a quantum projection step. The
+Stetcu--Baroni--Carlson (SBC) projection {[}1{]}, related to the rodeo
+algorithm {[}2{]}, multiplies the trial state's energy components by a
+filter \(F(E)=\prod_i\cos(Et_i+\phi_i)\) realised with pulses of
+controlled time evolution on a single ancilla. It sits among a family of
+ground-state projectors that use polynomial or Fourier filters of the
+Hamiltonian: phase-estimation-based preparation {[}3{]},
+quantum-eigenvalue-transformation filters {[}4,5{]} and, more generally,
+quantum singular value transformation. The SBC filter trades the optimal
+\(\log(1/\varepsilon)\) scaling of those methods for a
+measurement-based, single-ancilla circuit whose filter can be designed
+and certified classically.
+
+Someone deciding whether to use it needs to know \textbf{what the full
+workflow is, how much of its guarantee is rigorous and how much is
+assumed, and what it costs in gates}. This paper answers those questions
+for one concrete, fully reproducible workflow:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Section 2 specifies the workflow stage by stage, with the classical
+  inputs it consumes and the certificate it produces.
+\item
+  Section 3 describes the experiments. Section 4 reports accuracy: the
+  quality of the DMRG inputs, how tight the certificate is, how the step
+  count should be chosen, how the trial state matters, what happens when
+  inputs are wrong, and how sensitive the result is to design choices.
+\item
+  Section 5 reports cost in CX gates, including the trial circuit, how
+  it scales, and how it compares with preparing the state directly from
+  the MPS.
+\item
+  Section 6 states what the workflow does and does not establish.
+\end{enumerate}
+
+We do not claim a resource advantage; Section 5 shows there is none at
+these sizes.
+
+\hypertarget{the-workflow}{%
+\subsection{2. The workflow}\label{the-workflow}}
+
+\begin{figure}
+\centering
+\includegraphics[width=1\textwidth,height=\textheight]{figs/fig_workflow.png}
+\caption{Figure 1. The workflow.}
+\end{figure}
+
+\textbf{Stage 1 --- classical front end (DMRG).} From a Hamiltonian
+\(H=\sum_gH_g\) (here the bonds of the chain) run DMRG for the
+ground-state energy \(E_0\) and a high-bond-dimension reference MPS,
+DMRG on \(-H\) for the top energy \(E_{\mathrm{top}}\), and DMRG on
+\(H+\lambda|\psi_0\rangle\langle\psi_0|\) with
+\(\lambda=1.1(E_{\mathrm{top}}-E_0)\) for the first excitation \(E_1\)
+(penalty method). Set \(W=E_{\mathrm{top}}-E_0\), \(H_s=(H-E_0)/W\), so
+that \(\operatorname{spec}H_s\subset\{0\}\cup[\Delta,1]\) with
+\(\Delta=(E_1-E_0)/W\).
+
+\textbf{Stage 2 --- trial state.} Run DMRG at a small maximum bond
+dimension \(\chi\) and compile the MPS to a circuit (here exactly, by
+sequential isometries with \texttt{mps-to-circuit}; an approximate
+brickwork compilation is also tested). Estimate the ground-state weight
+\(\gamma=|\langle E_0|\psi\rangle|^2\) as the overlap with the reference
+MPS. If \(1-\gamma\le\varepsilon\) for the target \(\varepsilon\), stop:
+the trial state already suffices.
+
+\textbf{Stage 3 --- filter.} One pulse \((t,\phi)\) applies
+\(\mathsf H_{\mathrm{a}}\,e^{-itH_s\otimes Z_{\mathrm{a}}}\,\mathrm{Rz}_{\mathrm{a}}(2\phi)\,\mathsf H_{\mathrm{a}}\);
+its ancilla-\(|0\rangle\) block is \(\cos(H_st+\phi)\). Keeping outcome
+\(0\) after \(m\) pulses applies
+\(F(E)=\prod_{i=1}^m\cos(Et_i+\phi_i)\), with total time \(T=\sum_it_i\)
+and \(F(0)=\prod_i\cos\phi_i\). Two numbers characterise the filter:
+\(\eta=\sup_{E\in[\Delta,1]}|F(E)|/|F(0)|\) (suppression of excited
+states relative to the ground state) and \(p_g=\gamma F(0)^2\) (a lower
+bound on the success probability). We design \((t_i,\phi_i)\) with
+\texttt{floor.py}, which maximises \(F(0)^2\) subject to a
+\emph{certified} bound on \(\eta\) (interval bisection using
+\(|F'|\le\sum|t_i|\) and \(|F''|\le(\sum|t_i|)^2\)), for a leakage
+budget \(\varepsilon_\ell=\varepsilon/4\).
+
+\textbf{Stage 4 --- Trotterisation and the choice of \(n\).} Each
+controlled evolution is \(k_i\) first-order Lie--Trotter steps over the
+bonds, \(n=\sum_ik_i\), \(t_i=k_i\,dt\). The Trotter error is governed
+by the commutator constant
+\(\alpha=\sum_g\big\|[H_g,\sum_{g'>g}H_{g'}]\big\|\) (the larger of the
+two product orders; the ancilla does not change it). Three rules choose
+\(n\):
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Certified.} The smallest \(n\) with
+  \(\bar D(n)\le\sqrt\varepsilon\), where the \emph{certificate} is
+  \[\boxed{\;D\le\bar D:=\sqrt{\bar\ell}+\frac{\alpha T^2}{2n\sqrt{\gamma F(0)^2}},\qquad\bar\ell=\frac{(1-\gamma)\eta^2}{\gamma+(1-\gamma)\eta^2}\;}\]
+  \(D\) is the trace distance between the implemented and the exact
+  ground state. The first term is \textbf{leakage} (what an exact filter
+  would leave) and depends only on \(\gamma\) and \(\eta\); the second
+  is the \textbf{Trotter} term. Equivalently, infidelity \(\le\bar D^2\)
+  and energy error \(\langle H\rangle-E_0\le W\bar D^2\). The proof
+  (Appendix A) is the triangle inequality for the trace distance plus a
+  leakage lemma and a first-order Trotter lemma.
+\item
+  \textbf{Hybrid.} Keep the rigorous leakage term but replace the
+  worst-case Trotter term by a measured one. For each candidate \(n\) on
+  a geometric grid, run the same filter at \(n\) and \(2n\) steps;
+  because the first-order error scales as \(1/n\), the Trotter distance
+  is \(\approx2D(\tilde\varphi_n,\tilde\varphi_{2n})\). Accept the
+  smallest \(n\) such that
+  \(\sqrt{\bar\ell}+2D(\tilde\varphi_n,\tilde\varphi_{2n})\le\sqrt\varepsilon\)
+  at that grid point and the next. This uses no ground state and is
+  \emph{not} a theorem (it assumes the \(1/n\) regime), but it is what a
+  practitioner can actually evaluate.
+\item
+  \textbf{Measured (oracle).} The smallest \(n\) whose measured \(D\)
+  meets the target. It needs the exact ground state, so it is a
+  reference, not a rule.
+\end{itemize}
+
+\textbf{Stage 5 --- run and check.} Execute the filter; check the
+post-selection rate, which is at least \(p_g\), and, where the energy is
+measurable, \(\langle H\rangle-E_0\le W\bar D^2\). If the device is
+noisy and prepares a mixed state \(\tilde\rho\), the triangle inequality
+adds a noise term:
+\(D(\tilde\rho,g)\le D(\tilde\rho,\tilde\varphi)+\bar D\).
+
+\textbf{What is rigorous and what is assumed.}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Quantity
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Source
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Status
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(E_0\) & DMRG & variational upper bound; accurate to \(\sim10^{-9}\)
+here \\
+\(E_{\mathrm{top}}\), \(W\) & DMRG (or \(W=\tfrac14\sum_gJ_g-E_0\) from
+the bond norms, valid for \(J_g>0\)) & the bond bound is rigorous up to
+the error in \(E_0\); DMRG is accurate but uncertified \\
+\(E_1\), \(\Delta\) & DMRG penalty method & an \emph{upper} bound on
+\(E_1\): the wrong side for a gap lower bound \\
+\(\gamma\) & overlap with a high-\(\chi\) reference MPS & an overlap
+with an approximation of \(|E_0\rangle\) \\
+\(\eta\), \(F(0)\) & interval certificate & rigorous given \(\Delta\) \\
+\(\alpha\) & exact operator norms of commutators & rigorous \\
+leakage and Trotter terms & Lemmas 1 and 2 & rigorous \emph{given} the
+inputs above \\
+\end{longtable}
+
+The certificate is therefore as trustworthy as \(\Delta\) and
+\(\gamma\); Section 4.5 quantifies what happens when they are wrong.
+
+\hypertarget{experiments}{%
+\subsection{3. Experiments}\label{experiments}}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{System.} Open spin-½ \(J_1\)--\(J_2\) chain, \(J_1=1\),
+  \(J_2\in\{0,0.4\}\), \(N\in\{4,6,\dots,16\}\). Bonds are ordered:
+  nearest-neighbour bonds with even then odd left site, then
+  next-nearest-neighbour bonds likewise.
+\item
+  \textbf{Front end.} Two-site DMRG (\texttt{quimb}) with the
+  repository's \texttt{get\_energies.py}; reference MPS up to bond
+  dimension 64. The workflow sees only DMRG quantities. Exact
+  diagonalisation is used afterwards to validate (true ground state,
+  gap, overlap) and to measure distances.
+\item
+  \textbf{Trial state.} DMRG at maximum bond dimension \(\chi=2\) (main
+  experiments), compiled exactly. \(\chi\in\{1,2,4,8\}\) and \(L\)-layer
+  approximate circuits are compared at \(N=8\).
+\item
+  \textbf{Targets.} \(\varepsilon=10^{-1},10^{-2}\) (\(N\le16\)) and
+  \(10^{-3}\) (\(N\le8\)), i.e.~\(D\le0.32,0.1,0.032\).
+\item
+  \textbf{Simulation.} Exact statevector simulation of the Trotterised
+  filter, the ideal filter, and the ground state. A run is simulated
+  only if \(n\times\text{bonds}\times2\times2^N\le1.5\times10^{10}\);
+  the \(N=16\), \(\varepsilon=10^{-2}\) certified circuits are not
+  simulated, and their step counts and CX are reported from the
+  certificate.
+\item
+  \textbf{Cost.} One Trotter step of one pulse (for each bond, the
+  \(XX,YY,ZZ\) rotations tensored with \(Z\) on the ancilla) is
+  transpiled once with qiskit (level 3) to
+  \(\{\mathrm{CX},\mathrm{Rz},\mathrm{H},\mathrm{S}\}\); total CX is
+  trial CX plus \(n\times\) CX per step. All-to-all connectivity unless
+  stated. The trial circuit is the exact \texttt{mps-to-circuit}
+  compilation, transpiled the same way.
+\item
+  \textbf{Direct-preparation baseline.} Preparing the state directly
+  from the MPS: \texttt{mps-to-circuit} sequential (exact) circuits for
+  the reference MPS truncated to \(\chi\in\{1,2,4,8,16\}\), \(L\)-layer
+  approximate circuits (\(L\le8\)), and generic state preparation of the
+  exact ground state (\(N\le12\)). Each is measured against the exact
+  ground state; the baseline for a target \(\varepsilon\) is the
+  cheapest with infidelity \(\le\varepsilon\).
+\end{itemize}
+
+\hypertarget{accuracy}{%
+\subsection{4. Accuracy}\label{accuracy}}
+
+\hypertarget{the-classical-front-end-supplies-the-inputs}{%
+\subsubsection{4.1 The classical front end supplies the
+inputs}\label{the-classical-front-end-supplies-the-inputs}}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 18\tabcolsep) * \real{0.1000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\(N\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(J_2\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(\chi_{\mathrm{ref}}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(|E_0^{\mathrm{DMRG}}-E_0|\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(|E_1^{\mathrm{DMRG}}-E_1|\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(|\Delta^{\mathrm{DMRG}}-\Delta|/\Delta\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(\gamma\) (DMRG-ref.)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(\gamma\) (exact)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+trial CX
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(\alpha\)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+4 & 0.0 & 4 & 2.0e-15 & 6.7e-16 & 4.0e-15 & 0.9541 & 0.9541 & 9 &
+0.155 \\
+6 & 0.0 & 8 & 2.2e-15 & 1.3e-15 & 1.7e-15 & 0.8823 & 0.8823 & 15 &
+0.124 \\
+8 & 0.0 & 16 & 3.1e-15 & 4.4e-16 & 6.7e-15 & 0.7748 & 0.7748 & 21 &
+0.099 \\
+10 & 0.0 & 20 & 4.8e-10 & 2.1e-10 & 8.1e-10 & 0.6713 & 0.6713 & 27 &
+0.082 \\
+12 & 0.0 & 23 & 1.2e-9 & 9.1e-10 & 9.4e-10 & 0.5911 & 0.5911 & 33 &
+0.070 \\
+14 & 0.0 & 31 & 1.8e-9 & 1.8e-9 & 1.3e-10 & 0.5274 & 0.5274 & 39 &
+0.060 \\
+16 & 0.0 & 36 & 2.2e-9 & 2.7e-9 & 2.5e-9 & 0.4750 & 0.4750 & 45 &
+0.053 \\
+4 & 0.4 & 4 & 2.2e-15 & 4.4e-16 & 4.0e-15 & 0.9957 & 0.9957 & 9 &
+0.201 \\
+6 & 0.4 & 8 & 4.4e-15 & 2.0e-15 & 5.0e-15 & 0.9873 & 0.9873 & 15 &
+0.184 \\
+8 & 0.4 & 16 & 5.8e-15 & 6.8e-11 & 1.7e-10 & 0.9755 & 0.9755 & 21 &
+0.153 \\
+10 & 0.4 & 18 & 1.7e-10 & 9.9e-10 & 2.4e-9 & 0.9613 & 0.9613 & 27 &
+0.129 \\
+12 & 0.4 & 28 & 1.0e-9 & 7.3e-10 & 9.5e-10 & 0.9455 & 0.9455 & 33 &
+0.111 \\
+14 & 0.4 & 31 & 1.0e-9 & 1.7e-9 & 2.5e-9 & 0.9286 & 0.9286 & 39 &
+0.097 \\
+16 & 0.4 & 32 & 6.2e-10 & 3.0e-9 & 1.0e-8 & 0.9110 & 0.9110 & 45 &
+0.086 \\
+\end{longtable}
+
+\emph{Table 1.} DMRG-derived inputs against exact diagonalisation.
+\(\chi_{\mathrm{ref}}\) is the bond dimension the reference MPS used.
+
+DMRG reproduces \(E_0\), \(E_1\) and the gap to better than 3e-9
+(absolute) and 1e-8 (relative), and the estimated \(\gamma\) differs
+from the exact overlap by at most 6e-8. At these sizes the certificate
+computed from DMRG inputs is therefore indistinguishable from the one
+computed from exact inputs. This is an empirical statement about
+well-behaved chains, not a guarantee: DMRG does not certify these
+numbers (Section 2) and the penalty \(E_1\) is variationally on the
+unsafe side. Section 4.5 shows what an error of that sign does.
+
+\hypertarget{the-certificate-is-accurate-mostly-because-leakage-is-tight}{%
+\subsubsection{4.2 The certificate is accurate, mostly because leakage
+is
+tight}\label{the-certificate-is-accurate-mostly-because-leakage-is-tight}}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 20\tabcolsep) * \real{0.0909}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 20\tabcolsep) * \real{0.0909}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 20\tabcolsep) * \real{0.0909}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 20\tabcolsep) * \real{0.0909}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 20\tabcolsep) * \real{0.0909}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 20\tabcolsep) * \real{0.0909}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 20\tabcolsep) * \real{0.0909}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 20\tabcolsep) * \real{0.0909}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 20\tabcolsep) * \real{0.0909}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 20\tabcolsep) * \real{0.0909}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 20\tabcolsep) * \real{0.0909}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\(N\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(J_2\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(\gamma\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(\Delta\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(n_{\mathrm{bound}}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(n_{\mathrm{hyb}}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(n_{\mathrm{meas}}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+bound \(\bar D\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(D\) at \(n_{\mathrm{bound}}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+leakage: bound / meas.
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Trotter: bound / meas.
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+4 & 0.0 & 0.954 & 0.278 & 89 & 14 & 8 & 0.099 & 0.024 & 2.2\(\times\) &
+12\(\times\) \\
+6 & 0.0 & 0.882 & 0.131 & 386 & 59 & 23 & 0.100 & 0.042 & 1.2\(\times\)
+& 9\(\times\) \\
+8 & 0.0 & 0.775 & 0.077 & 1,108 & 74 & 47 & 0.100 & 0.045 &
+1.1\(\times\) & 17\(\times\) \\
+10 & 0.0 & 0.671 & 0.050 & 4,182 & 147 & 93 & 0.099 & 0.045 &
+1.1\(\times\) & 32\(\times\) \\
+12 & 0.0 & 0.591 & 0.036 & 7,712 & 231 & 117 & 0.099 & 0.046 &
+1.1\(\times\) & 41\(\times\) \\
+14 & 0.0 & 0.527 & 0.027 & 12,807 & 289 & 147 & 0.100 & 0.045 &
+1.1\(\times\) & 52\(\times\) \\
+16 & 0.0 & 0.475 & 0.021 & 20,198 & 362 & 184 & 0.100 & not simulated &
+-- & -- \\
+4 & 0.4 & 0.996 & 0.274 & -- & -- & -- & -- & 0.066\(^\dagger\) & -- &
+-- \\
+6 & 0.4 & 0.987 & 0.128 & 405 & 47 & 29 & 0.100 & 0.023 & 2.4\(\times\)
+& 10\(\times\) \\
+8 & 0.4 & 0.976 & 0.075 & 1,091 & 74 & 37 & 0.100 & 0.020 &
+2.7\(\times\) & 20\(\times\) \\
+10 & 0.4 & 0.961 & 0.050 & 2,292 & 93 & 59 & 0.100 & 0.021 &
+2.4\(\times\) & 30\(\times\) \\
+12 & 0.4 & 0.945 & 0.036 & 4,121 & 93 & 74 & 0.100 & 0.026 &
+1.9\(\times\) & 39\(\times\) \\
+14 & 0.4 & 0.929 & 0.027 & 6,656 & 147 & 59 & 0.100 & 0.022 &
+2.2\(\times\) & 77\(\times\) \\
+16 & 0.4 & 0.911 & 0.021 & 10,026 & 184 & 93 & 0.100 & not simulated &
+-- & -- \\
+\end{longtable}
+
+\emph{Table 2.} \(\varepsilon=10^{-2}\), \(\chi=2\).
+\(^\dagger\)\(1-\gamma\le\varepsilon\): no filter needed, and the entry
+is the trial state's own distance. \(D\) is at \(n_{\mathrm{bound}}\).
+The last two columns compare the certificate with the measurement, term
+by term.
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Never violated.} Across 97 simulated points (every case at
+  \(n_{\mathrm{bound}}\) plus the \(n\)-sweeps) the total certificate,
+  its leakage term, its Trotter term, the triangle inequality, the
+  energy bound and \(P_{\mathrm{succ}}\ge\gamma F(0)^2\) each held 97
+  out of 97 times. This checks the derivation and the code; the proofs
+  are in Appendix A.
+\item
+  \textbf{Close in total.} At \(n_{\mathrm{bound}}\) the certificate
+  exceeds the measured \(D\) by 2.2--5.1\(\times\) (median
+  3.9\(\times\)).
+\item
+  \textbf{Leakage is nearly tight; Trotter is not.} The leakage term is
+  within 1.1--2.7\(\times\); the Trotter term is 9--77\(\times\) too
+  large and the discrepancy grows with \(N\) (from \(9\times\) at
+  \(N=6\) to \(52\)--\(77\times\) at \(N=14\)), because \(\alpha\) is a
+  worst case over all states. The measured \(D\) at
+  \(n_{\mathrm{bound}}\) is dominated by leakage (0.018--0.046, against
+  a Trotter part of at most 0.006).
+\item
+  \textbf{Scaling in \(n\).} The Trotter certificate and the measured
+  Trotter distance both fall as \(1/n\) (fitted log--log slopes -1.01 to
+  -0.99 and -1.17 to -0.93), so the certificate has the right scaling in
+  \(n\) and is off by a roughly constant factor (Figure 2). The measured
+  total saturates at the leakage floor.
+\item
+  \textbf{Other observables.} The energy bound \(W\bar D^2\) holds but
+  is 21--293\(\times\) above the measured energy error. The success rate
+  matches the lower bound \(\gamma F(0)^2\) to 0.35\% or better, so
+  \(1/(\gamma F(0)^2)\) is an accurate estimate of the repetition
+  overhead.
+\end{itemize}
+
+\begin{figure}
+\centering
+\includegraphics[width=1\textwidth,height=\textheight]{figs/fig_sweep.png}
+\caption{Figure 2. Dependence on \(n\) at fixed design
+(\(\varepsilon=10^{-2}\), \(J_2=0\), \(N=4,6,8,10\) as solid, dashed,
+dotted, dash-dotted). (a) Certificate (blue) and measured distance
+(red). (b) Trotter part only: certificate (blue) and measurement
+(green).}
+\end{figure}
+
+\hypertarget{choosing-n-certified-hybrid-measured}{%
+\subsubsection{\texorpdfstring{4.3 Choosing \(n\): certified, hybrid,
+measured}{4.3 Choosing n: certified, hybrid, measured}}\label{choosing-n-certified-hybrid-measured}}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1111}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1111}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1111}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1111}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1111}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1111}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1111}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1111}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.1111}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\(N\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(J_2\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(\varepsilon\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(n_{\mathrm{bound}}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(n_{\mathrm{hyb}}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(n_{\mathrm{meas}}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(D\) at \(n_{\mathrm{hyb}}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(\sqrt\varepsilon\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+steps saved vs.~certified
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+4 & 0.0 & 0.01 & 89 & 14 & 8 & 0.056 & 0.100 & 6\(\times\) \\
+4 & 0.0 & 0.001 & 380 & 47 & 11 & 0.007 & 0.032 & 8\(\times\) \\
+6 & 0.0 & 0.01 & 386 & 59 & 23 & 0.058 & 0.100 & 7\(\times\) \\
+6 & 0.0 & 0.001 & 2,651 & 184 & 117 & 0.021 & 0.032 & 14\(\times\) \\
+8 & 0.0 & 0.01 & 1,108 & 74 & 47 & 0.065 & 0.100 & 15\(\times\) \\
+8 & 0.0 & 0.001 & 7,577 & 567 & 567 & 0.018 & 0.032 & 13\(\times\) \\
+10 & 0.0 & 0.01 & 4,182 & 147 & 93 & 0.065 & 0.100 & 28\(\times\) \\
+12 & 0.0 & 0.01 & 7,712 & 231 & 117 & 0.063 & 0.100 & 33\(\times\) \\
+14 & 0.0 & 0.01 & 12,807 & 289 & 147 & 0.064 & 0.100 & 44\(\times\) \\
+16 & 0.0 & 0.01 & 20,198 & 362 & 184 & 0.063 & 0.100 & 56\(\times\) \\
+4 & 0.4 & 0.001 & 363 & 37 & 18 & 0.012 & 0.032 & 10\(\times\) \\
+6 & 0.4 & 0.01 & 405 & 47 & 29 & 0.059 & 0.100 & 9\(\times\) \\
+6 & 0.4 & 0.001 & 1,790 & 74 & 23 & 0.009 & 0.032 & 24\(\times\) \\
+8 & 0.4 & 0.01 & 1,091 & 74 & 37 & 0.050 & 0.100 & 15\(\times\) \\
+8 & 0.4 & 0.001 & 4,881 & 74 & 29 & 0.012 & 0.032 & 66\(\times\) \\
+10 & 0.4 & 0.01 & 2,292 & 93 & 59 & 0.056 & 0.100 & 25\(\times\) \\
+12 & 0.4 & 0.01 & 4,121 & 93 & 74 & 0.037 & 0.100 & 44\(\times\) \\
+14 & 0.4 & 0.01 & 6,656 & 147 & 59 & 0.032 & 0.100 & 45\(\times\) \\
+16 & 0.4 & 0.01 & 10,026 & 184 & 93 & 0.037 & 0.100 & 54\(\times\) \\
+\end{longtable}
+
+\emph{Table 3.} The hybrid rule against the certificate and the oracle.
+\(D\) is measured at \(n_{\mathrm{hyb}}\) against the exact ground
+state, which the rule itself never uses.
+
+\begin{itemize}
+\tightlist
+\item
+  The hybrid rule met the target in 25 of 25 cases, with a margin
+  \(\sqrt\varepsilon/D\) of 1.5--4.5\(\times\).
+\item
+  It uses 6--66\(\times\) (median 18\(\times\)) fewer steps than the
+  certificate and only 1.0--4.3\(\times\) (median 2.0\(\times\)) more
+  than the oracle. The gap to the oracle is mostly the coarse geometric
+  grid and the requirement of confirmation at the next grid point.
+\item
+  The n-versus-\(2n\) estimate of the Trotter distance matched the
+  measured one to within {[}0.998, 1.061{]} over 61 sweep points with
+  \(n\ge n_{\mathrm{meas}}\).
+\item
+  The hybrid rule is not a theorem. It assumes the \(1/n\) regime, which
+  held in all runs here, and inherits the assumptions on \(\gamma\) and
+  \(\Delta\) through its leakage term.
+\end{itemize}
+
+Step counts scale with the target roughly as the first-order theory
+predicts for the certificate (\(n\propto\varepsilon^{-1/2}\) at fixed
+filter; observed ratios \(n(10^{-3})/n(10^{-2})\) of \(4\)--\(7\)
+include the tightening of the filter itself):
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\(N\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(J_2\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(n_{\mathrm{bound}}\) (\(\varepsilon=10^{-1}\))
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+(\(10^{-2}\))
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+(\(10^{-3}\))
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+ratio \(10^{-3}/10^{-2}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(n_{\mathrm{hyb}}\) (\(10^{-2}\) / \(10^{-3}\))
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(n_{\mathrm{meas}}\) (\(10^{-2}\) / \(10^{-3}\))
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+4 & 0.0 & -- & 89 & 380 & 4.3 & 14 / 47 & 8 / 11 \\
+6 & 0.0 & 87 & 386 & 2,651 & 6.9 & 59 / 184 & 23 / 117 \\
+8 & 0.0 & 247 & 1,108 & 7,577 & 6.8 & 74 / 567 & 47 / 567 \\
+6 & 0.4 & -- & 405 & 1,790 & 4.4 & 47 / 74 & 29 / 23 \\
+8 & 0.4 & -- & 1,091 & 4,881 & 4.5 & 74 / 74 & 37 / 29 \\
+\end{longtable}
+
+\emph{Table 4.} Certified step counts at three targets, and hybrid and
+measured counts at \(10^{-2}\) and \(10^{-3}\).
+
+\hypertarget{the-choice-of-trial-state}{%
+\subsubsection{4.4 The choice of trial
+state}\label{the-choice-of-trial-state}}
+
+At \(N=8\), \(\varepsilon=10^{-2}\):
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.1429}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\(J_2\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+trial state
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(\gamma\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+trial CX
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(n_{\mathrm{bound}}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+total CX, certified
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+total CX, hybrid
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0.0 & DMRG \(\chi=1\) & 0.1336 & 0 & 8,519 & 417,431 & 5,733 \\
+0.0 & DMRG \(\chi=2\) & 0.7748 & 21 & 1,108 & 54,313 & 3,647 \\
+0.0 & DMRG \(\chi=4\) & 0.9986 & 99 & no filter needed & 99 & 99 \\
+0.0 & DMRG \(\chi=8\) & 1.0000 & 329 & no filter needed & 329 & 329 \\
+0.0 & approx. circuit \(L=1\) & 0.8371 & 21 & 992 & 48,629 & 3,647 \\
+0.0 & approx. circuit \(L=2\) & 0.9195 & 42 & 864 & 42,378 & 2,933 \\
+0.0 & approx. circuit \(L=3\) & 0.9600 & 63 & 749 & 36,764 & 2,366 \\
+0.4 & DMRG \(\chi=1\) & 0.0361 & 0 & 33,636 & 3,060,876 & 21,021 \\
+0.4 & DMRG \(\chi=2\) & 0.9755 & 21 & 1,091 & 99,302 & 6,755 \\
+0.4 & DMRG \(\chi=4\) & 0.9999 & 100 & no filter needed & 100 & 100 \\
+0.4 & DMRG \(\chi=8\) & 1.0000 & 329 & no filter needed & 329 & 329 \\
+0.4 & approx. circuit \(L=1\) & 0.9770 & 21 & 1,075 & 97,846 & 6,755 \\
+0.4 & approx. circuit \(L=2\) & 0.9867 & 42 & 992 & 90,314 & 8,505 \\
+0.4 & approx. circuit \(L=3\) & 0.9927 & 63 & no filter needed & 63 &
+63 \\
+\end{longtable}
+
+\emph{Table 5.} Trial state against total CX (trial plus filter).
+``Approx.'' is the \(L\)-layer \texttt{mps-to-circuit} brickwork
+compilation of the reference MPS.
+
+A better trial state needs a much shorter filter: going from \(\chi=1\)
+(\(\gamma=0.13\) at \(J_2=0\)) to \(\chi=2\) cuts the certified step
+count by \(7.7\times\) (\(31\times\) at \(J_2=0.4\), where \(\chi=1\)
+gives \(\gamma=0.04\)). For \(\chi=4\) the DMRG state already meets the
+target and no filter is needed. A trial state produced by approximate
+compilation behaves like a DMRG state of the same \(\gamma\): the filter
+only sees \(\gamma\).
+
+\hypertarget{when-the-classical-inputs-are-wrong}{%
+\subsubsection{4.5 When the classical inputs are
+wrong}\label{when-the-classical-inputs-are-wrong}}
+
+The certificate assumes \(\Delta\) and \(\gamma\) are known. We design
+and certify with deliberately wrong values and measure the true distance
+(\(N=8\) and \(12\), \(J_2=0\), \(\varepsilon=10^{-2}\)):
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\(N\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+input error
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(n_{\mathrm{bound}}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+claimed \(\bar D\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(\bar D\) with true inputs
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+measured \(D\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+claim violated?
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+target \(\sqrt\varepsilon\) missed?
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+8 & gap -20\% & 1,734 & 0.100 & 0.100 & 0.022 & no & no \\
+8 & gap +0\% & 1,108 & 0.100 & 0.100 & 0.045 & no & no \\
+8 & gap +10\% & 910 & 0.100 & 0.130 & 0.069 & no & no \\
+8 & gap +25\% & 711 & 0.099 & 0.171 & 0.103 & yes & yes \\
+8 & gap +50\% & 488 & 0.100 & 0.229 & 0.151 & yes & yes \\
+8 & gap +100\% & 261 & 0.100 & 0.311 & 0.221 & yes & yes \\
+8 & \(\gamma\) over-estimated (0.831 vs 0.775) & 1,009 & 0.099 & 0.111 &
+0.053 & no & no \\
+8 & \(\gamma\) over-estimated (0.887 vs 0.775) & 910 & 0.100 & 0.128 &
+0.067 & no & no \\
+8 & \(\gamma\) over-estimated (0.944 vs 0.775) & 800 & 0.100 & 0.164 &
+0.100 & yes & yes \\
+12 & gap -20\% & 11,951 & 0.100 & 0.100 & 0.034 & no & no \\
+12 & gap +0\% & 7,712 & 0.099 & 0.099 & 0.046 & no & no \\
+12 & gap +10\% & 6,760 & 0.100 & 0.145 & 0.085 & no & no \\
+12 & gap +25\% & 4,881 & 0.100 & 0.224 & 0.155 & yes & yes \\
+12 & gap +50\% & 3,386 & 0.100 & 0.326 & 0.248 & yes & yes \\
+12 & gap +100\% & 1,902 & 0.100 & 0.456 & 0.368 & yes & yes \\
+12 & \(\gamma\) over-estimated (0.693 vs 0.591) & 7,070 & 0.100 & 0.116
+& 0.056 & no & no \\
+12 & \(\gamma\) over-estimated (0.796 vs 0.591) & 3,570 & 0.100 & 0.139
+& 0.075 & no & no \\
+12 & \(\gamma\) over-estimated (0.898 vs 0.591) & 2,934 & 0.099 & 0.182
+& 0.114 & yes & yes \\
+\end{longtable}
+
+\emph{Table 6.} ``Claimed'' is the certificate computed from the (wrong)
+inputs; ``with true inputs'' recomputes it with the true gap and
+overlap; ``measured'' is the actual distance.
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Under-estimating the gap is safe} (the filter is designed for
+  a wider window and costs more steps).
+\item
+  \textbf{Over-estimating the gap is not.} At \(+10\%\) the claimed
+  bound still holds, but the guaranteed distance with true inputs is
+  already \(30\)--\(45\%\) above the claim; at \(+25\%\) the claim is
+  violated and the target missed at both sizes.
+\item
+  \textbf{Over-estimating \(\gamma\)} behaves the same way, at a
+  threshold that depends on how much of the excited weight is hidden.
+\item
+  This is why the penalty-method \(E_1\), which is an \emph{upper}
+  bound, must be treated with care: in this study it was accurate to
+  \(10^{-8}\), but the workflow should either certify \(\Delta\)
+  independently or design with a deliberately \emph{reduced} gap: a
+  \(20\%\) reduction was safe and cost \(1.55\times\) more steps at both
+  sizes.
+\end{itemize}
+
+\hypertarget{sensitivity-to-design-choices}{%
+\subsubsection{4.6 Sensitivity to design
+choices}\label{sensitivity-to-design-choices}}
+
+At \(N=8\), \(J_2=0\), \(\varepsilon=10^{-2}\), certified \(n\) against
+the leakage share \(\varepsilon_\ell/\varepsilon\) and the number of
+pulses \(m\) (the solver searched \(x=T\Delta/\pi\in\{0.6,1,1.5,2\}\)):
+
+\begin{longtable}[]{@{}llll@{}}
+\toprule\noalign{}
+leakage share \(\varepsilon_\ell/\varepsilon\) & \(m=4\) & \(m=6\) &
+\(m=8\) \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0.05 & infeasible & 1,398 (6 pulses) & 1,398 (8 pulses) \\
+0.1 & infeasible & 1,511 (6 pulses) & 1,511 (8 pulses) \\
+0.25 & infeasible & 1,108 (6 pulses) & 1,124 (8 pulses) \\
+0.5 & infeasible & 1,651 (6 pulses) & 1,651 (8 pulses) \\
+0.75 & infeasible & 3,216 (6 pulses) & 3,216 (8 pulses) \\
+\end{longtable}
+
+\emph{Table 7.} Certified step count against design choices. Four pulses
+are infeasible for this trial state.
+
+The certified \(n\) varies by \(3\times\) (1,108--3,216) over the shares
+tried, with a minimum near the \(1/4\) used elsewhere; six and eight
+pulses are equivalent. The leakage share is the one design parameter
+worth tuning.
+
+\hypertarget{cost}{%
+\subsection{5. Cost}\label{cost}}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 18\tabcolsep) * \real{0.1000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\(N\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(J_2\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+trial CX
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+CX / step
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+filter CX: certified
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+filter CX: hybrid
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+filter CX: measured
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+total, certified
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+total, hybrid
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+best direct MPS prep.
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+4 & 0.0 & 9 & 21 & 1,869 & 294 & 168 & 1,878 & 303 & 11 (generic) \\
+6 & 0.0 & 15 & 35 & 13,510 & 2,065 & 805 & 13,525 & 2,080 & 51
+(generic) \\
+8 & 0.0 & 21 & 49 & 54,292 & 3,626 & 2,303 & 54,313 & 3,647 & 100
+(sequential MPS, \(\chi=4\)) \\
+10 & 0.0 & 27 & 63 & 263,466 & 9,261 & 5,859 & 263,493 & 9,288 & 137
+(sequential MPS, \(\chi=4\)) \\
+12 & 0.0 & 33 & 77 & 593,824 & 17,787 & 9,009 & 593,857 & 17,820 & 173
+(sequential MPS, \(\chi=4\)) \\
+14 & 0.0 & 39 & 91 & 1,165,437 & 26,299 & 13,377 & 1,165,476 & 26,338 &
+210 (sequential MPS, \(\chi=4\)) \\
+16 & 0.0 & 45 & 105 & 2,120,790 & 38,010 & 19,320 & 2,120,835 & 38,055 &
+1,089 (sequential MPS, \(\chi=8\)) \\
+6 & 0.4 & 15 & 63 & 25,515 & 2,961 & 1,827 & 25,530 & 2,976 & 30
+(approx. circuit, \(L=2\)) \\
+8 & 0.4 & 21 & 91 & 99,281 & 6,734 & 3,367 & 99,302 & 6,755 & 63
+(approx. circuit, \(L=3\)) \\
+10 & 0.4 & 27 & 119 & 272,748 & 11,067 & 7,021 & 272,775 & 11,094 & 136
+(sequential MPS, \(\chi=4\)) \\
+12 & 0.4 & 33 & 147 & 605,787 & 13,671 & 10,878 & 605,820 & 13,704 & 173
+(sequential MPS, \(\chi=4\)) \\
+14 & 0.4 & 39 & 175 & 1,164,800 & 25,725 & 10,325 & 1,164,839 & 25,764 &
+210 (sequential MPS, \(\chi=4\)) \\
+16 & 0.4 & 45 & 203 & 2,035,278 & 37,352 & 18,879 & 2,035,323 & 37,397 &
+248 (sequential MPS, \(\chi=4\)) \\
+\end{longtable}
+
+\emph{Table 8.} \(\varepsilon=10^{-2}\), \(\chi=2\), all-to-all
+connectivity. Filter CX is \(n\times\) CX per step; totals add the trial
+circuit. The last column is the cheapest direct preparation of the state
+at infidelity \(\le\varepsilon\) (Section 3).
+
+\begin{figure}
+\centering
+\includegraphics[width=0.65\textwidth,height=\textheight]{figs/fig_cx.png}
+\caption{Figure 3. Total CX against \(N\) for \(\varepsilon=10^{-2}\).}
+\end{figure}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Per step}, CX grows about linearly with the number of bonds
+  (\(N^{1.1}\) at \(J_2=0\)); \(J_2=0.4\) costs about \(1.9\times\) more
+  because it has about twice as many bonds. A line with the ancilla at
+  the end costs 1.4--3.0\(\times\) more than all-to-all.
+\item
+  \textbf{Scaling.} Over \(N=6\)--\(16\), filter CX grows as \(N^{5.3}\)
+  (certified), \(N^{3.1}\) (hybrid) and \(N^{3.2}\) (measured) at
+  \(J_2=0\), and as \(N^{4.5}\), \(N^{2.5}\), \(N^{2.3}\) at
+  \(J_2=0.4\). These are fits to at most six points. The steps
+  themselves scale as \(N^{4.1}\) (certified) and \(N^{2.1}\)
+  (measured), driven by \(T^2\propto\Delta^{-2}\): the scaled gap falls
+  from \(0.28\) to \(0.02\) over \(N=4\)--\(16\).
+\item
+  \textbf{Certified versus hybrid.} The certificate costs
+  6--56\(\times\) (median 28\(\times\)) the hybrid circuit; the hybrid
+  circuit is 1.3--2.6\(\times\) the oracle.
+\item
+  \textbf{Trial circuit.} For \(\chi=2\) it costs \(3(N-1)\) CX,
+  negligible next to the filter.
+\item
+  \textbf{Against direct preparation.} Directly compiling the MPS
+  reaches the same infidelity with \(11\)--\(250\) CX at every size
+  except \(N=16\), \(J_2=0\) (a sequential \(\chi=4\) circuit suffices
+  at most sizes; there the required \(\chi\) rises to \(8\) and the cost
+  to \(1{,}089\) CX). The certified filter costs 171--8,207\(\times\)
+  more, the hybrid filter 28--151\(\times\) more, and even the oracle
+  filter 16--76\(\times\) more. The ratio for the hybrid filter drops
+  where the direct method must double its bond dimension (from about
+  \(125\times\) at \(N=14\) to \(35\times\) at \(N=16\), \(J_2=0\)),
+  because the filter's cost depends on \(1/\Delta^2\) and \(\alpha\) and
+  not on entanglement; but at these sizes it never crosses.
+\end{itemize}
+
+The direct-preparation baselines for each size:
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 14\tabcolsep) * \real{0.1250}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\(N\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(J_2\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+MPS \(\chi=2\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+MPS \(\chi=4\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+MPS \(\chi=8\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+approx. \(L=1\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+approx. \(L=3\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+generic
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+4 & 0.0 & 9 (4.5e-2) & 25 (1.0e-16) & 25 (1.0e-16) & 9 (4.5e-2) & 27
+(1.2e-3) & 11 \\
+4 & 0.4 & 9 (4.1e-3) & 25 (1.0e-16) & 25 (1.0e-16) & 9 (4.1e-3) & 27
+(3.6e-4) & 11 \\
+6 & 0.0 & 15 (1.0e-1) & 62 (3.5e-4) & 139 (1.0e-16) & 15 (1.0e-1) & 45
+(1.9e-2) & 51 \\
+6 & 0.4 & 15 (1.2e-2) & 62 (4.5e-5) & 139 (1.0e-16) & 15 (1.2e-2) & 45
+(3.0e-3) & 57 \\
+8 & 0.0 & 21 (1.6e-1) & 100 (1.2e-3) & 329 (7.2e-7) & 21 (1.6e-1) & 63
+(5.3e-2) & 247 \\
+8 & 0.4 & 21 (2.3e-2) & 100 (1.3e-4) & 329 (1.7e-7) & 21 (2.3e-2) & 63
+(9.7e-3) & 247 \\
+10 & 0.0 & 27 (2.2e-1) & 137 (2.7e-3) & 519 (4.6e-6) & 27 (2.2e-1) & 81
+(9.4e-2) & 1013 \\
+10 & 0.4 & 27 (3.6e-2) & 136 (2.6e-4) & 519 (1.6e-6) & 27 (3.6e-2) & 81
+(1.7e-2) & 1013 \\
+12 & 0.0 & 33 (2.8e-1) & 173 (4.8e-3) & 709 (1.6e-5) & 33 (2.8e-1) & 99
+(1.4e-1) & 4083 \\
+12 & 0.4 & 33 (5.1e-2) & 173 (4.5e-4) & 709 (6.9e-6) & 33 (5.1e-2) & 99
+(2.7e-2) & 4083 \\
+14 & 0.0 & 39 (3.4e-1) & 210 (7.5e-3) & 899 (3.9e-5) & 39 (3.4e-1) & 117
+(2.0e-1) & -- \\
+14 & 0.4 & 39 (6.7e-2) & 210 (7.1e-4) & 899 (1.7e-5) & 39 (6.7e-2) & 117
+(4.4e-2) & -- \\
+16 & 0.0 & 45 (3.9e-1) & 247 (1.1e-2) & 1089 (7.9e-5) & 45 (3.9e-1) &
+135 (2.5e-1) & -- \\
+16 & 0.4 & 45 (8.3e-2) & 248 (1.0e-3) & 1089 (3.0e-5) & 45 (8.3e-2) &
+135 (4.8e-2) & -- \\
+\end{longtable}
+
+\emph{Table 9.} Direct preparation CX (infidelity to the exact ground
+state in parentheses), at \(\chi=2,4,8\), \(L=1,3\) approximate layers,
+and generic preparation (\(N\le12\)).
+
+\hypertarget{discussion}{%
+\subsection{6. Discussion}\label{discussion}}
+
+\textbf{What the workflow gives.} A single procedure from DMRG output to
+a Trotter step count, with a certificate that held on every point
+tested, an explicit statement of which inputs it trusts, and a practical
+hybrid rule that is much cheaper than the certificate and met all
+targets. The certificate's leakage half is tight; its Trotter half is
+the price of a worst-case proof.
+
+\textbf{What it costs.} At \(\varepsilon=10^{-2}\) the hybrid circuit
+costs roughly \(10^3\)--\(4\times10^4\) CX at \(N=6\)--\(16\) against
+\(30\)--\(1{,}100\) for direct MPS preparation. The filter is not
+competitive on these chains.
+
+\textbf{When it could matter.} The filter's cost is set by the gap and
+the commutator constant, not by the state's entanglement; direct
+preparation's cost steps up each time the bond dimension must double.
+The data show the ratio narrowing at one such step (\(N=16\), \(J_2=0\))
+but not crossing. A genuine crossover would need systems where the
+required MPS bond dimension grows quickly with size (critical systems at
+larger \(N\), or two dimensions) and where the filter can be run without
+paying for dense simulation. Neither is tested here.
+
+\textbf{Limitations.}
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{Inputs.} The certificate needs \(\gamma\) and \(\Delta\). Here
+  DMRG supplies them to \(10^{-8}\) and exact diagonalisation validates
+  them (\(N\le16\)). At larger \(N\) there is no validation, and Section
+  4.5 shows the certificate breaks if the gap is optimistic. Certifying
+  \(\Delta\) at large \(N\) is the main open point.
+\item
+  \emph{Models.} Two couplings of one chain.
+\item
+  \emph{Trotter order.} First order only; higher-order formulas would
+  shrink the Trotter term but need a different constant.
+\item
+  \emph{Noise.} Not simulated; the triangle inequality gives an additive
+  noise term.
+\item
+  \emph{Cost model.} CX only, all-to-all (a line costs about
+  \(2\)--\(3\times\) more), no T-count, no synthesis error; the CX per
+  step is for a Heisenberg bond decomposition into three Pauli rotations
+  and is not the cheapest possible.
+\item
+  \emph{Simulation.} Dense statevectors, so the large-\(N\) reach of
+  DMRG is not exercised, and the largest certified circuits are not
+  simulated.
+\item
+  \emph{Hybrid rule.} An empirical rule that assumed the \(1/n\) regime
+  and had 25 test cases.
+\end{itemize}
+
+\textbf{Reproducibility.} All code is in \texttt{simple\_paper/}:
+\texttt{dmrg\_inputs.py} (DMRG front end and trial circuits),
+\texttt{workflow.py} (Hamiltonian, pulses, certificate),
+\texttt{run\_experiments.py} (main grid), \texttt{run\_extras.py} (trial
+states, wrong inputs, design choices, direct-preparation baseline),
+\texttt{resources.py} (CX counts), \texttt{pinsker\_check.py},
+\texttt{make\_report.py}, \texttt{build\_paper.py}; filter design is
+\texttt{j1j2\_filter/floor.py}. They run in a Python 3.12 environment
+with \texttt{numpy}, \texttt{scipy}, \texttt{quimb}, \texttt{qiskit} and
+\texttt{mps-to-circuit}; set \texttt{OMP\_NUM\_THREADS=1} when running
+processes in parallel. The full set (all tables here) runs in one to two
+hours on four cores. Seeds are fixed, including the Lanczos start vector
+used for the exact ground state at \(N\ge12\) (a \(\chi=2\) cut passes
+through degenerate Schmidt values, so \(\gamma\) is otherwise only
+reproducible to the third digit).
+
+\hypertarget{references}{%
+\subsection{References}\label{references}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  I. Stetcu, A. Baroni, J. Carlson, ``Projection algorithm for state
+  preparation on quantum computers,'' \emph{Phys. Rev.~C} \textbf{105},
+  064308 (2022).
+\item
+  K. Choi, D. Lee, J. Bonitati, Z. Qian, J. Watkins, ``Rodeo algorithm
+  for quantum computing,'' \emph{Phys. Rev.~Lett.} \textbf{127}, 040505
+  (2021).
+\item
+  D. Poulin, P. Wocjan, ``Preparing ground states of quantum many-body
+  systems on a quantum computer,'' \emph{Phys. Rev.~Lett.} \textbf{102},
+  130503 (2009).
+\item
+  L. Lin, Y. Tong, ``Near-optimal ground state preparation,''
+  \emph{Quantum} \textbf{4}, 372 (2020).
+\item
+  Y. Dong, L. Lin, Y. Tong, ``Ground-state preparation and energy
+  estimation on early fault-tolerant quantum computers via quantum
+  eigenvalue transformation of unitary matrices,'' \emph{PRX Quantum}
+  \textbf{3}, 040305 (2022).
+\item
+  A. M. Childs, Y. Su, M. C. Tran, N. Wiebe, S. Zhu, ``Theory of Trotter
+  error with commutator scaling,'' \emph{Phys. Rev.~X} \textbf{11},
+  011020 (2021).
+\item
+  C. Schön, E. Solano, F. Verstraete, J. I. Cirac, M. M. Wolf,
+  ``Sequential generation of entangled multiqubit states,'' \emph{Phys.
+  Rev.~Lett.} \textbf{95}, 110503 (2005).
+\item
+  S.-J. Ran, ``Encoding of matrix product states into quantum circuits
+  of one- and two-qubit gates,'' \emph{Phys. Rev.~A} \textbf{101},
+  032310 (2020).
+\item
+  S. R. White, ``Density matrix formulation for quantum renormalization
+  groups,'' \emph{Phys. Rev.~Lett.} \textbf{69}, 2863 (1992); U.
+  Schollwöck, ``The density-matrix renormalization group in the age of
+  matrix product states,'' \emph{Ann. Phys.} \textbf{326}, 96 (2011).
+\item
+  M. A. Nielsen, I. L. Chuang, \emph{Quantum Computation and Quantum
+  Information} (Cambridge University Press, 2000), Ch. 9.
+\item
+  T. M. Cover, J. A. Thomas, \emph{Elements of Information Theory}
+  (Wiley, 2006), Lemma 11.6.1.
+\end{enumerate}
+
+\hypertarget{appendix-a.-proof-of-the-certificate}{%
+\subsection{Appendix A. Derivation of the filter and proof of the
+certificate}\label{appendix-a.-proof-of-the-certificate}}
+ 
+Throughout, \(H_s=(H-E_0)/W\) has eigenpairs
+\(H_s|E_k\rangle=E_k|E_k\rangle\) with \(E_0=0\) and \(E_k\in[\Delta,1]\)
+for \(k\ge1\). The trial state is \(|\psi\rangle=\sum_kc_k|E_k\rangle\)
+with \(\gamma=|c_0|^2\). \(\|\cdot\|\) is the vector 2-norm or the
+operator norm. System states are written first and the ancilla second,
+as in \(H_s\otimes Z_{\mathrm a}\).
+ 
+\subsubsection{A.1 One pulse}
+ 
+A pulse is
+\(\mathcal W(t,\phi)=\mathsf H_{\mathrm a}\,e^{-itH_s\otimes Z_{\mathrm a}}\,\mathrm{Rz}_{\mathrm a}(2\phi)\,\mathsf H_{\mathrm a}\),
+with \(\mathrm{Rz}(2\phi)=\mathrm{diag}(e^{-i\phi},e^{i\phi})\). We follow
+\(|E\rangle|0\rangle_{\mathrm a}\), where \(|E\rangle\) is any eigenstate
+of \(H_s\), through the four gates, applied right to left.
+ 
+\emph{Step 1 (Hadamard).}
+\(|E\rangle|0\rangle\mapsto\tfrac1{\sqrt2}|E\rangle\big(|0\rangle+|1\rangle\big)\).
+ 
+\emph{Step 2 (phase).}
+\(\mapsto\tfrac1{\sqrt2}|E\rangle\big(e^{-i\phi}|0\rangle+e^{i\phi}|1\rangle\big)\).
+ 
+\emph{Step 3 (controlled evolution).} Since
+\((H_s\otimes Z)\,|E\rangle|j\rangle=(-1)^jE\,|E\rangle|j\rangle\), the
+branch \(|0\rangle\) acquires \(e^{-iEt}\) and the branch \(|1\rangle\)
+acquires \(e^{+iEt}\). With \(\theta=Et+\phi\):
+\[\mapsto\tfrac1{\sqrt2}|E\rangle\big(e^{-i\theta}|0\rangle+e^{i\theta}|1\rangle\big).\]
+The two branches have rotated by \(\
+
+\hypertarget{appendix-b.-where-pinskers-inequality-applies}{%
+\subsection{Appendix B. Where Pinsker's inequality
+applies}\label{appendix-b.-where-pinskers-inequality-applies}}
+
+For the target \(|g\rangle\langle g|\) the relative entropy
+\(S(\rho\|\,|g\rangle\langle g|)\) is infinite unless
+\(\rho=|g\rangle\langle g|\), so \(D\le\sqrt{S/2}\) gives nothing here,
+which is why the certificate uses the triangle inequality and fidelity
+instead. Pinsker does apply to the energy-resolved distributions
+\(p_k=|c_k|^2\) (trial) and \(q_k=p_kF(E_k)^2/P_{\mathrm{succ}}\)
+(filtered):
+\(\mathrm{KL}(q\|p)=\sum_kq_k\ln(F(E_k)^2/P_{\mathrm{succ}})\le\ln(1/P_{\mathrm{succ}})\),
+and \(\mathrm{TV}(p,q)\ge q_0-p_0=1-\ell-\gamma\), so with
+\(\mathrm{TV}\le\sqrt{\mathrm{KL}/2}\),
+\[P_{\mathrm{succ}}\le\exp\!\big(-2(1-\ell-\gamma)^2\big).\] This is a
+necessary condition on the post-selection cost, not an error bound. We
+checked it on the 5 \(\varepsilon=10^{-2}\) cases with \(N\le8\) that
+need a filter: every inequality held, but the cap (0.91--1.00) is far
+above the actual \(P_{\mathrm{succ}}\) (0.29--0.93), so it is
+uninformative for these trial states.
+
+\end{document}
