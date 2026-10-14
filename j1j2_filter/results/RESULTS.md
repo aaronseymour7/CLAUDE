@@ -18,10 +18,10 @@ Data present: 66 (N, J2, ε) points, N from 4 to 32; 0 failed point(s).
 
 * **N ≤ 14, guaranteed designs, ε = 10⁻²:** 89–24,051 Trotter steps, 2,004–4,208,964 total CX, T (phys) 1.9–13.3 (1/J1).
 * **Guaranteed versus empirical (oracle):** the guaranteed design uses 22–892× the steps and 21–874× the CX of the smallest n that empirically meets ε (median 153×).
-* **N = 16–32 (DMRG/MPS only, counted not simulated), ε = 10⁻²:** 16,533–664,802 steps, 2.78e+06–2.84e+08 total CX, 3.63e+06–3.66e+08 non-Clifford RZ, T (phys) 7.9–22.1 (converged-DMRG points only; 0 further point(s) have an unconverged excited-state DMRG and are flagged in Section 7).
+* **N = 16–28 (DMRG/MPS only, counted not simulated), ε = 10⁻²:** 16,533–127,714 steps, 2.78e+06–4.74e+07 total CX, 3.63e+06–6.12e+07 non-Clifford RZ, T (phys) 7.9–20.8 (converged-DMRG points only; 0 further point(s) have an unconverged excited-state DMRG and are flagged in Section 7; 1 point(s) designed by the fallback FilterBuilder, marked † there, are excluded from these ranges and from the fits).
 * **Scaling, J2 = 0:** guaranteed total CX ~ N^5.1 (R² 0.996), steps ~ N^4.0, CX per step ~ N^1.1 (fits over N = 6–20).
 * **Scaling, J2 = 0.2411:** guaranteed total CX ~ N^5.5 (R² 0.998), steps ~ N^4.3, CX per step ~ N^1.2 (fits over N = 6–20).
-* **Scaling, J2 = 0.4:** guaranteed total CX ~ N^5.2 (R² 0.990), steps ~ N^4.1, CX per step ~ N^1.1 (fits over N = 6–32).
+* **Scaling, J2 = 0.4:** guaranteed total CX ~ N^5.0 (R² 0.999), steps ~ N^3.8, CX per step ~ N^1.1 (fits over N = 6–28).
 * **Certified bandwidth:** W is 1.63–1.94× E_top − E0, so the scaled gap is that much smaller and T longer than with the exact bandwidth.
 * **Bound violations among simulated points:** 0.
 
@@ -351,7 +351,9 @@ The certificate depends on E0, E1 (through Δ), the DMRG cross-check of E_top, a
 | N | J2 | γ, MPS contraction (no ED, no statevector) | γ, dense overlap with exact ground state | difference |
 |---|---|---|---|---|
 | 16 | 0 | 0.606802310650 | 0.606802312131 | -1.5e-09 |
+| 18 | 0 | 0.554637097041 | 0.554637099565 | -2.5e-09 |
 | 16 | 0.2411 | 0.736784131818 | 0.736784132514 | -7.0e-10 |
+| 16 | 0.4 | 0.916938666774 | 0.916938666766 | +7.8e-12 |
 
 *Table 5c.* γ is the overlap of the DMRG ground state with the trial circuit. The N > 14 path computes it by MPS contraction; the dense value is for checking only.
 
@@ -422,7 +424,9 @@ N ≥ 16 is **DMRG/MPS only**: γ is the DMRG-MPS overlap of the trial circuit, 
 | 20 | 0.4 | 0.8833 | 0.0074 | 27.24 | 0.0389 | 8 | 42,636 | 320.5 | 11.77 | 57 | 11,042,724 | 11,042,781 | 33,981,266 | 14,283,421 | 33,981,214 | 45,834,123 | 0.717 | 9.89e-03 | 21,602,297 | yes |
 | 24 | 0.4 | 0.8491 | 0.0053 | 32.96 | 0.0326 | 8 | 77,984 | 355.4 | 10.78 | 69 | 24,564,960 | 24,565,029 | 75,566,943 | 31,739,928 | 75,566,882 | 101,925,599 | 0.540 | 9.64e-03 | 95,972,378 | yes |
 | 28 | 0.4 | 0.8153 | 0.0040 | 38.68 | 0.0280 | 8 | 127,714 | 467.0 | 12.07 | 81 | 47,381,894 | 47,381,975 | 145,722,201 | 61,175,518 | 145,722,124 | 196,552,444 | 0.416 | 9.88e-03 | 255,300,367 | yes |
-| 32 | 0.4 | 0.7823 | 0.0032 | 44.40 | 0.0246 | 9 | 664,802 | 983.4 | 22.15 | 93 | 283,870,454 | 283,870,547 | 872,885,631 | 366,306,489 | 872,885,542 | 1,177,365,029 | 0.704 | 1.00e-02 | 1,689,040,374 | yes |
+| 32 | 0.4 | 0.7823 | 0.0032 | 44.40 | 0.0246 | 9 | 664,802 † | 983.4 | 22.15 | 93 | 283,870,454 | 283,870,547 | 872,885,631 | 366,306,489 | 872,885,542 | 1,177,365,029 | 0.704 | 1.00e-02 | 1,689,040,374 | yes |
+
+† The floor solver (≤ 8 pulses, t_max = T/2) found no feasible filter for this γ and ε, so the design fell back to the generic minimax FilterBuilder (up to 15 pulses, x not optimized). It is a valid certified design but far from the trend; do not read scaling from it.
 
 **Guaranteed designs, ε = 0.1**
 
@@ -502,14 +506,14 @@ N ≥ 16 is **DMRG/MPS only**: γ is the DMRG-MPS overlap of the trial circuit, 
 | CX total | 0.2411 | dmrg | 6–20 | 5.48 | 0.998 | 8 |
 | RZ non-Cliff. total | 0.2411 | dmrg | 6–20 | 5.46 | 0.998 | 8 |
 | depth total | 0.2411 | dmrg | 6–20 | 5.47 | 0.998 | 8 |
-| n (steps) | 0.4 | dmrg | 6–32 | 4.11 | 0.983 | 11 |
-| T (scaled) | 0.4 | dmrg | 6–32 | 2.29 | 0.986 | 11 |
-| CX per step | 0.4 | dmrg | 6–32 | 1.13 | 0.999 | 11 |
-| CX total | 0.4 | dmrg | 6–32 | 5.24 | 0.990 | 11 |
-| RZ non-Cliff. total | 0.4 | dmrg | 6–32 | 5.23 | 0.990 | 11 |
-| depth total | 0.4 | dmrg | 6–32 | 5.24 | 0.990 | 11 |
+| n (steps) | 0.4 | dmrg | 6–28 | 3.83 | 0.998 | 10 |
+| T (scaled) | 0.4 | dmrg | 6–28 | 2.22 | 0.985 | 10 |
+| CX per step | 0.4 | dmrg | 6–28 | 1.14 | 0.999 | 10 |
+| CX total | 0.4 | dmrg | 6–28 | 4.98 | 0.999 | 10 |
+| RZ non-Cliff. total | 0.4 | dmrg | 6–28 | 4.96 | 0.999 | 10 |
+| depth total | 0.4 | dmrg | 6–28 | 4.97 | 0.999 | 10 |
 
-*Table 7.* Power-law fits of guaranteed-design quantities (ε = 10⁻²) over points with converged DMRG and a feasible certified design. Few points: indicative, not asymptotic.
+*Table 7.* Power-law fits of guaranteed-design quantities (ε = 10⁻²) over points with converged DMRG and a certified design from the floor solver (fallback-builder points, marked † in Section 7, are excluded). Few points: indicative, not asymptotic.
 
 ## 8. Dependence on the target ε
 

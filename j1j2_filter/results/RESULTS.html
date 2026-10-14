@@ -101,18 +101,20 @@ Trotter steps, 2,004–4,208,964 total CX, T (phys) 1.9–13.3 (1/J1).</li>
 <li><strong>Guaranteed versus empirical (oracle):</strong> the
 guaranteed design uses 22–892× the steps and 21–874× the CX of the
 smallest n that empirically meets ε (median 153×).</li>
-<li><strong>N = 16–32 (DMRG/MPS only, counted not simulated), ε =
-10⁻²:</strong> 16,533–664,802 steps, 2.78e+06–2.84e+08 total CX,
-3.63e+06–3.66e+08 non-Clifford RZ, T (phys) 7.9–22.1 (converged-DMRG
+<li><strong>N = 16–28 (DMRG/MPS only, counted not simulated), ε =
+10⁻²:</strong> 16,533–127,714 steps, 2.78e+06–4.74e+07 total CX,
+3.63e+06–6.12e+07 non-Clifford RZ, T (phys) 7.9–20.8 (converged-DMRG
 points only; 0 further point(s) have an unconverged excited-state DMRG
-and are flagged in Section 7).</li>
+and are flagged in Section 7; 1 point(s) designed by the fallback
+FilterBuilder, marked † there, are excluded from these ranges and from
+the fits).</li>
 <li><strong>Scaling, J2 = 0:</strong> guaranteed total CX ~ N^5.1 (R²
 0.996), steps ~ N^4.0, CX per step ~ N^1.1 (fits over N = 6–20).</li>
 <li><strong>Scaling, J2 = 0.2411:</strong> guaranteed total CX ~ N^5.5
 (R² 0.998), steps ~ N^4.3, CX per step ~ N^1.2 (fits over N =
 6–20).</li>
-<li><strong>Scaling, J2 = 0.4:</strong> guaranteed total CX ~ N^5.2 (R²
-0.990), steps ~ N^4.1, CX per step ~ N^1.1 (fits over N = 6–32).</li>
+<li><strong>Scaling, J2 = 0.4:</strong> guaranteed total CX ~ N^5.0 (R²
+0.999), steps ~ N^3.8, CX per step ~ N^1.1 (fits over N = 6–28).</li>
 <li><strong>Certified bandwidth:</strong> W is 1.63–1.94× E_top − E0, so
 the scaled gap is that much smaller and T longer than with the exact
 bandwidth.</li>
@@ -3644,11 +3646,25 @@ dense value</strong></p>
 <td>-1.5e-09</td>
 </tr>
 <tr class="even">
+<td>18</td>
+<td>0</td>
+<td>0.554637097041</td>
+<td>0.554637099565</td>
+<td>-2.5e-09</td>
+</tr>
+<tr class="odd">
 <td>16</td>
 <td>0.2411</td>
 <td>0.736784131818</td>
 <td>0.736784132514</td>
 <td>-7.0e-10</td>
+</tr>
+<tr class="even">
+<td>16</td>
+<td>0.4</td>
+<td>0.916938666774</td>
+<td>0.916938666766</td>
+<td>+7.8e-12</td>
 </tr>
 </tbody>
 </table>
@@ -4372,7 +4388,7 @@ included for continuity.</p>
 <td>44.40</td>
 <td>0.0246</td>
 <td>9</td>
-<td>664,802</td>
+<td>664,802 †</td>
 <td>983.4</td>
 <td>22.15</td>
 <td>93</td>
@@ -4389,6 +4405,11 @@ included for continuity.</p>
 </tr>
 </tbody>
 </table>
+<p>† The floor solver (≤ 8 pulses, t_max = T/2) found no feasible filter
+for this γ and ε, so the design fell back to the generic minimax
+FilterBuilder (up to 15 pulses, x not optimized). It is a valid
+certified design but far from the trend; do not read scaling from
+it.</p>
 <p><strong>Guaranteed designs, ε = 0.1</strong></p>
 <table style="width:100%;">
 <colgroup>
@@ -5303,61 +5324,62 @@ sits.</p>
 <td>n (steps)</td>
 <td>0.4</td>
 <td>dmrg</td>
-<td>6–32</td>
-<td>4.11</td>
-<td>0.983</td>
-<td>11</td>
+<td>6–28</td>
+<td>3.83</td>
+<td>0.998</td>
+<td>10</td>
 </tr>
 <tr class="even">
 <td>T (scaled)</td>
 <td>0.4</td>
 <td>dmrg</td>
-<td>6–32</td>
-<td>2.29</td>
-<td>0.986</td>
-<td>11</td>
+<td>6–28</td>
+<td>2.22</td>
+<td>0.985</td>
+<td>10</td>
 </tr>
 <tr class="odd">
 <td>CX per step</td>
 <td>0.4</td>
 <td>dmrg</td>
-<td>6–32</td>
-<td>1.13</td>
+<td>6–28</td>
+<td>1.14</td>
 <td>0.999</td>
-<td>11</td>
+<td>10</td>
 </tr>
 <tr class="even">
 <td>CX total</td>
 <td>0.4</td>
 <td>dmrg</td>
-<td>6–32</td>
-<td>5.24</td>
-<td>0.990</td>
-<td>11</td>
+<td>6–28</td>
+<td>4.98</td>
+<td>0.999</td>
+<td>10</td>
 </tr>
 <tr class="odd">
 <td>RZ non-Cliff. total</td>
 <td>0.4</td>
 <td>dmrg</td>
-<td>6–32</td>
-<td>5.23</td>
-<td>0.990</td>
-<td>11</td>
+<td>6–28</td>
+<td>4.96</td>
+<td>0.999</td>
+<td>10</td>
 </tr>
 <tr class="even">
 <td>depth total</td>
 <td>0.4</td>
 <td>dmrg</td>
-<td>6–32</td>
-<td>5.24</td>
-<td>0.990</td>
-<td>11</td>
+<td>6–28</td>
+<td>4.97</td>
+<td>0.999</td>
+<td>10</td>
 </tr>
 </tbody>
 </table>
 <p><em>Table 7.</em> Power-law fits of guaranteed-design quantities (ε =
-10⁻²) over points with converged DMRG and a feasible certified design.
-Few points: indicative, not asymptotic.</p>
+10⁻²) over points with converged DMRG and a certified design from the
+floor solver (fallback-builder points, marked † in Section 7, are
+excluded). Few points: indicative, not asymptotic.</p>
 <h2 id="dependence-on-the-target-ε">8. Dependence on the target ε</h2>
 <p><strong>N = 6, J2 = 0</strong></p>
 <table>

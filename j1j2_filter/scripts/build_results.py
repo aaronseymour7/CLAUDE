@@ -54,6 +54,11 @@ def ok(d):
     return d is not None and "n" in d
 
 
+def from_floor(r):
+    """True if the guaranteed design came from the precision-targeted floor solver (not the fallback FilterBuilder)."""
+    return r["design"]["source"] in ("floor", "none")
+
+
 # ------------------------------------------------------------------ formatting
 def f(x, spec=".3g", dash="–"):
     if x is None or (isinstance(x, float) and not np.isfinite(x)):
@@ -354,7 +359,7 @@ for eps in (EPS_MAIN, 1e-1):
                 continue
             i, c = r["inputs"], tot(d)
             rows.append([N, jl(J2), f(i["gamma"], ".4f"), f(i["gap_scaled"], ".4f"), f(i["W"], ".2f"), f(i["alpha"], ".4f"),
-                         d["n_pulses_used"], f(d["n"], "int"), f(d["T_scaled"], ".1f"), f(d["T_phys"], ".2f"),
+                         d["n_pulses_used"], f(d["n"], "int") + ("" if from_floor(r) else " †"), f(d["T_scaled"], ".1f"), f(d["T_phys"], ".2f"),
                          f(i["trial_cost"]["cx"], "int"), f(fil(d)["cx"], "int"), f(c["cx"], "int"), f(c["rz"], "int"),
                          f(c["rz_nonclifford"], "int"), f(c["h"], "int"), f(c["depth"], "int"),
                          f(d["p_succ_lb"], ".3f"), f(d["eps_bound"], ".2e"), f(tot(d, "line")["cx"], "int"), conv_str(r)])
@@ -364,6 +369,10 @@ for eps in (EPS_MAIN, 1e-1):
         A(md(hd, rows))
         csv_dump(f"large_guaranteed_eps{eps:g}.csv", hd, rows)
         A("")
+        if any(" †" in str(row[7]) for row in rows):
+            A("† The floor solver (≤ 8 pulses, t_max = T/2) found no feasible filter for this γ and ε, so the design fell back to the generic minimax FilterBuilder "
+              "(up to 15 pulses, x not optimized). It is a valid certified design but far from the trend; do not read scaling from it.")
+            A("")
 rows, hd = [], ["N", "J2", "kᵢ (guaranteed)", "largest block kmax", "CX in largest block"]
 for J2 in J2_ORDER:
     for N in Nl:
@@ -420,7 +429,7 @@ metrics = [("n (steps)", lambda r, d: d["n"]), ("T (scaled)", lambda r, d: d["T_
 for src, Nrange in (("dmrg", (6, 32)),):
     for J2 in J2_ORDER:
         pts = [(N, one(src, N, J2, EPS_MAIN)) for N in range(Nrange[0], Nrange[1] + 1, 2)]
-        pts = [(N, r, D(r, "guaranteed")) for N, r in pts if r is not None and ok(D(r, "guaranteed")) and r["inputs"].get("dmrg_converged", True)]
+        pts = [(N, r, D(r, "guaranteed")) for N, r in pts if r is not None and ok(D(r, "guaranteed")) and r["inputs"].get("dmrg_converged", True) and from_floor(r)]
         for name, fn in metrics:
             if len(pts) >= 3:
                 fr = fit([N for N, _, _ in pts], [fn(r, d) for N, r, d in pts])
@@ -430,7 +439,7 @@ if rows:
     A(md(hd, rows))
     csv_dump("scaling_fits.csv", hd, rows)
     A("")
-    A("*Table 7.* Power-law fits of guaranteed-design quantities (ε = 10⁻²) over points with converged DMRG and a feasible certified design. Few points: indicative, not asymptotic.")
+    A("*Table 7.* Power-law fits of guaranteed-design quantities (ε = 10⁻²) over points with converged DMRG and a certified design from the floor solver (fallback-builder points, marked † in Section 7, are excluded). Few points: indicative, not asymptotic.")
     A("")
 
 # ------------------------------------------------------------------ 7 eps scan
@@ -573,7 +582,8 @@ S = ["## Summary", ""]
 g_small = [(r, D(r, "guaranteed"), D(r, "empirical")) for r in sel("dmrg", eps=EPS_MAIN) if r["N"] <= 14]
 g_small = [(r, g, e) for r, g, e in g_small if ok(g)]
 g_large_all = [(r, D(r, "guaranteed")) for r in sel("dmrg", eps=EPS_MAIN) if r["N"] > 14 and ok(D(r, "guaranteed"))]
-g_large = [(r, g) for r, g in g_large_all if r["inputs"].get("dmrg_converged", True)]
+g_large = [(r, g) for r, g in g_large_all if r["inputs"].get("dmrg_converged", True) and from_floor(r)]
+n_fallback = sum(1 for r, _ in g_large_all if not from_floor(r))
 if g_small:
     ns = [g["n"] for _, g, _ in g_small]
     cxs = [tot(g)["cx"] for _, g, _ in g_small]
@@ -588,12 +598,12 @@ if g_small:
                  f"{f(min(rc), '.0f')}–{f(max(rc), '.0f')}× the CX of the smallest n that empirically meets ε (median {f(float(np.median(rc)), '.0f')}×).")
 if g_large:
     cxs = [tot(g)["cx"] for _, g in g_large]
-    nunc = len(g_large_all) - len(g_large)
+    nunc = sum(1 for r, _ in g_large_all if not r["inputs"].get("dmrg_converged", True))
     S.append(f"* **N = {min(r['N'] for r, _ in g_large)}–{max(r['N'] for r, _ in g_large)} (DMRG/MPS only, counted not simulated), ε = 10⁻²:** {f(min(g['n'] for _, g in g_large), 'int')}–"
              f"{f(max(g['n'] for _, g in g_large), 'int')} steps, {min(cxs):.2e}–{max(cxs):.2e} total CX, "
              f"{min(tot(g)['rz_nonclifford'] for _, g in g_large):.2e}–{max(tot(g)['rz_nonclifford'] for _, g in g_large):.2e} non-Clifford RZ, "
              f"T (phys) {f(min(g['T_phys'] for _, g in g_large), '.1f')}–{f(max(g['T_phys'] for _, g in g_large), '.1f')} "
-             f"(converged-DMRG points only; {nunc} further point(s) have an unconverged excited-state DMRG and are flagged in Section 7).")
+             f"(converged-DMRG points only; {nunc} further point(s) have an unconverged excited-state DMRG and are flagged in Section 7; {n_fallback} point(s) designed by the fallback FilterBuilder, marked † there, are excluded from these ranges and from the fits).")
 for J2 in J2_ORDER:
     k = ("CX total", J2, "dmrg")
     if k in FITS:
