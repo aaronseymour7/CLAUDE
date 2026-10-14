@@ -85,6 +85,15 @@ $W\ge E_{\rm top}-E_0$ and $\operatorname{spec}(\Hs)\subset[0,1]$ without needin
 that $W$ is $1.6$--$1.9\times$ larger than $E_{\rm top}-E_0$ on the J1--J2 chain (measured), shrinking the scaled gap by the
 same factor. Code: \code{core/spectrum.py: get\_spectrum}.
 
+\paragraph{Why not the DMRG bandwidth.} DMRG on $H$ is variational, so $E_0^{\rm DMRG}\ge E_0$; DMRG on $-H$ gives
+$E_{\rm top}^{\rm DMRG}\le E_{\rm top}$. Hence
+\[
+  W_{\rm DMRG}=E_{\rm top}^{\rm DMRG}-E_0^{\rm DMRG}\;\le\;E_{\rm top}-E_0\;\le\;W ,
+\]
+so the DMRG bandwidth can only err downward, which would let $\operatorname{spec}(\Hs)$ exceed $1$ and invalidate the
+certificate. The Pauli bound \eqref{eq:W} is a true upper bound independent of DMRG, so it is used (the code takes
+$\max(W_{\rm cert},E_{\rm top}^{\rm DMRG}-E_0^{\rm DMRG})$).
+
 \paragraph{Chosen value: the scaled gap.} $\Delta=(E_1-E_0)/W$, with $E_1$ the lowest energy of \emph{any} symmetry
 sector other than the ground state. This matters near the BKT point $J_2^c\approx0.2411$~\cite{eggert,okamoto}: the first
 excitation is a triplet for $J_2<J_2^c$ but can be a singlet in the dimerized phase.
@@ -340,7 +349,7 @@ Bound on $\eta$ & Rigorous given $[\Delta,1]$ & second-derivative branch and bou
 Trotter bound $\alpha t^2/2k$ & Rigorous & commutator bound with exact $\alpha$\\
 Combination \eqref{eq:star} & Rigorous & Sec.~\ref{sec:combine}\\
 $\gamma$ & \textbf{Assumption} & DMRG/MPS overlap, not a lower bound on $\abs{\braket g\psi}^2$\\
-$\Delta$ & \textbf{Assumption} & DMRG $E_1-E_0$; a variational excited energy is an upper bound on $E_1$, the unsafe direction\\
+$\Delta$ & \textbf{Assumption} & DMRG $E_1-E_0$; $E_1^{\rm DMRG}\ge E_1$ and $E_0^{\rm DMRG}\ge E_0$ are both upper bounds, so the sign of the error in their difference is not guaranteed\\
 DMRG $E_0$ as the exact shift & \textbf{Assumption} & accurate to $\sim10^{-13}$ for $N\le20$\\
 $T$-count constant $+9.2$ & Unverified & used only for fault-tolerant estimates\\
 \bottomrule
