@@ -146,13 +146,18 @@ reported runs take it to be zero (Section~\ref{sec:thm}).
 
 \paragraph{Chosen value: the bandwidth.}
 \begin{equation}\label{eq:W}
-  W \;=\; c_I+\sum_\beta\abs{c_\beta}-E_0 .
+  W \;=\; \sum_{b}\lambda_{\max}(h_b)\;-\;E_0,\qquad \lambda_{\max}(J\,\mathbf S\!\cdot\!\mathbf S)=\begin{cases}J/4,&J\ge0\\ 3\abs J/4,&J<0,\end{cases}
 \end{equation}
-\emph{Derivation.} For any Pauli sum, $\norm{H-c_I}\le\sum_\beta\abs{c_\beta}\norm{P_\beta}=\sum_\beta\abs{c_\beta}$ by the
-triangle inequality, since Pauli strings have norm $1$. Hence $E_{\rm top}\le c_I+\sum_\beta\abs{c_\beta}$, so
-$W\ge E_{\rm top}-E_0$ and $\operatorname{spec}(\Hs)\subset[0,1]$ without needing the DMRG value of $E_{\rm top}$. The price is
-that $W$ is $1.6$--$1.9\times$ larger than $E_{\rm top}-E_0$ on the J1--J2 chain (measured), shrinking the scaled gap by the
-same factor. Code: \code{core/spectrum.py: get\_spectrum}.
+summed over the $N-1$ nearest-neighbour and $N-2$ next-nearest-neighbour bonds, i.e.\ $W=(N-1)J_1/4+(N-2)J_2/4-E_0$ for $J_1,J_2\ge0$.
+\emph{Derivation.} By Weyl's inequality $\lambda_{\max}(A+B)\le\lambda_{\max}(A)+\lambda_{\max}(B)$, so
+$E_{\rm top}\le\sum_b\lambda_{\max}(h_b)$, hence $W\ge E_{\rm top}-E_0$ and $\operatorname{spec}(\Hs)\subset[0,1]$ without any DMRG value for
+$E_{\rm top}$. For $J_1,J_2\ge0$ the bound is attained by the fully polarized state ($\mathbf S_i\!\cdot\!\mathbf S_j=\tfrac14$ on every bond), so
+$W=E_{\rm top}-E_0$ exactly; the DMRG value agrees with it to $\lesssim10^{-13}$ in all cases run. (An earlier version used the looser Pauli bound
+$\sum_\beta\abs{c_\beta}-E_0$, which is $1.6$--$1.9\times$ larger because it counts $3/4$ rather than $1/4$ per bond at the top of the spectrum.)
+
+\paragraph{The bandwidth does not change $n$ or the physical time.} With $\alpha_{\rm scaled}=\alpha/W^2$ and $T_{\rm scaled}=x\pi W/g$ ($g=E_1-E_0$ the unscaled gap),
+$n\propto\alpha_{\rm scaled}T_{\rm scaled}^2=\alpha\,x^2\pi^2/g^2$ and $T_{\rm phys}=T_{\rm scaled}/W=x\pi/g$ are independent of $W$. A larger $W$ only widens
+the suppression window $[\Delta,1]$ beyond the occupied spectrum, which can slightly increase the certified $\eta$.
 
 \paragraph{Why not the DMRG bandwidth.} DMRG on $H$ is variational, so $E_0^{\rm DMRG}\ge E_0$; DMRG on $-H$ gives
 $E_{\rm top}^{\rm DMRG}\le E_{\rm top}$. Hence
@@ -160,7 +165,7 @@ $E_{\rm top}^{\rm DMRG}\le E_{\rm top}$. Hence
   W_{\rm DMRG}=E_{\rm top}^{\rm DMRG}-E_0^{\rm DMRG}\;\le\;E_{\rm top}-E_0\;\le\;W ,
 \]
 so the DMRG bandwidth can only err downward, which would let $\operatorname{spec}(\Hs)$ exceed $1$ and invalidate the
-certificate. The Pauli bound \eqref{eq:W} is a true upper bound independent of DMRG, so it is used (the code takes
+certificate. The Weyl bound \eqref{eq:W} is a true upper bound independent of DMRG, so it is used (the code takes
 $\max(W_{\rm cert},E_{\rm top}^{\rm DMRG}-E_0^{\rm DMRG})$).
 
 \paragraph{Chosen value: the scaled gap.} $\Delta=(E_1-E_0)/W$, with $E_1$ the lowest energy of \emph{any} symmetry
@@ -425,7 +430,7 @@ Code: \code{core/resources.py}, \code{pipeline.py: per\_step\_costs, costs, meas
 \toprule
 Ingredient & Status & Notes\\
 \midrule
-$\operatorname{spec}(\Hs)\le1$ & Rigorous & triangle inequality on the Pauli sum (Sec.~\ref{sec:scale})\\
+$\operatorname{spec}(\Hs)\le1$ & Rigorous & Weyl's inequality on the bond terms (Sec.~\ref{sec:scale})\\
 Pulse implements $\cos(\Hs t+\varphi)$ & Rigorous & algebra, also checked numerically\\
 Leakage \eqref{eq:leak}, $P_{\rm succ}\ge\gamma F(0)^2$ & Rigorous given the window and $\gamma$ & Sec.~\ref{sec:filter}--\ref{sec:leak}\\
 Bound on $\eta$ & Numerically verified & second-derivative branch and bound in double precision; no interval arithmetic (Sec.~\ref{sec:cert})\\

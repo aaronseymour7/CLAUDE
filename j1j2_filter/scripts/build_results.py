@@ -112,8 +112,8 @@ A("* **Two designs per case.** *Guaranteed* = smallest n whose a-priori rigorous
   "uses the exact ground state, so it is an oracle lower envelope, not something a practitioner can know in advance; "
   "it needs simulation and is therefore only available for N ≤ 14.")
 A("* **Everything uses the DMRG spectrum.** E0, E1 (orthogonality-penalty DMRG: lowest state of any symmetry orthogonal to ψ0) and E_top from DMRG; the bandwidth is the **certified** "
-  "W = (c_I + Σ|c_β|) − E0, which is 1.6–1.9× larger than E_top − E0 here (XX+YY+ZZ is bounded term by term), so the scaled gap "
-  "is smaller and T longer (Section 6). The DMRG gap, shift and γ are not certified: every guarantee below is a *conditional certificate* (exact only if the DMRG reference is exact; see `CERTIFICATION.tex`, Section 1 and Section 12).")
+  "W = Σ_bonds λmax(bond) − E0 (Weyl's inequality: λmax of a sum ≤ sum of λmax; a bond J S·S has λmax = J/4), which equals E_top − E0 for J1, J2 ≥ 0 "
+  "because the fully polarized state attains it (Section 6). The DMRG gap, shift and γ are not certified: every guarantee below is a *conditional certificate* (exact only if the DMRG reference is exact; see `CERTIFICATION.tex`, Section 1 and Section 12).")
 A("* **N ≤ 14 versus N > 14.** For N ≤ 14 an exact-diagonalisation cross-check and statevector simulation of the filter are available: "
   "γ is the overlap with the ED ground state, and measured 1−F, P_succ and the state error are reported. "
   "For **N > 14 there is no ED, no statevector and no dense or sparse 2^N operator**: γ is the overlap of the DMRG MPS with the "
@@ -162,8 +162,7 @@ A("*Table 1.* The energies are DMRG values (10 digits); `|E0−E0(ED)|`, `|E1−
   "*DMRG converged*: the ground-state, top-state and orthogonality-penalty excited-state DMRG runs each reached the sweep tolerance within 100 sweeps; "
   "a **NO** means that quantity (for the excited state, E1 and hence the gap Δ) is not converged and the design is only indicative. "
   "*E1 method*: `local` = projector penalty λ|ψ0⟩⟨ψ0| applied as a rank-1 term in every two-site local problem, giving the lowest state of any symmetry (checked against ED in Section 5). "
-  "Trial circuit = L = 1 approximate brickwork circuit from the DMRG MPS. α is in scaled units: the exact commutator sum Σ_g‖[H_g, Σ_{g'>g}H_g']‖ for every N (computed on the local support of each term). W is the certified bandwidth; the scaled gap Δ = (E1−E0)/W "
-  "is correspondingly 1.6–1.9× smaller than with the exact bandwidth.")
+  "Trial circuit = L = 1 approximate brickwork circuit from the DMRG MPS. α is in scaled units: the exact commutator sum Σ_g‖[H_g, Σ_{g'>g}H_g']‖ for every N (computed on the local support of each term). W is the certified (Weyl) bandwidth, which coincides with E_top − E0 here, so Δ = (E1−E0)/W is the exact scaled gap.")
 A("")
 rows, hd = [], ["N", "J2", "α (exact commutator sum)", "α triangle (diagnostic)", "triangle / exact"]
 for J2 in J2_ORDER:
@@ -322,27 +321,34 @@ if gm:
     A("*Table 5c.* γ is the overlap of the DMRG ground state with the trial circuit. The N > 14 path computes it by MPS contraction; the dense value is for checking only.")
     A("")
 
-A("## 6. Effect of the certified bandwidth")
+A("## 6. The certified bandwidth")
 A("")
-A("The certified bandwidth W = (c_I + Σ|c_β|) − E0 is a rigorous upper bound on E_top − E0 that does not rely on DMRG's E_top. "
-  "It is larger than E_top − E0 (ratio in Table 1, column *W / (E_top−E0)*), which shrinks the scaled gap Δ = (E1−E0)/W, lengthens the "
-  "total scaled time T ≈ xπ/Δ and multiplies the step count n ∝ α T². In physical units (1/J1) T is unchanged by the choice of W only "
-  "if the filter window could use the exact bandwidth; here the window [Δ, 1] is wider than needed.")
+A("The scaling H_s = (H − E0)/W needs W ≥ E_top − E0 so that the spectrum stays inside [0, 1]. A certified W must not rely on DMRG's E_top "
+  "(DMRG on −H is variational, so E_top(DMRG) ≤ E_top and W(DMRG) ≤ W_exact: the unsafe direction). Weyl's inequality gives "
+  "λmax(Σ_b h_b) ≤ Σ_b λmax(h_b); a bond J S·S has λmax = J/4 (J ≥ 0), so E_top ≤ (N−1)J1/4 + (N−2)J2/4, and the fully polarized state attains it. "
+  "Hence W = (N−1)J1/4 + (N−2)J2/4 − E0 equals E_top − E0 (to rounding) with no DMRG input for E_top. "
+  "An earlier version used the looser Pauli bound W = Σ|c_β| − E0 = 3(Σ_b λmax) − E0, which is 1.6–1.9× larger; Table 5 compares them.")
 A("")
-rows, hd = [], ["N", "J2", "W / (E_top−E0)", "Δ certified", "Δ with exact bandwidth", "ratio"]
+rows, hd = [], ["N", "J2", "W (Weyl) = E_top − E0", "|W − (E_top−E0)_DMRG|", "W (Pauli-ℓ1, earlier)", "ℓ1 / Weyl"]
 for J2 in J2_ORDER:
     for N in (4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 28, 32):
         r = one("dmrg", N, J2, EPS_MAIN)
         if r is None:
             continue
         i = r["inputs"]
-        rows.append([N, jl(J2), f(i["W"] / i["W_exact_dmrg"], ".2f"), f(i["gap_scaled"], ".5f"),
-                     f(i["gap_scaled"] * i["W"] / i["W_exact_dmrg"], ".5f"), f(i["W"] / i["W_exact_dmrg"], ".2f")])
+        wl1 = 3.0 * (i["W"] + i["E0"]) - i["E0"]
+        rows.append([N, jl(J2), f(i["W"], ".6f"), f(abs(i["W"] - i["W_exact_dmrg"]), ".1e"), f(wl1, ".4f"), f(wl1 / i["W"], ".2f")])
 A(md(hd, rows))
 csv_dump("bandwidth.csv", hd, rows)
 A("")
-A("*Table 5.* Certified versus exact bandwidth: the scaled gap is smaller by the factor W / (E_top−E0). Because n ∝ T² ∝ Δ⁻², "
-  "using the exact bandwidth would reduce the guaranteed step count by roughly the square of that ratio (not re-run here).")
+BWC = json.load(open(RES / "bandwidth_comparison.json")) if (RES / "bandwidth_comparison.json").exists() else None
+A("*Table 5.* The Weyl bandwidth agrees with the DMRG E_top − E0 to rounding (≤ 1e-13), because E_top is the all-up energy. "
+  "**W cancels in the step count:** α_scaled = α/W² and T_scaled = xπW/g (g the unscaled gap), so n ∝ α_scaled T² ∝ α/g² and T (phys) = T_scaled/W = xπ/g do not depend on W. "
+  "W only changes the *window*: [Δ, 1] is wider than the occupied spectrum when W is loose, which can make the certified η slightly larger.")
+if BWC:
+    A("")
+    A(f"Measured effect of switching from the Pauli-ℓ1 bandwidth to the Weyl bandwidth, over {BWC['count']} matching (N, J2, ε) guaranteed designs: "
+      f"n changed by a factor {BWC['n_ratio_min']:.2f}–{BWC['n_ratio_max']:.2f} (median {BWC['n_ratio_median']:.2f}), T (phys) by {BWC['T_ratio_min']:.2f}–{BWC['T_ratio_max']:.2f}.")
 A("")
 # ------------------------------------------------------------------ 6 larger systems
 A(f"## 7. Larger J1–J2 chains (N = 14–{max(Ns_large) if Ns_large else 14}): resource costs")
@@ -616,7 +622,7 @@ for J2 in J2_ORDER:
                  f"steps ~ N^{FITS[('n (steps)', J2, 'dmrg')][0][0]:.1f}, CX per step ~ N^{FITS[('CX per step', J2, 'dmrg')][0][0]:.1f} "
                  f"(fits over N = {FITS[k][1][0][0]}–{FITS[k][1][-1][0]}).")
 ratios = [r["inputs"]["W"] / r["inputs"]["W_exact_dmrg"] for r in R]
-S.append(f"* **Certified bandwidth:** W is {min(ratios):.2f}–{max(ratios):.2f}× E_top − E0, so the scaled gap is that much smaller and T longer than with the exact bandwidth.")
+S.append(f"* **Certified bandwidth:** the Weyl bound W = Σ_bonds λmax − E0 equals E_top − E0 (ratio {min(ratios):.3f}–{max(ratios):.3f}); W cancels in n and in T (phys), see Section 6.")
 S.append(f"* **Bound violations among simulated points:** {len(viol)}.")
 S.append("")
 i1 = next(i for i, l in enumerate(L) if l.startswith("## 1. Case inputs"))

@@ -29,8 +29,8 @@ def get_spectrum(N, j1=1.0, j2=0.0, source="dmrg", res=None, H_mpo=None,
 
     res: output of get_energies (pass it in -> DMRG runs once, A9). If None and
          source='dmrg', get_energies is called here.
-    bandwidth='certified': W = (c_I + sum|c_beta|) - E0, an upper bound on
-         E_top - E0 independent of DMRG's E_top (A3). The price is a smaller
+    bandwidth='certified': W = sum_bonds lambda_max(bond) - E0 (Weyl), an upper bound on
+         E_top - E0 independent of DMRG's E_top, equal to it for J1, J2 >= 0 (A3). The price is a smaller
          scaled gap (longer T). 'dmrg': W = E_top - E0 from DMRG (uncertified).
     gap_mode='any': DMRG first excited state (conservative for trial circuits
          that are not exactly symmetric). 'sector': lowest level in the ground
@@ -64,7 +64,12 @@ def get_spectrum(N, j1=1.0, j2=0.0, source="dmrg", res=None, H_mpo=None,
         res = get_energies(H_mpo, N=N, j1=j1, j2=j2)
     E0, E1, Etop = (float(np.real(res[k])) for k in ("E0", "E1", "E_top"))
 
-    W_cert = (cI + l1) - E0
+    # Weyl: lambda_max(sum_b h_b) <= sum_b lambda_max(h_b); a bond J S.S has lambda_max = J/4 (J >= 0) or 3|J|/4 (J < 0).
+    # For J1, J2 >= 0 the fully polarized state attains it, so this equals E_top exactly.
+    bond_max = lambda J: J / 4.0 if J >= 0 else 3.0 * abs(J) / 4.0
+    top_ub = (N - 1) * bond_max(j1) + (N - 2) * bond_max(j2)
+    W_l1 = (cI + l1) - E0                      # looser Pauli-l1 bound, kept for comparison only
+    W_cert = top_ub - E0
     W = max(W_cert, Etop - E0) if bandwidth == "certified" else Etop - E0
     gap_any = E1 - E0
     gap_sector = float("nan")
@@ -97,7 +102,7 @@ def get_spectrum(N, j1=1.0, j2=0.0, source="dmrg", res=None, H_mpo=None,
           f"gap_sector={gap_sector:.6f}  scaled gap={gap:.6f}  "
           f"sqrt(var)={np.sqrt(var):.2e}")
     return dict(energies=np.array([0.0, gap, 1.0]), gap=gap,
-                totaltime=np.pi / gap, shift=E0, W=W, W_cert=W_cert, E0=E0,
+                totaltime=np.pi / gap, shift=E0, W=W, W_cert=W_cert, W_l1=W_l1, E0=E0,
                 E1=E1, Etop=Etop, l1=l1, gap_any_raw=gap_any,
                 gap_sector_raw=gap_sector, gap_mode=gap_mode, source="dmrg",
                 ed=res.get("ed"), e0_dev_indicative=float(np.sqrt(var) / W), var=var,
