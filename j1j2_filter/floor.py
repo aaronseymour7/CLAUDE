@@ -395,7 +395,7 @@ def _sweep_m(args):
     return table
 
 
-def floor_vs_precision(eps_list, gamma, delta, e0_slack, x_list=DEFAULT_X,
+def floor_vs_precision(eps_list, gamma, delta, e0_slack=0.0, x_list=DEFAULT_X,
                        m_list=(4, 6, 8, 10, 12), hi=1.0, seed=0, verbose=True,
                        cost_fn=None, n_jobs=1, skip_infeasible=True, **kw):
     """For each (x = T*Delta/pi, m): continuation over eps (loose -> tight) with

@@ -4,7 +4,7 @@ run_results.py -- collect every pipeline quantity needed for the results documen
 For each (source, N, J2, eps) it runs the pipeline's own functions (build_ctx -> make_design -> find_guaranteed /
 find_empirical) and records, in results/data/<source>_N<N>_J2<J2>_eps<eps>.json:
 
-  inputs     E0, E1, Etop, W, scaled gap, gamma (+ source), alpha, e0_slack, <DMRG|ED>^2, MPO check, trial F
+  inputs     E0, E1, Etop, W, scaled gap, gamma (+ source), alpha, <DMRG|ED>^2, MPO check, trial F
   design     source, pulses m, x = T*Delta/pi, T, eta target / certified, leakage budget
   per design ("guaranteed" = rigorous a-priori bound <= eps; "empirical" = measured 1-F <= eps, an oracle):
      n, pulses used, k_i, t_i, phases, dt, T (scaled and physical), eta, bound terms, P_succ lower bound,
@@ -166,7 +166,7 @@ def run_point(source, N, J2, eps, whichs, cache):
                            W_cert=float(spec.get("W_cert", np.nan)), gap_scaled=float(spec["gap"]),
                            gap_raw=float(spec["gap"] * W), gamma=float(ctx["gamma"]), gamma_src=ctx["gamma_src"],
                            trial_F_ed=float(ctx["g_ed"]), trial_F_dmrg=float(ctx["g_dmrg"]), dmrg_ed_overlap=float(ctx["dmrg_ed"]),
-                           alpha=float(ctx["alpha"]), alpha_tri=float(ctx["alpha_tri"]), e0_slack=float(spec["e0_slack"]),
+                           alpha=float(ctx["alpha"]), alpha_tri=float(ctx["alpha_tri"]), e0_dev_indicative=float(spec["e0_dev_indicative"]),
                            W_exact_dmrg=float(spec["Etop"] - spec["E0"]), dense=bool(ctx["dense"]),
                            mpo_err=None if ctx.get("mpo_err") is None else float(ctx["mpo_err"]),
                            n_pauli_terms=int(len(ctx["H_scaled"]) - 1), trial_layers=P.SWEEP_L,

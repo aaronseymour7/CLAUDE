@@ -46,7 +46,7 @@ for eps in EPS_LIST:
             if a is None or b is None: continue
             g, sv, p = a
             delta = 1 - abs(np.vdot(sv, b[1])) ** 2
-            eb = P.total_error_bound(ctx["gamma"], ctx["gap"], ctx["alpha"], g["tg"], g["ph"], g["k"], hi=1.0, e0_slack=ctx["e0_slack"], eta=g["eta"])
+            eb = P.total_error_bound(ctx["gamma"], ctx["gap"], ctx["alpha"], g["tg"], g["ph"], g["k"], hi=1.0, eta=g["eta"])
             leak = eb["leak"]
             est = (np.sqrt(leak) + 2 * np.sqrt(max(delta, 0))) ** 2
             if est <= eps and g["eta"] < 1:

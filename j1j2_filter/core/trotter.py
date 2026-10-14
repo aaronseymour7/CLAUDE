@@ -78,11 +78,11 @@ def alpha_commutator(H, reverse=False):
 
 
 def trotter_alpha(H, tight=True):
-    """Safe alpha: max over both term orders, so the bound holds whichever
-    ordering convention the commutator theorem uses for the synthesized
-    product. lie_trotter_order() tells you which one is actually realized."""
-    return max(alpha_comm(H, tight, reverse=False),
-               alpha_comm(H, tight, reverse=True))
+    """alpha = sum_g ||[H_g, sum_{g'>g} H_g']||, evaluated exactly (alpha_commutator), as the max over both
+    term orders so the bound holds whichever order the synthesized product realizes (lie_trotter_order tells
+    which one is realized).  `tight` is accepted for backward compatibility and ignored: the exact value is
+    now cheap for every N."""
+    return max(alpha_commutator(H, reverse=False), alpha_commutator(H, reverse=True))
 
 
 def lie_trotter_order(H, tau=0.05, reps_list=(1, 3), tol=1e-9):
@@ -145,36 +145,31 @@ def lie_trotter_order(H, tau=0.05, reps_list=(1, 3), tol=1e-9):
 
 
 def trotter_bounds(alpha, tg, k, p_g):
-    """(R3) Rigorous post-selected-state bound.
+    """Post-selected Trotter error in trace distance.
 
-    Setup: exact unnormalized vector a = A_m ... A_1 psi with A_i = <0|W_i|0>
-    = cos(H t_i + phi_i); Trotterized b with A~_i = <0|W~_i|0>. Only the
-    exp(-i t H(x)Z) factor differs, and [H_g(x)Z, H_g'(x)Z] = [H_g, H_g'](x)1,
-    so ||W~_i - W_i|| <= alpha t_i^2 / (2 k_i) =: eps_i (same alpha for H(x)Z).
-    All A_i, A~_i are blocks of unitaries (norm <= 1), so telescoping gives
-    ||a - b|| <= sum_i eps_i = eps. On the uniform grid t_i = k_i dt,
-    sum k_i = n: eps = alpha T^2 / (2n).
-    Normalization: ||a/|a| - b/|b|| <= 2 ||a - b|| / ||a||, ||a|| = sqrt(p_g).
-    Hence state distance <= 2 eps / sqrt(p_g). Valid when `alpha` is for the
-    realized term order (trotter_alpha takes the max over both orders)."""
+    a = A_m...A_1 psi (exact, unnormalized), b = A~_m...A~_1 psi (Trotterized), A_i = <0|W_i|0> a block of a
+    unitary.  ||A_i - A~_i|| <= ||W_i - W~_i|| <= alpha t_i^2/(2 k_i), so telescoping gives
+    ||a - b|| <= eps := sum_i alpha t_i^2/(2 k_i)  (= alpha T^2/(2n) on the uniform grid, t_i = k_i dt).
+    For pure states the trace distance is sin(angle); the component of a orthogonal to b has norm <= ||a - b||,
+    so  D(a/|a|, b/|b|) <= ||a - b|| / ||a|| <= eps / sqrt(p_g),  ||a||^2 = p_g (a lower bound on it suffices)."""
     tg = np.asarray(tg, dtype=float)
     k = np.asarray(k, dtype=float)
     total = float(np.sum(alpha * tg ** 2 / (2.0 * k)))
-    raw = 2.0 * total / np.sqrt(p_g)
-    return dict(bound_total=total, bound_state_raw=raw,
-                bound_state=min(2.0, raw))
+    raw = total / np.sqrt(p_g)
+    return dict(bound_total=total, bound_state_raw=raw, bound_state=min(1.0, raw))
 
 
-def total_error_bound(gamma, delta, alpha, times, phases, k, hi=1.0,
-                      e0_slack=0.0, eta=None):
-    """Upper bound on 1 - F_total from (gamma, delta, alpha, design).
+def total_error_bound(gamma, delta, alpha, times, phases, k, hi=1.0, eta=None):
+    """Upper bound on 1 - F_total from (gamma, delta, alpha, design), in trace distance:
+
+        D(psi~, g) <= D(psi~, psi_f) + D(psi_f, g) <= eps_T / sqrt(p_g) + sqrt(leak),   1 - F <= D^2.
 
     k : per-pulse Trotter step counts (array, same length as times).
     eta : optionally pass an already-certified eta (skips the certificate)."""
     times = np.asarray(times, float)
     k = np.asarray(k, float)
     gamma = min(float(gamma), 1.0)
-    cert = certify_eta(times, phases, delta, hi, e0_slack)
+    cert = certify_eta(times, phases, delta, hi)
     if eta is None:
         eta = cert["eta"]
 
@@ -186,19 +181,19 @@ def total_error_bound(gamma, delta, alpha, times, phases, k, hi=1.0,
     else:
         leak = (1 - gamma) * eta ** 2 / (gamma + (1 - gamma) * eta ** 2)
 
-    # Trotter (post-selected state distance)
-    p_g = gamma * cert["f0_lb"] ** 2
+    # Trotter (post-selected state, trace distance)
+    p_g = gamma * cert["f0"] ** 2
     eps_T = float(np.sum(alpha * times ** 2 / (2.0 * k)))
-    d_T = 2.0 if p_g <= 0 else min(2.0, 2.0 * eps_T / np.sqrt(p_g))
+    d_T = 1.0 if p_g <= 0 else min(1.0, eps_T / np.sqrt(p_g))
 
-    total = min(1.0, (np.sqrt(2.0 * leak) + d_T) ** 2)
+    total = min(1.0, (np.sqrt(leak) + d_T) ** 2)
     return dict(eps_bound=total, leak=leak, trotter_dist=d_T, eps_T=eps_T,
                 eta=eta, f0=cert["f0"], p_g_lb=p_g, gamma=gamma)
 
 
 def steps_needed(alpha, T, p_g, d_T_target):
-    """Total Trotter steps n so that the Trotter distance <= d_T_target."""
-    return int(np.ceil(alpha * T ** 2 / (np.sqrt(p_g) * d_T_target)))
+    """Total Trotter steps n so that the Trotter trace distance alpha T^2/(2 n sqrt(p_g)) <= d_T_target."""
+    return int(np.ceil(alpha * T ** 2 / (2.0 * np.sqrt(p_g) * d_T_target)))
 
 
 def alpha_triangle(H):
@@ -238,7 +233,7 @@ def _trotter_run(Hs_op, psi, times, phases, k):
 
 
 def ed_error(H, psi, times, phases, k, alpha=None, simulate_trotter=True,
-             shift=None, W=None, e0_slack=0.0):
+             shift=None, W=None):
     """Exact-diagonalization error report for a design.
 
     H   : unscaled SparsePauliOp (N <= ~14).   psi : trial vector (qiskit order).
@@ -270,9 +265,8 @@ def ed_error(H, psi, times, phases, k, alpha=None, simulate_trotter=True,
     eps_exact = 1.0 - float(abs(amp[0]) ** 2) / p_exact
 
     if alpha is None:
-        alpha = alpha_triangle(H) / W ** 2
-    b = total_error_bound(gamma, delta, alpha, times, phases, k, hi=1.0,
-                          e0_slack=e0_slack)
+        alpha = max(alpha_commutator(H, False), alpha_commutator(H, True)) / W ** 2
+    b = total_error_bound(gamma, delta, alpha, times, phases, k, hi=1.0)
 
     out = dict(eps_bound=b["eps_bound"], eps_exact_filter=eps_exact,
                eps_trotter=None, gamma=gamma, delta=delta, W=W, E0=E0,

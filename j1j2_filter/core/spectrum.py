@@ -36,9 +36,8 @@ def get_spectrum(N, j1=1.0, j2=0.0, source="dmrg", res=None, H_mpo=None,
          that are not exactly symmetric). 'sector': lowest level in the ground
          state's (S, parity) sector (needs N <= SECTOR_MAX_N).
 
-    Caveat (A3): shift = DMRG E0 >= E0_exact (variational), so the true ground
-    energy may sit slightly below 0 in scaled units; e0_slack reports
-    sqrt(var)/W as an indicative size of that offset."""
+    The shift is the DMRG E0 (variational, >= E0_exact by a tiny amount at the accuracies used); no slack is
+    applied. sqrt(var)/W is returned as e0_dev_indicative for reporting only."""
     if source not in ("dmrg", "ed"):
         raise ValueError("source must be 'dmrg' or 'ed'")
     if bandwidth not in ("certified", "dmrg"):
@@ -57,7 +56,7 @@ def get_spectrum(N, j1=1.0, j2=0.0, source="dmrg", res=None, H_mpo=None,
         return dict(energies=(evals - E0) / W, gap=(E1 - E0) / W,
                     totaltime=np.pi * W / (E1 - E0), shift=E0, W=W, E0=E0,
                     E1=E1, Etop=Etop, l1=l1, source="ed", ed=None,
-                    e0_slack=0.0, var=0.0, gap_mode="any", dmrg_res=None)
+                    e0_dev_indicative=0.0, var=0.0, gap_mode="any", dmrg_res=None)
 
     if res is None:
         if H_mpo is None:
@@ -101,5 +100,5 @@ def get_spectrum(N, j1=1.0, j2=0.0, source="dmrg", res=None, H_mpo=None,
                 totaltime=np.pi / gap, shift=E0, W=W, W_cert=W_cert, E0=E0,
                 E1=E1, Etop=Etop, l1=l1, gap_any_raw=gap_any,
                 gap_sector_raw=gap_sector, gap_mode=gap_mode, source="dmrg",
-                ed=res.get("ed"), e0_slack=float(np.sqrt(var) / W), var=var,
+                ed=res.get("ed"), e0_dev_indicative=float(np.sqrt(var) / W), var=var,
                 dmrg_res=res)
