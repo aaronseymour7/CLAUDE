@@ -137,8 +137,8 @@ A("")
 # ------------------------------------------------------------------ 1 inputs
 A("## 1. Case inputs (DMRG spectrum, certified bandwidth)")
 A("")
-rows, hd = [], ["N", "J2", "E0 (DMRG)", "E1", "E_top", "E_top−E0", "W (certified)", "W / (E_top−E0)", "Δ (scaled gap)", "γ (trial)", "γ source",
-                "1−γ", "α used", "Pauli terms", "trial CX", "trial RZ", "trial RZ (non-Cliff.)", "trial depth", "E1 method", "DMRG converged"]
+rows, hd = [], ["N", "J2", "E0 (DMRG)", "E1", "E_top", "|E0−E0(ED)|", "|E1−E1(ED)|", "E_top−E0", "W (certified)", "W / (E_top−E0)", "Δ (scaled gap)", "γ (trial)", "γ source",
+                "trial-circuit infidelity 1−γ", "α used", "Pauli terms", "trial CX", "trial RZ", "trial RZ (non-Cliff.)", "trial depth", "E1 method", "DMRG converged"]
 for J2 in J2_ORDER:
     for N in (4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 28, 32):
         r = one("dmrg", N, J2, EPS_MAIN)
@@ -146,7 +146,10 @@ for J2 in J2_ORDER:
             continue
         i = r["inputs"]
         tc = i["trial_cost"]
-        rows.append([N, jl(J2), f(i["E0"], ".6f"), f(i["E1"], ".6f"), f(i["Etop"], ".4f"), f(i["W_exact_dmrg"], ".4f"), f(i["W"], ".4f"),
+        ed_ = i.get("dmrg_vs_ed") or {}
+        rows.append([N, jl(J2), f(i["E0"], ".10f"), f(i["E1"], ".10f"), f(i["Etop"], ".10f"),
+                     f(ed_.get("E0_diff"), ".1e") if ed_ else "n/a (no ED)", f(ed_.get("E1_diff"), ".1e") if ed_ else "n/a (no ED)",
+                     f(i["W_exact_dmrg"], ".4f"), f(i["W"], ".4f"),
                      f(i["W"] / i["W_exact_dmrg"], ".2f"), f(i["gap_scaled"], ".5f"), f(i["gamma"], ".5f"), i["gamma_src"],
                      f(1 - i["gamma"], ".2e"), f(i["alpha"], ".4f"), i["n_pauli_terms"], f(tc["cx"], "int"), f(tc["rz"], "int"),
                      f(tc["rz_nonclifford"], "int"), f(tc["depth"], "int"),
@@ -154,7 +157,9 @@ for J2 in J2_ORDER:
 A(md(hd, rows))
 csv_dump("inputs.csv", hd, rows)
 A("")
-A("*Table 1.* *DMRG converged*: the ground-state, top-state and penalty-method excited-state DMRG runs each reached the sweep tolerance within 60 sweeps; "
+A("*Table 1.* The energies are DMRG values (10 digits); `|E0−E0(ED)|`, `|E1−E1(ED)|` are the DMRG errors against exact diagonalisation (N ≤ 14 here; N = 16–20 in Section 5; N ≥ 24 has no exact reference, see the run-to-run table in Section 5). "
+  "**1−γ is not a DMRG error:** it is the infidelity of the low-depth (L = 1 brickwork) trial *circuit* with respect to the ground state, which is large by construction and is what the filter has to remove. "
+  "*DMRG converged*: the ground-state, top-state and orthogonality-penalty excited-state DMRG runs each reached the sweep tolerance within 100 sweeps; "
   "a **NO** means that quantity (for the excited state, E1 and hence the gap Δ) is not converged and the design is only indicative. "
   "*E1 method*: `local` = projector penalty λ|ψ0⟩⟨ψ0| applied as a rank-1 term in every two-site local problem, giving the lowest state of any symmetry (checked against ED in Section 5). "
   "Trial circuit = L = 1 approximate brickwork circuit from the DMRG MPS. α is in scaled units: the exact commutator sum Σ_g‖[H_g, Σ_{g'>g}H_g']‖ for every N (computed on the local support of each term). W is the certified bandwidth; the scaled gap Δ = (E1−E0)/W "

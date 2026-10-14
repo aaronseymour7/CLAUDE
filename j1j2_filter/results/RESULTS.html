@@ -122,8 +122,10 @@ bandwidth.</li>
 </ul>
 <h2 id="case-inputs-dmrg-spectrum-certified-bandwidth">1. Case inputs
 (DMRG spectrum, certified bandwidth)</h2>
-<table>
+<table style="width:100%;">
 <colgroup>
+<col style="width: 4%" />
+<col style="width: 4%" />
 <col style="width: 4%" />
 <col style="width: 4%" />
 <col style="width: 4%" />
@@ -152,30 +154,34 @@ bandwidth.</li>
 <th>E0 (DMRG)</th>
 <th>E1</th>
 <th>E_top</th>
+<th></th>
+<th>E0−E0(ED)</th>
+<th></th>
+<th></th>
+<th>E1−E1(ED)</th>
+<th></th>
 <th>E_top−E0</th>
 <th>W (certified)</th>
 <th>W / (E_top−E0)</th>
 <th>Δ (scaled gap)</th>
 <th>γ (trial)</th>
 <th>γ source</th>
-<th>1−γ</th>
+<th>trial-circuit infidelity 1−γ</th>
 <th>α used</th>
 <th>Pauli terms</th>
 <th>trial CX</th>
 <th>trial RZ</th>
-<th>trial RZ (non-Cliff.)</th>
-<th>trial depth</th>
-<th>E1 method</th>
-<th>DMRG converged</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>4</td>
 <td>0</td>
-<td>-1.616025</td>
-<td>-0.957107</td>
-<td>0.7500</td>
+<td>-1.6160254038</td>
+<td>-0.9571067812</td>
+<td>0.7500000000</td>
+<td>2.3e-16</td>
+<td>1.0e-15</td>
 <td>2.3660</td>
 <td>3.8660</td>
 <td>1.63</td>
@@ -195,9 +201,11 @@ bandwidth.</li>
 <tr class="even">
 <td>6</td>
 <td>0</td>
-<td>-2.493577</td>
-<td>-2.001995</td>
-<td>1.2500</td>
+<td>-2.4935771339</td>
+<td>-2.0019953569</td>
+<td>1.2500000000</td>
+<td>1.4e-15</td>
+<td>1.3e-15</td>
 <td>3.7436</td>
 <td>6.2436</td>
 <td>1.67</td>
@@ -217,9 +225,11 @@ bandwidth.</li>
 <tr class="odd">
 <td>8</td>
 <td>0</td>
-<td>-3.374933</td>
-<td>-2.982240</td>
-<td>1.7500</td>
+<td>-3.3749325987</td>
+<td>-2.9822404878</td>
+<td>1.7500000000</td>
+<td>1.4e-15</td>
+<td>1.3e-15</td>
 <td>5.1249</td>
 <td>8.6249</td>
 <td>1.68</td>
@@ -239,9 +249,11 @@ bandwidth.</li>
 <tr class="even">
 <td>10</td>
 <td>0</td>
-<td>-4.258035</td>
-<td>-3.930674</td>
-<td>2.2500</td>
+<td>-4.2580352073</td>
+<td>-3.9306735895</td>
+<td>2.2500000000</td>
+<td>9.8e-15</td>
+<td>9.3e-15</td>
 <td>6.5080</td>
 <td>11.0080</td>
 <td>1.69</td>
@@ -261,9 +273,11 @@ bandwidth.</li>
 <tr class="odd">
 <td>12</td>
 <td>0</td>
-<td>-5.142091</td>
-<td>-4.861148</td>
-<td>2.7500</td>
+<td>-5.1420906328</td>
+<td>-4.8611479370</td>
+<td>2.7500000000</td>
+<td>5.1e-14</td>
+<td>4.3e-14</td>
 <td>7.8921</td>
 <td>13.3921</td>
 <td>1.70</td>
@@ -283,9 +297,11 @@ bandwidth.</li>
 <tr class="even">
 <td>14</td>
 <td>0</td>
-<td>-6.026725</td>
-<td>-5.780493</td>
-<td>3.2500</td>
+<td>-6.0267246619</td>
+<td>-5.7804926045</td>
+<td>3.2500000000</td>
+<td>1.4e-13</td>
+<td>9.9e-14</td>
 <td>9.2767</td>
 <td>15.7767</td>
 <td>1.70</td>
@@ -305,9 +321,11 @@ bandwidth.</li>
 <tr class="odd">
 <td>16</td>
 <td>0</td>
-<td>-6.911737</td>
-<td>-6.692460</td>
-<td>3.7500</td>
+<td>-6.9117371456</td>
+<td>-6.6924604290</td>
+<td>3.7500000000</td>
+<td>n/a (no ED)</td>
+<td>n/a (no ED)</td>
 <td>10.6617</td>
 <td>18.1617</td>
 <td>1.70</td>
@@ -327,9 +345,11 @@ bandwidth.</li>
 <tr class="even">
 <td>18</td>
 <td>0</td>
-<td>-7.797011</td>
-<td>-7.599285</td>
-<td>4.2500</td>
+<td>-7.7970110685</td>
+<td>-7.5992848841</td>
+<td>4.2500000000</td>
+<td>n/a (no ED)</td>
+<td>n/a (no ED)</td>
 <td>12.0470</td>
 <td>20.5470</td>
 <td>1.71</td>
@@ -349,9 +369,11 @@ bandwidth.</li>
 <tr class="odd">
 <td>20</td>
 <td>0</td>
-<td>-8.682473</td>
-<td>-8.502379</td>
-<td>4.7500</td>
+<td>-8.6824733344</td>
+<td>-8.5023786980</td>
+<td>4.7500000000</td>
+<td>n/a (no ED)</td>
+<td>n/a (no ED)</td>
 <td>13.4325</td>
 <td>22.9325</td>
 <td>1.71</td>
@@ -371,9 +393,11 @@ bandwidth.</li>
 <tr class="even">
 <td>24</td>
 <td>0</td>
-<td>-10.453786</td>
-<td>-10.300834</td>
-<td>5.7500</td>
+<td>-10.4537857604</td>
+<td>-10.3008340576</td>
+<td>5.7500000000</td>
+<td>n/a (no ED)</td>
+<td>n/a (no ED)</td>
 <td>16.2038</td>
 <td>27.7038</td>
 <td>1.71</td>
@@ -393,9 +417,11 @@ bandwidth.</li>
 <tr class="odd">
 <td>28</td>
 <td>0</td>
-<td>-12.225441</td>
-<td>-12.092425</td>
-<td>6.7500</td>
+<td>-12.2254405486</td>
+<td>-12.0924250046</td>
+<td>6.7500000000</td>
+<td>n/a (no ED)</td>
+<td>n/a (no ED)</td>
 <td>18.9754</td>
 <td>32.4754</td>
 <td>1.71</td>
@@ -415,9 +441,11 @@ bandwidth.</li>
 <tr class="even">
 <td>32</td>
 <td>0</td>
-<td>-13.997316</td>
-<td>-13.879576</td>
-<td>7.7500</td>
+<td>-13.9973156182</td>
+<td>-13.8795758237</td>
+<td>7.7500000000</td>
+<td>n/a (no ED)</td>
+<td>n/a (no ED)</td>
 <td>21.7473</td>
 <td>37.2473</td>
 <td>1.71</td>
@@ -437,9 +465,11 @@ bandwidth.</li>
 <tr class="odd">
 <td>4</td>
 <td>0.2411</td>
-<td>-1.538741</td>
-<td>-0.877680</td>
-<td>0.8705</td>
+<td>-1.5387409981</td>
+<td>-0.8776800957</td>
+<td>0.8705500000</td>
+<td>3.0e-17</td>
+<td>3.3e-16</td>
 <td>2.4093</td>
 <td>4.1504</td>
 <td>1.72</td>
@@ -459,9 +489,11 @@ bandwidth.</li>
 <tr class="even">
 <td>6</td>
 <td>0.2411</td>
-<td>-2.335347</td>
-<td>-1.847554</td>
-<td>1.4911</td>
+<td>-2.3353474058</td>
+<td>-1.8475542730</td>
+<td>1.4911000000</td>
+<td>1.3e-15</td>
+<td>4.4e-16</td>
 <td>3.8264</td>
 <td>6.8086</td>
 <td>1.78</td>
@@ -481,9 +513,11 @@ bandwidth.</li>
 <tr class="odd">
 <td>8</td>
 <td>0.2411</td>
-<td>-3.135001</td>
-<td>-2.749123</td>
-<td>2.1116</td>
+<td>-3.1350011019</td>
+<td>-2.7491233495</td>
+<td>2.1116500000</td>
+<td>2.7e-15</td>
+<td>4.4e-15</td>
 <td>5.2467</td>
 <td>9.4700</td>
 <td>1.80</td>
@@ -503,9 +537,11 @@ bandwidth.</li>
 <tr class="even">
 <td>10</td>
 <td>0.2411</td>
-<td>-3.936128</td>
-<td>-3.617027</td>
-<td>2.7322</td>
+<td>-3.9361281870</td>
+<td>-3.6170270856</td>
+<td>2.7322000000</td>
+<td>8.0e-15</td>
+<td>9.3e-15</td>
 <td>6.6683</td>
 <td>12.1327</td>
 <td>1.82</td>
@@ -525,9 +561,11 @@ bandwidth.</li>
 <tr class="odd">
 <td>12</td>
 <td>0.2411</td>
-<td>-4.738077</td>
-<td>-4.466065</td>
-<td>3.3528</td>
+<td>-4.7380770283</td>
+<td>-4.4660645236</td>
+<td>3.3527500000</td>
+<td>2.0e-14</td>
+<td>7.3e-14</td>
 <td>8.0908</td>
 <td>14.7963</td>
 <td>1.83</td>
@@ -547,9 +585,11 @@ bandwidth.</li>
 <tr class="even">
 <td>14</td>
 <td>0.2411</td>
-<td>-5.540531</td>
-<td>-5.303498</td>
-<td>3.9733</td>
+<td>-5.5405306286</td>
+<td>-5.3034976901</td>
+<td>3.9733000000</td>
+<td>1.1e-13</td>
+<td>1.3e-13</td>
 <td>9.5138</td>
 <td>17.4604</td>
 <td>1.84</td>
@@ -569,9 +609,11 @@ bandwidth.</li>
 <tr class="odd">
 <td>16</td>
 <td>0.2411</td>
-<td>-6.343316</td>
-<td>-6.133291</td>
-<td>4.5939</td>
+<td>-6.3433164211</td>
+<td>-6.1332908175</td>
+<td>4.5938500000</td>
+<td>n/a (no ED)</td>
+<td>n/a (no ED)</td>
 <td>10.9372</td>
 <td>20.1249</td>
 <td>1.84</td>
@@ -591,9 +633,11 @@ bandwidth.</li>
 <tr class="even">
 <td>18</td>
 <td>0.2411</td>
-<td>-7.146332</td>
-<td>-6.957788</td>
-<td>5.2144</td>
+<td>-7.1463324487</td>
+<td>-6.9577882796</td>
+<td>5.2144000000</td>
+<td>n/a (no ED)</td>
+<td>n/a (no ED)</td>
 <td>12.3607</td>
 <td>22.7895</td>
 <td>1.84</td>
@@ -613,9 +657,11 @@ bandwidth.</li>
 <tr class="odd">
 <td>20</td>
 <td>0.2411</td>
-<td>-7.949515</td>
-<td>-7.778465</td>
-<td>5.8349</td>
+<td>-7.9495146057</td>
+<td>-7.7784645690</td>
+<td>5.8349500000</td>
+<td>n/a (no ED)</td>
+<td>n/a (no ED)</td>
 <td>13.7845</td>
 <td>25.4544</td>
 <td>1.85</td>
@@ -635,9 +681,11 @@ bandwidth.</li>
 <tr class="even">
 <td>24</td>
 <td>0.2411</td>
-<td>-9.556221</td>
-<td>-9.411943</td>
-<td>7.0760</td>
+<td>-9.5562212540</td>
+<td>-9.4119433252</td>
+<td>7.0760500000</td>
+<td>n/a (no ED)</td>
+<td>n/a (no ED)</td>
 <td>16.6323</td>
 <td>30.7844</td>
 <td>1.85</td>
@@ -657,9 +705,11 @@ bandwidth.</li>
 <tr class="odd">
 <td>28</td>
 <td>0.2411</td>
-<td>-11.163230</td>
-<td>-11.038477</td>
-<td>8.3171</td>
+<td>-11.1632298850</td>
+<td>-11.0384766852</td>
+<td>8.3171500000</td>
+<td>n/a (no ED)</td>
+<td>n/a (no ED)</td>
 <td>19.4804</td>
 <td>36.1147</td>
 <td>1.85</td>
@@ -679,9 +729,11 @@ bandwidth.</li>
 <tr class="even">
 <td>32</td>
 <td>0.2411</td>
-<td>-12.770432</td>
-<td>-12.660549</td>
-<td>9.5582</td>
+<td>-12.7704324927</td>
+<td>-12.6605489205</td>
+<td>9.5582500000</td>
+<td>n/a (no ED)</td>
+<td>n/a (no ED)</td>
 <td>22.3287</td>
 <td>41.4452</td>
 <td>1.86</td>
@@ -701,9 +753,11 @@ bandwidth.</li>
 <tr class="odd">
 <td>4</td>
 <td>0.4</td>
-<td>-1.506776</td>
-<td>-0.833095</td>
-<td>0.9500</td>
+<td>-1.5067764363</td>
+<td>-0.8330951895</td>
+<td>0.9500000000</td>
+<td>1.8e-15</td>
+<td>3.3e-16</td>
 <td>2.4568</td>
 <td>4.3568</td>
 <td>1.77</td>
@@ -723,9 +777,11 @@ bandwidth.</li>
 <tr class="even">
 <td>6</td>
 <td>0.4</td>
-<td>-2.265535</td>
-<td>-1.763349</td>
-<td>1.6500</td>
+<td>-2.2655348801</td>
+<td>-1.7633485573</td>
+<td>1.6500000000</td>
+<td>9.8e-15</td>
+<td>1.8e-15</td>
 <td>3.9155</td>
 <td>7.2155</td>
 <td>1.84</td>
@@ -745,9 +801,11 @@ bandwidth.</li>
 <tr class="odd">
 <td>8</td>
 <td>0.4</td>
-<td>-3.025191</td>
-<td>-2.621482</td>
-<td>2.3500</td>
+<td>-3.0251905645</td>
+<td>-2.6214818416</td>
+<td>2.3500000000</td>
+<td>1.1e-16</td>
+<td>5.8e-15</td>
 <td>5.3752</td>
 <td>10.0752</td>
 <td>1.87</td>
@@ -767,9 +825,11 @@ bandwidth.</li>
 <tr class="even">
 <td>10</td>
 <td>0.4</td>
-<td>-3.785289</td>
-<td>-3.445167</td>
-<td>3.0500</td>
+<td>-3.7852888948</td>
+<td>-3.4451673343</td>
+<td>3.0500000000</td>
+<td>1.2e-14</td>
+<td>3.9e-14</td>
 <td>6.8353</td>
 <td>12.9353</td>
 <td>1.89</td>
@@ -789,9 +849,11 @@ bandwidth.</li>
 <tr class="odd">
 <td>12</td>
 <td>0.4</td>
-<td>-4.545626</td>
-<td>-4.250035</td>
-<td>3.7500</td>
+<td>-4.5456261627</td>
+<td>-4.2500350676</td>
+<td>3.7500000000</td>
+<td>1.2e-13</td>
+<td>5.2e-14</td>
 <td>8.2956</td>
 <td>15.7956</td>
 <td>1.90</td>
@@ -811,9 +873,11 @@ bandwidth.</li>
 <tr class="even">
 <td>14</td>
 <td>0.4</td>
-<td>-5.306103</td>
-<td>-5.043512</td>
-<td>4.4500</td>
+<td>-5.3061027329</td>
+<td>-5.0435118006</td>
+<td>4.4500000000</td>
+<td>1.3e-13</td>
+<td>9.9e-14</td>
 <td>9.7561</td>
 <td>18.6561</td>
 <td>1.91</td>
@@ -833,9 +897,11 @@ bandwidth.</li>
 <tr class="odd">
 <td>16</td>
 <td>0.4</td>
-<td>-6.066666</td>
-<td>-5.829557</td>
-<td>5.1500</td>
+<td>-6.0666655720</td>
+<td>-5.8295569546</td>
+<td>5.1500000000</td>
+<td>n/a (no ED)</td>
+<td>n/a (no ED)</td>
 <td>11.2167</td>
 <td>21.5167</td>
 <td>1.92</td>
@@ -855,9 +921,11 @@ bandwidth.</li>
 <tr class="even">
 <td>18</td>
 <td>0.4</td>
-<td>-6.827284</td>
-<td>-6.610475</td>
-<td>5.8500</td>
+<td>-6.8272844181</td>
+<td>-6.6104747998</td>
+<td>5.8500000000</td>
+<td>n/a (no ED)</td>
+<td>n/a (no ED)</td>
 <td>12.6773</td>
 <td>24.3773</td>
 <td>1.92</td>
@@ -877,9 +945,11 @@ bandwidth.</li>
 <tr class="odd">
 <td>20</td>
 <td>0.4</td>
-<td>-7.587941</td>
-<td>-7.387700</td>
-<td>6.5500</td>
+<td>-7.5879410154</td>
+<td>-7.3876995115</td>
+<td>6.5500000000</td>
+<td>n/a (no ED)</td>
+<td>n/a (no ED)</td>
 <td>14.1379</td>
 <td>27.2379</td>
 <td>1.93</td>
@@ -899,9 +969,11 @@ bandwidth.</li>
 <tr class="even">
 <td>24</td>
 <td>0.4</td>
-<td>-9.109325</td>
-<td>-8.934536</td>
-<td>7.9500</td>
+<td>-9.1093253675</td>
+<td>-8.9345357926</td>
+<td>7.9500000000</td>
+<td>n/a (no ED)</td>
+<td>n/a (no ED)</td>
 <td>17.0593</td>
 <td>32.9593</td>
 <td>1.93</td>
@@ -921,9 +993,11 @@ bandwidth.</li>
 <tr class="odd">
 <td>28</td>
 <td>0.4</td>
-<td>-10.630766</td>
-<td>-10.474638</td>
-<td>9.3500</td>
+<td>-10.6307656965</td>
+<td>-10.4746379729</td>
+<td>9.3500000000</td>
+<td>n/a (no ED)</td>
+<td>n/a (no ED)</td>
 <td>19.9808</td>
 <td>38.6808</td>
 <td>1.94</td>
@@ -943,9 +1017,11 @@ bandwidth.</li>
 <tr class="even">
 <td>32</td>
 <td>0.4</td>
-<td>-12.152237</td>
-<td>-12.010392</td>
-<td>10.7500</td>
+<td>-12.1522370500</td>
+<td>-12.0103923579</td>
+<td>10.7500000000</td>
+<td>n/a (no ED)</td>
+<td>n/a (no ED)</td>
 <td>22.9022</td>
 <td>44.4022</td>
 <td>1.94</td>
@@ -964,19 +1040,26 @@ bandwidth.</li>
 </tr>
 </tbody>
 </table>
-<p><em>Table 1.</em> <em>DMRG converged</em>: the ground-state,
-top-state and penalty-method excited-state DMRG runs each reached the
-sweep tolerance within 60 sweeps; a <strong>NO</strong> means that
-quantity (for the excited state, E1 and hence the gap Δ) is not
-converged and the design is only indicative. <em>E1 method</em>:
-<code>local</code> = projector penalty λ|ψ0⟩⟨ψ0| applied as a rank-1
-term in every two-site local problem, giving the lowest state of any
-symmetry (checked against ED in Section 5). Trial circuit = L = 1
-approximate brickwork circuit from the DMRG MPS. α is in scaled units:
-the exact commutator sum Σ_g‖[H_g, Σ_{g’&gt;g}H_g’]‖ for every N
-(computed on the local support of each term). W is the certified
-bandwidth; the scaled gap Δ = (E1−E0)/W is correspondingly 1.6–1.9×
-smaller than with the exact bandwidth.</p>
+<p><em>Table 1.</em> The energies are DMRG values (10 digits);
+<code>|E0−E0(ED)|</code>, <code>|E1−E1(ED)|</code> are the DMRG errors
+against exact diagonalisation (N ≤ 14 here; N = 16–20 in Section 5; N ≥
+24 has no exact reference, see the run-to-run table in Section 5).
+<strong>1−γ is not a DMRG error:</strong> it is the infidelity of the
+low-depth (L = 1 brickwork) trial <em>circuit</em> with respect to the
+ground state, which is large by construction and is what the filter has
+to remove. <em>DMRG converged</em>: the ground-state, top-state and
+orthogonality-penalty excited-state DMRG runs each reached the sweep
+tolerance within 100 sweeps; a <strong>NO</strong> means that quantity
+(for the excited state, E1 and hence the gap Δ) is not converged and the
+design is only indicative. <em>E1 method</em>: <code>local</code> =
+projector penalty λ|ψ0⟩⟨ψ0| applied as a rank-1 term in every two-site
+local problem, giving the lowest state of any symmetry (checked against
+ED in Section 5). Trial circuit = L = 1 approximate brickwork circuit
+from the DMRG MPS. α is in scaled units: the exact commutator sum
+Σ_g‖[H_g, Σ_{g’&gt;g}H_g’]‖ for every N (computed on the local support
+of each term). W is the certified bandwidth; the scaled gap Δ =
+(E1−E0)/W is correspondingly 1.6–1.9× smaller than with the exact
+bandwidth.</p>
 <p><strong>α: exact commutator sum against the triangle
 bound</strong></p>
 <table>
@@ -3677,6 +3760,48 @@ random starts (N ≥ 24)</strong></p>
 <td>2.4e-12 / 2.4e-12</td>
 <td>yes</td>
 <td>91</td>
+</tr>
+<tr class="even">
+<td>28</td>
+<td>0</td>
+<td>-12.22544055</td>
+<td>-12.09242500</td>
+<td>1.4e-14</td>
+<td>3.0e-14</td>
+<td>8.8e-14</td>
+<td>1.8e-14</td>
+<td>3.2e-12 / 3.5e-12</td>
+<td>2.9e-12 / 2.8e-12</td>
+<td>yes</td>
+<td>100</td>
+</tr>
+<tr class="odd">
+<td>24</td>
+<td>0.2411</td>
+<td>-9.55622125</td>
+<td>-9.41194333</td>
+<td>7.1e-15</td>
+<td>2.3e-14</td>
+<td>1.5e-14</td>
+<td>5.2e-14</td>
+<td>2.4e-12 / 2.4e-12</td>
+<td>2.4e-12 / 2.3e-12</td>
+<td>yes</td>
+<td>88</td>
+</tr>
+<tr class="even">
+<td>24</td>
+<td>0.4</td>
+<td>-9.10932537</td>
+<td>-8.93453579</td>
+<td>2.0e-14</td>
+<td>2.7e-14</td>
+<td>3.6e-14</td>
+<td>2.3e-14</td>
+<td>3.0e-12 / 2.8e-12</td>
+<td>2.3e-12 / 2.6e-12</td>
+<td>yes</td>
+<td>103</td>
 </tr>
 </tbody>
 </table>
