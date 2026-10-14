@@ -1,0 +1,166 @@
+{
+ "source": "dmrg",
+ "N": 24,
+ "J2": 0.2411,
+ "eps": 0.01,
+ "order": 1,
+ "bandwidth": "certified",
+ "sweep_L": 1,
+ "seed": 1234,
+ "inputs": {
+  "E0": -9.556221253962802,
+  "E1": -9.41194332521258,
+  "Etop": 7.076049999999928,
+  "W": 30.784371253962853,
+  "W_cert": 30.784371253962853,
+  "gap_scaled": 0.00468672650677085,
+  "gap_raw": 0.14427792875022227,
+  "gamma": 0.5757254555357134,
+  "gamma_src": "DMRG-MPS overlap (uncertified)",
+  "trial_F_ed": NaN,
+  "trial_F_dmrg": 0.5757254555357134,
+  "dmrg_ed_overlap": NaN,
+  "alpha": 0.03474060287485881,
+  "alpha_tri": 0.03474060287485881,
+  "e0_slack": 5.37970506021994e-08,
+  "W_exact_dmrg": 16.632271253962728,
+  "dense": false,
+  "mpo_err": null,
+  "n_pauli_terms": 135,
+  "trial_layers": 1,
+  "trial_cost": {
+   "cx": 69.0,
+   "h": 370.0,
+   "s": 0.0,
+   "rz": 444.0,
+   "rz_nonclifford": 430.0,
+   "total": 883.0,
+   "depth": 511.0,
+   "t_count_est": 8884.080328765402
+  },
+  "build_s": 35.15251445770264,
+  "dmrg_runs": [
+   {
+    "role": "ground",
+    "converged": true,
+    "energy": -9.556221253962802,
+    "max_bond": 84,
+    "sweeps": 6,
+    "local_eig_tol": 1e-10
+   },
+   {
+    "role": "top",
+    "converged": true,
+    "energy": -7.076049999999928,
+    "max_bond": 4,
+    "sweeps": 6,
+    "local_eig_tol": 1e-10
+   },
+   {
+    "role": "excited",
+    "converged": true,
+    "energy": -9.411943325212526,
+    "max_bond": 94,
+    "sweeps": 6,
+    "local_eig_tol": 1e-10
+   }
+  ],
+  "e1_method": "local",
+  "dmrg_vs_ed": null,
+  "dmrg_converged": true
+ },
+ "per_step": {
+  "a2a": {
+   "one": {
+    "cx": 315.0,
+    "h": 969.0,
+    "s": 0.0,
+    "rz": 969.0,
+    "rz_nonclifford": 407.0,
+    "total": 2253.0,
+    "depth": 1307.0
+   },
+   "avg3": {
+    "cx": 315.0,
+    "h": 953.0,
+    "s": 0.0,
+    "rz": 983.0,
+    "rz_nonclifford": 406.0,
+    "total": 2251.0,
+    "depth": 1305.6666666666667
+   }
+  },
+  "line": {
+   "one": {
+    "cx": 618.0,
+    "h": 969.0,
+    "s": 0.0,
+    "rz": 1012.0,
+    "rz_nonclifford": 493.0,
+    "total": 2599.0,
+    "depth": 1458.0
+   },
+   "avg3": {
+    "cx": 1230.6666666666667,
+    "h": 953.0,
+    "s": 0.0,
+    "rz": 1013.3333333333334,
+    "rz_nonclifford": 466.3333333333333,
+    "total": 3197.0,
+    "depth": 1488.3333333333333
+   }
+  }
+ },
+ "designs": {
+  "guaranteed": {
+   "error": "not achievable (leakage alone exceeds the budget / not reached in sweep)"
+  }
+ },
+ "design": {
+  "source": "builder",
+  "m": 11,
+  "x": 1.0000000000000002,
+  "T_scaled": 670.3170430472479,
+  "T_phys": 21.774589369304024,
+  "eta_cert": 0.12323125707610853,
+  "eta_target": null,
+  "leak_budget": null,
+  "times": [
+   54.50685826185538,
+   6.089470844798826e-14,
+   1.829849296914465,
+   12.910121856057735,
+   223.43901434908258,
+   116.41815371956368,
+   3.8696514321974607,
+   197.24910684925516,
+   2.965391489816447e-13,
+   26.43464744401623,
+   33.65963983830477
+  ],
+  "phases": [
+   0.03823206248605934,
+   -5.8982174321592656e-08,
+   0.001709277358162569,
+   0.009233414235968055,
+   0.30459433465077684,
+   0.0557905603346146,
+   0.0033980655318769084,
+   0.07497200344864356,
+   4.475031063318443e-08,
+   0.01740794111054622,
+   0.02250602534735081
+  ],
+  "candidates": [],
+  "design_s": 134.66694951057434
+ },
+ "validation": {
+  "n": 48,
+  "est_cx": 15120.0,
+  "est_depth": 62736.0,
+  "full_cx": 15120,
+  "full_depth": 62675,
+  "cx_err_pct": 0.0
+ },
+ "wall_s": 182.73580241203308
+}

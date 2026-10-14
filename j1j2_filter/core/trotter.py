@@ -46,6 +46,37 @@ def alpha_comm(H, tight=False, reverse=False):
     return a
 
 
+def _pauli_label_on(p, qubits):
+    """Pauli string of p restricted to `qubits` (ascending), qiskit label order."""
+    out = []
+    for q in reversed(qubits):
+        x, z = bool(p.x[q]), bool(p.z[q])
+        out.append("I" if not (x or z) else "X" if x and not z else "Z" if z and not x else "Y")
+    return "".join(out)
+
+
+def alpha_commutator(H, reverse=False):
+    """alpha = sum_g || [H_g, sum_{g'>g} H_g'] ||, evaluated exactly (no triangle inequality).
+
+    Each H_g = c_g P_g is a Pauli string, so [P_g, P_g'] = 2 P_g P_g' if they anticommute and 0 otherwise;
+    P_g is unitary, hence  || [H_g, sum_{g'>g} H_g'] || = 2 |c_g| || sum_{g' anticommuting, g'>g} c_g' P_g' ||.
+    The inner sum acts on the few qubits near term g, so its norm is a tiny dense eigenvalue problem and the
+    cost is O(#terms), independent of N.  reverse=True reverses the term order."""
+    H = _strip_identity(H)
+    P, c = list(H.paulis), np.real(H.coeffs)
+    if reverse:
+        P, c = P[::-1], c[::-1]
+    total = 0.0
+    for g in range(len(P) - 1):
+        idx = [j for j in range(g + 1, len(P)) if not P[g].commutes(P[j])]
+        if not idx:
+            continue
+        qubits = sorted({q for j in idx for q in range(len(P[j])) if P[j].x[q] or P[j].z[q]})
+        B = SparsePauliOp([_pauli_label_on(P[j], qubits) for j in idx], [c[j] for j in idx])
+        total += 2.0 * abs(c[g]) * float(np.max(np.abs(np.linalg.eigvalsh(B.to_matrix()))))
+    return total
+
+
 def trotter_alpha(H, tight=True):
     """Safe alpha: max over both term orders, so the bound holds whichever
     ordering convention the commutator theorem uses for the synthesized
