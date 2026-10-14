@@ -6,6 +6,7 @@
 \usepackage{enumitem}
 
 \newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
 \theoremstyle{definition}
 \newtheorem*{remark}{Remark}
 
@@ -45,6 +46,74 @@ where $\ell$ is the \emph{leakage} of the exact filter (Section~\ref{sec:leak}),
 error (Section~\ref{sec:trotter}) and $\pg$ a lower bound on the success probability (Section~\ref{sec:filter}).
 Everything below derives \eqref{eq:star} and how its ingredients are chosen.
 
+\section{Hypotheses and the conditional theorem}\label{sec:thm}
+The classical inputs come from DMRG and are not exact. We make the dependence explicit. Let $E_s=E_0^{\rm DMRG}$ be the energy used
+as the shift, and let $\psi_0$ be the DMRG reference state, with $E_s=\braket{\psi_0}{H\psi_0}$. Let $\Pi_0$ be the projector onto the
+exact ground space (eigenvalue $E_0$, any degeneracy) and $E_1$ the lowest level above it. Write
+\[
+  \varepsilon_0=E_s-E_0\;\ge\;0\ \text{(variational)},\qquad
+  \mu_0=\min_{\varphi\perp\psi_0}\braket{\varphi}{H\varphi},\qquad
+  \varepsilon_1=E_1^{\rm DMRG}-\mu_0 ,
+\]
+where $E_1^{\rm DMRG}$ is the energy found by the orthogonality-penalized solve (Section~\ref{sec:status}).
+
+\paragraph{Hypotheses.}
+\begin{enumerate}[label=(H\arabic*),leftmargin=*]
+\item The target is the ground space $\Pi_0$ (nondegenerate or not); $\gamma:=\norm{\Pi_0\psi}^2$ is the trial state's weight in the \emph{whole}
+      ground space, and all statements below are about the weight $\norm{\Pi_0\tilde\psi}^2$ of the output, not about a single chosen vector.
+\item The user supplies bounds $\varepsilon_0\le\bar\varepsilon_0$ and $\varepsilon_1\le\bar\varepsilon_1$. Neither is computable from DMRG
+      alone; they are inputs (the runs reported here set $\bar\varepsilon_0=\bar\varepsilon_1=0$, see below).
+\end{enumerate}
+
+\paragraph{Derived quantities.} With $\delta_0=\bar\varepsilon_0/W$, $\delta_1=\bar\varepsilon_1/W$, and $\Delta_{\rm D}=(E_1^{\rm DMRG}-E_s)/W$:
+\begin{align}
+  \Delta_*&=\Delta_{\rm D}-\delta_1 \quad(>0\text{ required}),\\
+  s^2&=\frac{\bar\varepsilon_0}{W(\Delta_*)},\quad \theta_1=\arcsin s,\quad \theta_2=\arccos\abs{\braket{\psi_0}{\psi}},\quad
+  \gamma_*=\cos^2(\theta_1+\theta_2)\ \ (\text{if }\theta_1+\theta_2\le\tfrac\pi2).
+\end{align}
+
+\begin{lemma}[Spectral window]\label{lem:window}
+Scaled by $\Hs=(H-E_s)/W$ with $W\ge E_{\rm top}-E_0$: the ground space sits at $e_g=-\varepsilon_0/W\in[-\delta_0,0]$, every other eigenvalue
+lies in $[\Delta_*,1]$.
+\end{lemma}
+\begin{proof}
+$e_g=(E_0-E_s)/W=-\varepsilon_0/W$. For the rest, $E_1\ge\mu_0$ by Courant--Fischer (Section~\ref{sec:status}), so $(E_1-E_s)/W\ge(\mu_0-E_s)/W
+=\Delta_{\rm D}-\varepsilon_1/W\ge\Delta_*$. The upper end: $(E_{\rm top}-E_s)/W\le(E_{\rm top}-E_0)/W\le1$.
+\end{proof}
+
+\begin{lemma}[Purity of the reference and a certified $\gamma$]\label{lem:purity}
+$1-\norm{\Pi_0\psi_0}^2\le\varepsilon_0/(E_1-E_0)\le s^2$, and consequently $\gamma\ge\gamma_*$.
+\end{lemma}
+\begin{proof}
+Write $w_k$ for the weight of $\psi_0$ on level $E_k$. Then $\varepsilon_0=\sum_kw_k(E_k-E_0)\ge(E_1-E_0)(1-w_0)$, and
+$E_1-E_0\ge W\Delta_*$ by Lemma~\ref{lem:window}, giving $\sin^2\theta(\psi_0,\Pi_0)\le s^2$. The angle $\theta(a,b)=\arccos\abs{\braket ab}$ is a metric
+on rays (Fubini--Study), and $\theta(\psi,\Pi_0)=\min_{v\in\Pi_0}\theta(\psi,v)$, so
+$\theta(\psi,\Pi_0)\le\theta(\psi,\psi_0)+\theta(\psi_0,\Pi_0)\le\theta_2+\theta_1$. Hence $\norm{\Pi_0\psi}=\cos\theta(\psi,\Pi_0)\ge\cos(\theta_1+\theta_2)$.
+\end{proof}
+
+\begin{theorem}[Conditional certificate]\label{thm:main}
+Assume (H1)--(H2). Design the filter with
+\[
+  \eta_*=\frac{\sup_{E\in[\Delta_*,1]}\abs{F(E)}}{F(0)-L\delta_0},\qquad \pg=\gamma_*\bigl(F(0)-L\delta_0\bigr)^2,\qquad
+  \ell=\frac{(1-\gamma_*)\eta_*^2}{\gamma_*+(1-\gamma_*)\eta_*^2},
+\]
+and run $n$ Lie--Trotter steps with $\eps_T=\alpha T^2/(2n)$. Then the output state satisfies
+\[
+  1-\norm{\Pi_0\tilde\psi}^2\;\le\;\Bigl(\sqrt\ell+\eps_T/\sqrt{\pg}\Bigr)^2 .
+\]
+\end{theorem}
+The proof is Sections~\ref{sec:filter}--\ref{sec:combine} with the window of Lemma~\ref{lem:window}: $\abs{F(e_g)}\ge F(0)-L\delta_0$ by the Lipschitz
+bound of Lemma~\ref{lem:F2}, all excited components obey $\abs F\le\sup_{[\Delta_*,1]}\abs F$, and $\gamma\ge\gamma_*$ by Lemma~\ref{lem:purity};
+all three enter the bounds monotonically. In the degenerate case the "ground vector" $g$ in Section~\ref{sec:combine} is the normalized
+$\Pi_0\psi_f$, and the weight in $\Pi_0$ replaces the overlap with a single vector.
+
+\paragraph{What the reported runs certify.} The pipeline sets $\bar\varepsilon_0=\bar\varepsilon_1=0$ and takes $\gamma$ as the overlap of the trial state with the
+DMRG reference state ($\theta_1=0$). Its numbers are therefore the theorem evaluated at zero reference error: they are
+\emph{conditional on the DMRG shift, gap and reference state being exact}, not unconditional guarantees. The measured DMRG errors
+($\sim10^{-13}$ against exact diagonalization for $N\le20$) make that condition plausible for the cases run, but it is not proved.
+Inflating $\bar\varepsilon_0,\bar\varepsilon_1$ reproduces a certificate that holds for any true errors below them, at the price of a
+smaller $\Delta_*$, a smaller $\gamma_*$ and a longer circuit; this is not yet wired into the code.
+
 \section{Overview}
 \begin{center}
 \small
@@ -71,9 +140,9 @@ $\mathbf S=\boldsymbol\sigma/2$. Each bond is $\tfrac14(XX+YY+ZZ)$, so $H=\sum_\
 (plus an identity coefficient $c_I$, zero for plain Heisenberg bonds). There are $3(N-1)+3(N-2)$ terms for $J_2\neq0$.
 Code: \code{hamiltonians.j1j2\_hamiltonian}.
 
-\paragraph{Shift.} $E_0$ is the DMRG ground-state energy; $\Hs=(H-E_0)/W$ places the ground state at $0$. No further
-slack is applied: at the DMRG accuracies used ($\sim10^{-13}$ against exact diagonalization) the offset between the DMRG
-and true $E_0$ is negligible, and treating it as an extra parameter only complicated the derivation.
+\paragraph{Shift.} $E_0$ is the DMRG ground-state energy; $\Hs=(H-E_0)/W$ places the ground state at $0$. Since DMRG is variational the
+shift satisfies $E_s\ge E_0$; the effect of this offset is carried explicitly by Theorem~\ref{thm:main} through $\bar\varepsilon_0$, and the
+reported runs take it to be zero (Section~\ref{sec:thm}).
 
 \paragraph{Chosen value: the bandwidth.}
 \begin{equation}\label{eq:W}
@@ -133,7 +202,7 @@ Define the worst-case contraction
 \begin{equation}
   \eta=\sup_{E\in[\Delta,1]}\frac{\abs{F(E)}}{\abs{F(0)}} .
 \end{equation}
-If $\operatorname{spec}(\Hs)\subset\{0\}\cup[\Delta,1]$ then $\sum_{k\ge1}\abs{\psi_k}^2F(E_k)^2\le(1-\gamma)\eta^2F(0)^2$, so the
+If $\operatorname{spec}(\Hs)\subset\{0\}\cup[\Delta,1]$ (for a degenerate ground space all ground components share the eigenvalue $0$ and $\gamma$ is their total weight) then $\sum_{k\ge1}\abs{\psi_k}^2F(E_k)^2\le(1-\gamma)\eta^2F(0)^2$, so the
 fidelity of the exact filtered state $\psi_f=a/\norm a$ with $\ket g$ is
 \begin{equation}
   \abs{\braket g{\psi_f}}^2=\frac{\gamma F(0)^2}{\gamma F(0)^2+\sum_{k\ge1}\abs{\psi_k}^2F(E_k)^2}
@@ -177,9 +246,16 @@ The first-derivative bound is the same argument.
 Starting from a coarse grid, intervals whose bound is below $(1+\mathrm{rtol})\times$ the current maximum are pruned
 (keeping that upper bound) and the rest are bisected. The returned supremum is the larger of the best grid value and the
 pruned upper bounds, hence a rigorous upper bound on $\sup_{[\Delta,1]}\abs F$ (looser only if the interval cap is hit,
-flagged by \code{converged=False}). The denominator is $F(0)=\prod_i\cos\varphi_i$, exact at the reference energy, so
+flagged by \code{converged=False}). The denominator is $F(0)=\prod_i\cos\varphi_i$ (replaced by $F(0)-L\delta_0$ when a shift bound $\bar\varepsilon_0>0$ is used), so
 $\eta=\sup/F(0)$. Code: \code{floor.py: certify} during design, \code{core/filter\_design.py: certify\_filter} (grid maximum
 $+Lh/2$) on the snapped grid; the pipeline takes the smaller of the two, both valid.
+
+\paragraph{Floating-point caveat.} The interval bound \eqref{eq:taylor} is evaluated in double precision. The recurrence is
+exact in real arithmetic, but each evaluation of $F$, $F'$ carries a relative rounding error of order $m\,u$ with $u\approx1.1\times10^{-16}$
+(so $\lesssim10^{-14}$ for $m\le12$), far below the pruning tolerance ($0.5$--$2\%$). The certificate is thus ``numerically verified'', not formally
+machine-checked: a formal claim would require interval arithmetic with outward rounding (e.g.\ Arb) or an explicit inflation of the supremum by
+a proven rounding bound, neither of which is implemented. The SLSQP design step is not part of the certificate; only the final evaluation of
+$\sup\abs F$ and $F(0)$ is.
 
 \section{Choosing the filter}\label{sec:design}
 \paragraph{Chosen.} The total time $T=\sum_it_i=x\pi/\Delta$, the number of pulses $m$, the times $t_i$ and the phases
@@ -323,58 +399,66 @@ smallest $n$ with measured infidelity $\le\eps$ is also reported. It is not guar
 $n$) and is reported only as the practical cost.
 
 \section{Resource costs}\label{sec:cost}
-\paragraph{Gate counts.} One Trotter step of one pulse is transpiled once (optimization level 3, basis $\{h,s,\mathrm{cx},r_z\}$),
-its CX count and depth are multiplied by $n$, and the $m$ ancilla rotations and the trial-state circuit are added. This was
-validated against a full transpile of the whole circuit (0.0\% CX difference at $n=48$).
+The costs separate into three kinds with different standing.
 
-\paragraph{Non-Clifford $R_z$ and $T$.} An $r_z$ whose angle is a multiple of $\pi/2$ is Clifford; the rest are counted. The
-$T$-count of synthesizing them is approximated by $1.15\log_2(1/\eps_{\rm syn})+9.2$ per rotation. The slope $1.15$ is from the
-repeat-until-success analysis~\cite{bocharov}; the additive $9.2$ is \textbf{not verified}. Ross and Selinger~\cite{ross} give
-$\approx3\log_2(1/\eps)$ for ancilla-free synthesis.
+\paragraph{Bounds (follow from the certificate).} The Trotter step count $n$ (Section~\ref{sec:choose}), the number of pulses $m$ and per-pulse step
+counts $k_i$, hence the number of controlled Pauli rotations $n\times\#\text{terms}$; and $P_{\rm succ}\ge\pg$, so that under independent attempts
+the expected number of repetitions is at most $1/\pg$.
 
-\paragraph{Expected cost.} Dividing by the success probability $\pg$ gives the expected CX count including repeats. Code:
-\code{core/resources.py}, \code{pipeline.py: per\_step\_costs, costs, measured\_cost}.
+\paragraph{Compiler-dependent counts (estimates, not bounds).} One Trotter step of one pulse is transpiled once (optimization level 3, basis
+$\{h,s,\mathrm{cx},r_z\}$) and its CX count and depth multiplied by $n$, with the $m$ ancilla rotations and the trial-state circuit added.
+These are outputs of qiskit's heuristic compiler on an all-to-all (or a line) topology, not minimal counts. The per-step method was validated against
+a full transpile of the whole circuit ($0.0\%$ CX difference at $n=48$). The metric for fault-tolerant cost is the number of
+\emph{non-Clifford} $r_z$ rotations (angles not a multiple of $\pi/2$); no $T$-count is reported, because the cost of synthesizing a rotation depends on
+constants that are not verified here and on the downstream synthesis method.
+
+\paragraph{Not included.} The expected-repetition figure is not the whole hardware cost: ancilla measurement and reset time, classical feed-forward
+for the early abort, the native implementation of the controlled Pauli rotations on a real connectivity, calibration and error mitigation or
+correction overhead, and routing beyond the topologies tested are all additional. The totals above are gate counts of an ideal circuit.
+
+Code: \code{core/resources.py}, \code{pipeline.py: per\_step\_costs, costs, measured\_cost}.
 
 \section{What is rigorous and what is an assumption}\label{sec:status}
 \begin{center}
 \small
-\begin{tabular}{@{}p{0.31\linewidth}p{0.17\linewidth}p{0.42\linewidth}@{}}
+\begin{tabular}{@{}p{0.30\linewidth}p{0.20\linewidth}p{0.40\linewidth}@{}}
 \toprule
 Ingredient & Status & Notes\\
 \midrule
 $\operatorname{spec}(\Hs)\le1$ & Rigorous & triangle inequality on the Pauli sum (Sec.~\ref{sec:scale})\\
 Pulse implements $\cos(\Hs t+\varphi)$ & Rigorous & algebra, also checked numerically\\
-$P_{\rm succ}\ge\gamma F(0)^2$; leakage \eqref{eq:leak} & Rigorous given $\gamma,\Delta$ & non-degenerate ground state\\
-Bound on $\eta$ & Rigorous given $[\Delta,1]$ & second-derivative branch and bound\\
+Leakage \eqref{eq:leak}, $P_{\rm succ}\ge\gamma F(0)^2$ & Rigorous given the window and $\gamma$ & Sec.~\ref{sec:filter}--\ref{sec:leak}\\
+Bound on $\eta$ & Numerically verified & second-derivative branch and bound in double precision; no interval arithmetic (Sec.~\ref{sec:cert})\\
 Trotter bound $\alpha t^2/2k$ & Rigorous & commutator bound with exact $\alpha$\\
 Combination \eqref{eq:star} & Rigorous & Sec.~\ref{sec:combine}\\
-$\gamma$ & \textbf{Assumption} & DMRG/MPS overlap, not a lower bound on $\abs{\braket g\psi}^2$\\
-$\Delta$ & Rigorous up to $\varepsilon_1$ & $\Delta_{\rm true}\ge\Delta_{\rm DMRG}-\varepsilon_1/W$, with $\varepsilon_1\ge0$ the optimization error of the constrained solve (Sec.~\ref{sec:status}); $\varepsilon_1$ is not computable\\
-DMRG $E_0$ as the exact shift & \textbf{Assumption} & accurate to $\sim10^{-13}$ for $N\le20$\\
-$T$-count constant $+9.2$ & Unverified & used only for fault-tolerant estimates\\
+Shift $E_s$ & Conditional on $\bar\varepsilon_0$ & Thm.~\ref{thm:main}; runs use $\bar\varepsilon_0=0$\\
+Gap $\Delta$ & Conditional on $\bar\varepsilon_1$ & $\Delta_{\rm true}\ge\Delta_{\rm D}-\varepsilon_1/W$ (below); runs use $\bar\varepsilon_1=0$\\
+Trial weight $\gamma$ & Conditional on $\bar\varepsilon_0,\bar\varepsilon_1$ & $\gamma\ge\gamma_*$ by Lemma~\ref{lem:purity}; runs use the overlap with the DMRG reference\\
+Degeneracy & Handled & target is the ground space $\Pi_0$ (Thm.~\ref{thm:main}); the open even-$N$ J1--J2 chain is expected to have a nondegenerate singlet ground state, and a degenerate space would show up as $\Delta\approx0$\\
+Resource counts & See Sec.~\ref{sec:cost} & only $n$, pulse counts and the repetition bound are bounds\\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\paragraph{$\gamma$ and $\Delta$ are the two inputs the guarantee depends on.} \eqref{eq:star} is a \emph{conditional}
-certificate: it holds when the DMRG gap does not exceed the true gap and the trial overlap does not exceed the true overlap.
-With DMRG energies accurate to $\sim10^{-13}$ (validated against exact diagonalization for $N=8$--$20$ including the
-dimerized phase) these assumptions are very likely to hold in the cases run, but they are assumptions. Practical mitigations:
-$\Delta_{\rm used}=(1-\rho)\Delta_{\rm DMRG}$ and $\gamma_{\rm used}=(1-\rho)\gamma_{\rm DMRG}$ for a safety margin $\rho$.
+\paragraph{Which results are rigorous.} Everything in Sections~\ref{sec:pulse}--\ref{sec:combine} is rigorous given the window and the weight
+$\gamma$. Whether the window and $\gamma$ are right is exactly what DMRG cannot certify without a lower bound on the gap, so the reported
+numbers are \emph{conditional certificates} (Section~\ref{sec:thm}). The rounding of the interval certificate is the only other gap between
+the claim and a formal proof.
 
 \paragraph{Direction of the gap error (interlacing).} Let $\mu_0=\min_{\varphi\perp\psi_0}\braket{\varphi}{H\varphi}$ for any unit $\psi_0$.
 By Courant--Fischer, $E_1=\max_v\min_{\varphi\perp v}\braket{\varphi}{H\varphi}\ge\mu_0$, and trivially $\mu_0\ge E_0$, so
 $E_0\le\mu_0\le E_1$ for \emph{every} $\psi_0$. DMRG on the penalized problem returns $E_1^{\rm DMRG}=\mu_0+\varepsilon_1$ with
-$\varepsilon_1\ge0$ its optimization and truncation error, and $E_0^{\rm DMRG}=E_0+\varepsilon_0$ with $\varepsilon_0\ge0$. Hence
+$\varepsilon_1$ its optimization and truncation error (nonnegative apart from the tiny residual overlap discussed below), and $E_0^{\rm DMRG}=E_0+\varepsilon_0$ with $\varepsilon_0\ge0$. Hence
 \[
   E_1-E_0\;\ge\;\mu_0-E_0\;=\;\bigl(E_1^{\rm DMRG}-E_0^{\rm DMRG}\bigr)-\varepsilon_1+\varepsilon_0\;\ge\;\mathrm{gap}^{\rm DMRG}-\varepsilon_1 .
 \]
 The DMRG gap can therefore overestimate the true gap only by the (nonnegative) optimization error $\varepsilon_1$; an inaccurate
 $\psi_0$ makes $\mu_0$ smaller, which only widens the window and is conservative. $\varepsilon_1$ is not computable (a bound on
 $\mu_0$ itself would be needed), so the guarantee is stated up to $\varepsilon_1$, validated at $\sim10^{-13}$ against exact
-diagonalization for $N\le20$. A margin $\Delta_{\rm used}=\Delta_{\rm DMRG}-\varepsilon_1^{\rm est}/W$ with a generous estimate makes
-the certificate hold up to that error. The same argument does \emph{not} give a bound on the \emph{ground-state weight} of $\psi_0$,
-which needs a lower bound on $E_1$ as input.
+diagonalization for $N\le20$. Using $\Delta_*=\Delta_{\rm D}-\bar\varepsilon_1/W$ (Theorem~\ref{thm:main}) makes the certificate hold for any
+true $\varepsilon_1\le\bar\varepsilon_1$. The ground-state weight of $\psi_0$ is bounded by Lemma~\ref{lem:purity}, which \emph{uses} this gap bound.
+The solve is penalized rather than constrained and its returned state has a residual overlap with $\psi_0$ of order $10^{-14}$; this tiny
+difference between the penalized energy and $\mu_0$ is absorbed in $\varepsilon_1$, which is only required to be bounded above.
 
 \paragraph{How $E_1$ is obtained.} $E_1$ is the lowest energy of any symmetry orthogonal to $\psi_0$, from DMRG on
 $H+\lambda\ket{\psi_0}\!\bra{\psi_0}$ with $\lambda=1.1\,W$, applying the projector as a rank-one term in each local two-site
@@ -387,7 +471,7 @@ problem (\code{get\_energies.py: OrthoDMRG2}). An $S^z$-sector shortcut is not v
       $\sum_g\norm{[H_g,\sum_{g'>g}H_{g'}]}$, evaluated exactly on the local support of each term (one code path for all $N$).
 \item \textbf{Trace distance.} The bound is stated in trace distance, $(\sqrt\ell+\eps_T/\sqrt{\pg})^2$, instead of the
       $2$-norm form $(\sqrt{2\ell}+2\eps_T/\sqrt{\pg})^2$; for the same budget this lowers the required $n$ by a factor of at least $2$.
-\item \textbf{No $E_0$ slack.} The extra term in the denominator of $\eta$ is removed.
+\item \textbf{$E_0$ slack.} The ad hoc $\sqrt{\mathrm{Var}}/W$ slack is gone; shift uncertainty enters only through the explicit bound $\bar\varepsilon_0$ of Theorem~\ref{thm:main} (zero in the reported runs).
 \item \textbf{No Pinsker or separate lemmas}; one chain of three inequalities: leakage, telescoping, triangle.
 \end{enumerate}
 \paragraph{Still possible.}
@@ -410,10 +494,6 @@ problem (\code{get\_energies.py: OrthoDMRG2}). An $S^z$-sector shortcut is not v
 \bibitem{trotter} H.~F.~Trotter, \emph{On the product of semi-groups of operators}, Proc.\ Amer.\ Math.\ Soc.\ \textbf{10}, 545 (1959).
 \bibitem{rodeo} K.~Choi, D.~Lee, J.~Bonitati, Z.~Qian, J.~Watkins, \emph{Rodeo algorithm for quantum computing},
   Phys.\ Rev.\ Lett.\ \textbf{127}, 040505 (2021). \emph{(From memory.)}
-\bibitem{bocharov} A.~Bocharov, M.~Roetteler, K.~M.~Svore, \emph{Efficient synthesis of universal repeat-until-success quantum
-  circuits}, Phys.\ Rev.\ Lett.\ \textbf{114}, 080502 (2015).
-\bibitem{ross} N.~J.~Ross, P.~Selinger, \emph{Optimal ancilla-free Clifford+$T$ approximation of $z$-rotations},
-  Quantum Inf.\ Comput.\ \textbf{16}, 901 (2016), arXiv:1403.2975.
 \end{thebibliography}
 
 \noindent\emph{Items marked ``from memory'' were not checked against the source in this session; the SBC paper, Eggert's paper

@@ -120,8 +120,7 @@ A("* **Counting.** One Trotter step of one pulse (all bonds, ancilla-controlled)
   "(`optimization_level=3`, basis cx/h/s/rz); filter counts = n × per-step + per pulse (one Rz(2φ), two H). "
   "At small n this was checked against a full transpile of the real early-abort circuit (Section 9). "
   "`RZ` counts every `rz` gate in the basis; `RZ (non-Cliff.)` only those whose angle is not a multiple of π/2 "
-  "(these drive the T-count). The T-count is the pipeline's rough estimate (1.15·log2(1/ε_synth)+9.2 T per rotation, "
-  "ε_synth = 1e-3); its constants are unverified. "
+  "(the metric used for fault-tolerant cost; no T-count is reported because the synthesis constants are unverified). "
   "**Totals include the trial circuit.** Connectivity is all-to-all unless marked *line* "
   "(ancilla at the end of a line: pessimistic).")
 A("* **Success path.** All counts are for the all-zeros (success) path. The expected cost per accepted run is "
@@ -181,7 +180,7 @@ def design_tables(source, which, N_list, title_prefix, eps=EPS_MAIN, tag=""):
     rows1, rows2, rows3 = [], [], []
     h1 = ["N", "J2", "pulses", "n (steps)", "kᵢ", "T (scaled)", "T (phys)", "η cert.", "ε bound", "P_succ lb"]
     h2 = ["N", "J2", "CX trial", "CX filter", "CX total", "RZ total", "RZ (non-Cliff.)", "H total", "depth total",
-          "T-count (est.)", "E[CX]/accept", "CX total (line)"]
+          "E[CX]/accept", "CX total (line)"]
     h3 = ["N", "J2", "measured 1−F", "F (ED)", "P_succ meas.", "state err vs exact", "bound holds", "full-transpile CX (n ≤ 200)"]
     for J2 in J2_ORDER:
         for N in N_list:
@@ -195,7 +194,7 @@ def design_tables(source, which, N_list, title_prefix, eps=EPS_MAIN, tag=""):
                           f(d["T_phys"], ".2f"), f(d["eta"], ".3f"), f(d["eps_bound"], ".2e"), f(d["p_succ_lb"], ".3f")])
             rows2.append([N, jl(J2), f(r["inputs"]["trial_cost"]["cx"], "int"), f(fil(d)["cx"], "int"), f(c["cx"], "int"),
                           f(c["rz"], "int"), f(c["rz_nonclifford"], "int"), f(c["h"], "int"), f(c["depth"], "int"),
-                          f(c["t_count_est"], ".3g"), f(c["cx"] / ps, "int"), f(tot(d, "line")["cx"], "int")])
+                          f(c["cx"] / ps, "int"), f(tot(d, "line")["cx"], "int")])
             ft = d.get("full_transpile_check")
             rows3.append([N, jl(J2), f(d.get("eps_actual"), ".2e"), f(d.get("F_ed"), ".5f"), f(d.get("p_succ"), ".3f"),
                           f(d.get("state_err"), ".2e"),
@@ -349,7 +348,7 @@ A("")
 Nl = [N for N in (14, 16, 18, 20, 24, 28, 32) if sel("dmrg", N)]
 for eps in (EPS_MAIN, 1e-1):
     rows, hd = [], ["N", "J2", "γ", "Δ", "W", "α", "pulses", "n (steps)", "T (scaled)", "T (phys)", "CX trial", "CX filter", "CX total",
-                    "RZ total", "RZ (non-Cliff.)", "H total", "depth", "T-count (est.)", "P_succ lb", "ε bound", "CX total (line)", "DMRG converged"]
+                    "RZ total", "RZ (non-Cliff.)", "H total", "depth", "P_succ lb", "ε bound", "CX total (line)", "DMRG converged"]
     for J2 in J2_ORDER:
         for N in Nl:
             r = one("dmrg", N, J2, eps)
@@ -360,7 +359,7 @@ for eps in (EPS_MAIN, 1e-1):
             rows.append([N, jl(J2), f(i["gamma"], ".4f"), f(i["gap_scaled"], ".4f"), f(i["W"], ".2f"), f(i["alpha"], ".4f"),
                          d["n_pulses_used"], f(d["n"], "int"), f(d["T_scaled"], ".1f"), f(d["T_phys"], ".2f"),
                          f(i["trial_cost"]["cx"], "int"), f(fil(d)["cx"], "int"), f(c["cx"], "int"), f(c["rz"], "int"),
-                         f(c["rz_nonclifford"], "int"), f(c["h"], "int"), f(c["depth"], "int"), f(c["t_count_est"], ".3g"),
+                         f(c["rz_nonclifford"], "int"), f(c["h"], "int"), f(c["depth"], "int"),
                          f(d["p_succ_lb"], ".3f"), f(d["eps_bound"], ".2e"), f(tot(d, "line")["cx"], "int"), conv_str(r)])
     if rows:
         A(f"**Guaranteed designs, ε = {eps:g}**")
