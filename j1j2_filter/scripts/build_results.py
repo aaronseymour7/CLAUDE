@@ -68,9 +68,14 @@ def f(x, spec=".3g", dash="–"):
     return format(x, spec)
 
 
+def _cell(x):
+    """Escape pipes so |x| inside a header/cell does not split the markdown table column."""
+    return str(x).replace("|", "\\|")
+
+
 def md(headers, rows):
-    out = ["| " + " | ".join(headers) + " |", "|" + "|".join("---" for _ in headers) + "|"]
-    out += ["| " + " | ".join(str(c) for c in r) + " |" for r in rows]
+    out = ["| " + " | ".join(_cell(h) for h in headers) + " |", "|" + "|".join("---" for _ in headers) + "|"]
+    out += ["| " + " | ".join(_cell(c) for c in r) + " |" for r in rows]
     return "\n".join(out)
 
 
