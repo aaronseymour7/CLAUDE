@@ -349,7 +349,7 @@ Bound on $\eta$ & Rigorous given $[\Delta,1]$ & second-derivative branch and bou
 Trotter bound $\alpha t^2/2k$ & Rigorous & commutator bound with exact $\alpha$\\
 Combination \eqref{eq:star} & Rigorous & Sec.~\ref{sec:combine}\\
 $\gamma$ & \textbf{Assumption} & DMRG/MPS overlap, not a lower bound on $\abs{\braket g\psi}^2$\\
-$\Delta$ & \textbf{Assumption} & DMRG $E_1-E_0$; $E_1^{\rm DMRG}\ge E_1$ and $E_0^{\rm DMRG}\ge E_0$ are both upper bounds, so the sign of the error in their difference is not guaranteed\\
+$\Delta$ & Rigorous up to $\varepsilon_1$ & $\Delta_{\rm true}\ge\Delta_{\rm DMRG}-\varepsilon_1/W$, with $\varepsilon_1\ge0$ the optimization error of the constrained solve (Sec.~\ref{sec:status}); $\varepsilon_1$ is not computable\\
 DMRG $E_0$ as the exact shift & \textbf{Assumption} & accurate to $\sim10^{-13}$ for $N\le20$\\
 $T$-count constant $+9.2$ & Unverified & used only for fault-tolerant estimates\\
 \bottomrule
@@ -361,6 +361,20 @@ certificate: it holds when the DMRG gap does not exceed the true gap and the tri
 With DMRG energies accurate to $\sim10^{-13}$ (validated against exact diagonalization for $N=8$--$20$ including the
 dimerized phase) these assumptions are very likely to hold in the cases run, but they are assumptions. Practical mitigations:
 $\Delta_{\rm used}=(1-\rho)\Delta_{\rm DMRG}$ and $\gamma_{\rm used}=(1-\rho)\gamma_{\rm DMRG}$ for a safety margin $\rho$.
+
+\paragraph{Direction of the gap error (interlacing).} Let $\mu_0=\min_{\varphi\perp\psi_0}\braket{\varphi}{H\varphi}$ for any unit $\psi_0$.
+By Courant--Fischer, $E_1=\max_v\min_{\varphi\perp v}\braket{\varphi}{H\varphi}\ge\mu_0$, and trivially $\mu_0\ge E_0$, so
+$E_0\le\mu_0\le E_1$ for \emph{every} $\psi_0$. DMRG on the penalized problem returns $E_1^{\rm DMRG}=\mu_0+\varepsilon_1$ with
+$\varepsilon_1\ge0$ its optimization and truncation error, and $E_0^{\rm DMRG}=E_0+\varepsilon_0$ with $\varepsilon_0\ge0$. Hence
+\[
+  E_1-E_0\;\ge\;\mu_0-E_0\;=\;\bigl(E_1^{\rm DMRG}-E_0^{\rm DMRG}\bigr)-\varepsilon_1+\varepsilon_0\;\ge\;\mathrm{gap}^{\rm DMRG}-\varepsilon_1 .
+\]
+The DMRG gap can therefore overestimate the true gap only by the (nonnegative) optimization error $\varepsilon_1$; an inaccurate
+$\psi_0$ makes $\mu_0$ smaller, which only widens the window and is conservative. $\varepsilon_1$ is not computable (a bound on
+$\mu_0$ itself would be needed), so the guarantee is stated up to $\varepsilon_1$, validated at $\sim10^{-13}$ against exact
+diagonalization for $N\le20$. A margin $\Delta_{\rm used}=\Delta_{\rm DMRG}-\varepsilon_1^{\rm est}/W$ with a generous estimate makes
+the certificate hold up to that error. The same argument does \emph{not} give a bound on the \emph{ground-state weight} of $\psi_0$,
+which needs a lower bound on $E_1$ as input.
 
 \paragraph{How $E_1$ is obtained.} $E_1$ is the lowest energy of any symmetry orthogonal to $\psi_0$, from DMRG on
 $H+\lambda\ket{\psi_0}\!\bra{\psi_0}$ with $\lambda=1.1\,W$, applying the projector as a rank-one term in each local two-site
