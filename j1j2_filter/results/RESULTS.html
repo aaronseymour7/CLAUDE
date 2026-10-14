@@ -3612,12 +3612,80 @@ reference used for testing only)</p>
 <td>yes</td>
 <td>79</td>
 </tr>
+<tr class="odd">
+<td>20</td>
+<td>0.4</td>
+<td>3.7e-13</td>
+<td>2.9e-13</td>
+<td>5.3e-15</td>
+<td>4.3e-13</td>
+<td>6.8e-14</td>
+<td>local</td>
+<td>yes</td>
+<td>86</td>
+</tr>
 </tbody>
 </table>
 <p><em>Table 5a.</em> Absolute errors of the DMRG energies, the relative
 error of the gap (|ΔE1|/gap for N ≤ 14, where the E0 error is negligible
 next to it), and the overlap deficit of the ground state, against exact
 diagonalisation.</p>
+<p><strong>No exact reference: two independent runs from different
+random starts (N ≥ 24)</strong></p>
+<table>
+<colgroup>
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>N</th>
+<th>J2</th>
+<th>E0</th>
+<th>E1</th>
+<th>run-to-run</th>
+<th>ΔE0</th>
+<th></th>
+<th></th>
+<th>ΔE1</th>
+<th></th>
+<th></th>
+<th>ΔE_top</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>24</td>
+<td>0</td>
+<td>-10.45378576</td>
+<td>-10.30083406</td>
+<td>3.0e-14</td>
+<td>3.6e-15</td>
+<td>2.9e-14</td>
+<td>4.7e-14</td>
+<td>3.2e-12 / 2.6e-12</td>
+<td>2.4e-12 / 2.4e-12</td>
+<td>yes</td>
+<td>91</td>
+</tr>
+</tbody>
+</table>
+<p><em>Table 5b.</em> Agreement between two independent DMRG runs and
+the energy variance ⟨H²⟩ − ⟨H⟩² of each state. A state with variance s²
+has an exact eigenvalue within s of its energy; run-to-run agreement at
+1e-13 or better together with variances of order 1e-12 is strong
+evidence of convergence, but it is not a proof that E1 is the
+second-lowest level.</p>
 <p><strong>The ground-state weight γ used for N &gt; 14 against the
 dense value</strong></p>
 <table>
@@ -3660,11 +3728,25 @@ dense value</strong></p>
 <td>-7.0e-10</td>
 </tr>
 <tr class="even">
+<td>18</td>
+<td>0.2411</td>
+<td>0.694543127658</td>
+<td>0.694543127932</td>
+<td>-2.7e-10</td>
+</tr>
+<tr class="odd">
 <td>16</td>
 <td>0.4</td>
 <td>0.916938666774</td>
 <td>0.916938666766</td>
 <td>+7.8e-12</td>
+</tr>
+<tr class="even">
+<td>18</td>
+<td>0.4</td>
+<td>0.900035947685</td>
+<td>0.900035947967</td>
+<td>-2.8e-10</td>
 </tr>
 </tbody>
 </table>

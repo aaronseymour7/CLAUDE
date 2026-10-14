@@ -343,8 +343,17 @@ The certificate depends on E0, E1 (through Δ), the DMRG cross-check of E_top, a
 | 20 | 0.2411 | 2.9e-13 | 3.4e-13 | 3.6e-15 | 3.2e-13 | 6.3e-14 | local | yes | 77 |
 | 16 | 0.4 | 3.0e-13 | 2.8e-13 | 8.0e-15 | 7.9e-14 | 6.8e-14 | local | yes | 70 |
 | 18 | 0.4 | 3.7e-13 | 2.4e-13 | 8.9e-16 | 6.0e-13 | 7.9e-14 | local | yes | 79 |
+| 20 | 0.4 | 3.7e-13 | 2.9e-13 | 5.3e-15 | 4.3e-13 | 6.8e-14 | local | yes | 86 |
 
 *Table 5a.* Absolute errors of the DMRG energies, the relative error of the gap (|ΔE1|/gap for N ≤ 14, where the E0 error is negligible next to it), and the overlap deficit of the ground state, against exact diagonalisation.
+
+**No exact reference: two independent runs from different random starts (N ≥ 24)**
+
+| N | J2 | E0 | E1 | run-to-run |ΔE0| | |ΔE1| | |ΔE_top| | 1 − overlap(ψ0, ψ0′) | variance of ψ0 (a / b) | variance of ψ1 (a / b) | converged | max bond |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 24 | 0 | -10.45378576 | -10.30083406 | 3.0e-14 | 3.6e-15 | 2.9e-14 | 4.7e-14 | 3.2e-12 / 2.6e-12 | 2.4e-12 / 2.4e-12 | yes | 91 |
+
+*Table 5b.* Agreement between two independent DMRG runs and the energy variance ⟨H²⟩ − ⟨H⟩² of each state. A state with variance s² has an exact eigenvalue within s of its energy; run-to-run agreement at 1e-13 or better together with variances of order 1e-12 is strong evidence of convergence, but it is not a proof that E1 is the second-lowest level.
 
 **The ground-state weight γ used for N > 14 against the dense value**
 
@@ -353,7 +362,9 @@ The certificate depends on E0, E1 (through Δ), the DMRG cross-check of E_top, a
 | 16 | 0 | 0.606802310650 | 0.606802312131 | -1.5e-09 |
 | 18 | 0 | 0.554637097041 | 0.554637099565 | -2.5e-09 |
 | 16 | 0.2411 | 0.736784131818 | 0.736784132514 | -7.0e-10 |
+| 18 | 0.2411 | 0.694543127658 | 0.694543127932 | -2.7e-10 |
 | 16 | 0.4 | 0.916938666774 | 0.916938666766 | +7.8e-12 |
+| 18 | 0.4 | 0.900035947685 | 0.900035947967 | -2.8e-10 |
 
 *Table 5c.* γ is the overlap of the DMRG ground state with the trial circuit. The N > 14 path computes it by MPS contraction; the dense value is for checking only.
 

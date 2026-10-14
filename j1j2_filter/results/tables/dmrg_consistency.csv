@@ -1,0 +1,2 @@
+N,J2,E0,E1,run-to-run |ΔE0|,|ΔE1|,|ΔE_top|,"1 − overlap(ψ0, ψ0′)",variance of ψ0 (a / b),variance of ψ1 (a / b),converged,max bond
+24,0,-10.45378576,-10.30083406,3.0e-14,3.6e-15,2.9e-14,4.7e-14,3.2e-12 / 2.6e-12,2.4e-12 / 2.4e-12,yes,91
