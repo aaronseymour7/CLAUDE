@@ -37,23 +37,9 @@ from core.resources import resource_costs, rotation_synthesis_t_count   # noqa: 
 from qiskit import QuantumCircuit                     # noqa: E402
 from qiskit.transpiler import CouplingMap             # noqa: E402
 
-import get_energies as GE                             # noqa: E402
-import quimb.tensor as qtn                            # noqa: E402
+import get_energies as GE                             # noqa: E402   (settings + RUN_LOG live in get_energies.py)
 
-DMRG_LOG = []
 _ROLES = ("ground", "top", "excited")
-
-
-def _run_dmrg_logged(mpo, bond_dims=GE.BOND_DIMS, cutoff=GE.CUTOFF, tol=GE.TOL, max_sweeps=GE.MAX_SWEEPS, verbosity=0):
-    """get_energies.run_dmrg with the convergence flag recorded (call order in get_energies: ground, top, excited)."""
-    dmrg = qtn.DMRG2(mpo, bond_dims=bond_dims, cutoffs=cutoff)
-    converged = dmrg.solve(tol=tol, max_sweeps=max_sweeps, verbosity=verbosity)
-    DMRG_LOG.append(dict(role=_ROLES[len(DMRG_LOG) % 3], converged=bool(converged), energy=float(np.real(dmrg.energy)),
-                         max_bond=int(max(max(t.shape) for t in dmrg.state.arrays)), max_sweeps=max_sweeps))
-    return dmrg.energy, dmrg.state
-
-
-GE.run_dmrg = _run_dmrg_logged
 
 OUT = ROOT / "results" / "data"
 OUT.mkdir(parents=True, exist_ok=True)
@@ -63,7 +49,7 @@ J2_ALL = (0.0, 0.2411, 0.4)
 EPS_MAIN = 1e-2
 EPS_SCAN = (1e-1, 3e-2, 3e-3, 1e-3)
 SCAN_CASES = ((6, 0.0), (8, 0.0), (6, 0.4))
-LARGE_N = (16, 18, 20, 24)                    # DMRG/MPS only: no ED, no statevector, circuits counted not simulated
+LARGE_N = (16, 18, 20, 24, 28, 32)                    # DMRG/MPS only: no ED, no statevector, circuits counted not simulated
 SIM_MAX_FOR_N = {4: 200_000, 6: 200_000, 8: 200_000, 10: 200_000, 12: 200_000, 14: 150_000}   # n above this: not simulated
 
 
@@ -164,9 +150,9 @@ def run_point(source, N, J2, eps, whichs, cache):
     key = (source, N, J2)
     if key not in cache:
         t0 = time.time()
-        DMRG_LOG.clear()
+        GE.RUN_LOG.clear()
         ctx = P.run_quiet(P.build_ctx, N, P.J1, J2)
-        ctx["dmrg_runs"] = list(DMRG_LOG)
+        ctx["dmrg_runs"] = [dict(role=_ROLES[i % 3], **x) for i, x in enumerate(GE.RUN_LOG)]
         step = step_counts(ctx["H_scaled"], N)
         cache.clear()
         cache[key] = dict(ctx=ctx, step=step, build_s=time.time() - t0, des={})
@@ -185,6 +171,9 @@ def run_point(source, N, J2, eps, whichs, cache):
                            mpo_err=None if ctx.get("mpo_err") is None else float(ctx["mpo_err"]),
                            n_pauli_terms=int(len(ctx["H_scaled"]) - 1), trial_layers=P.SWEEP_L,
                            trial_cost=pick(ctx["trial_cost"]), build_s=c["build_s"], dmrg_runs=ctx.get("dmrg_runs", []),
+                           e1_method=(spec.get("dmrg_res") or {}).get("e1_method"),
+                           dmrg_vs_ed=({k: float(spec["ed"][k]) for k in ("E0_diff", "E1_diff", "E_top_diff") if k in spec["ed"]}
+                                       if spec.get("ed") else None),
                            dmrg_converged=all(x["converged"] for x in ctx.get("dmrg_runs", []))),
                per_step=step, designs={})
     t0 = time.time()

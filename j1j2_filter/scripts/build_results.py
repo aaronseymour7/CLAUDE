@@ -108,17 +108,17 @@ A("* **Two designs per case.** *Guaranteed* = smallest n whose a-priori rigorous
   "it needs simulation and is therefore only available for N ≤ 14.")
 A("* **Everything uses the DMRG spectrum.** E0, E1 (penalty method) and E_top from DMRG; the bandwidth is the **certified** "
   "W = (c_I + Σ|c_β|) − E0, which is 1.6–1.9× larger than E_top − E0 here (XX+YY+ZZ is bounded term by term), so the scaled gap "
-  "is smaller and T longer (Section 5). The DMRG gap is **not certified**.")
+  "is smaller and T longer (Section 6). The DMRG gap is **not certified**.")
 A("* **N ≤ 14 versus N > 14.** For N ≤ 14 an exact-diagonalisation cross-check and statevector simulation of the filter are available: "
   "γ is the overlap with the ED ground state, and measured 1−F, P_succ and the state error are reported. "
   "For **N > 14 there is no ED, no statevector and no dense or sparse 2^N operator**: γ is the overlap of the DMRG MPS with the "
   "trial circuit simulated as an MPS (Aer matrix-product-state), the energy variance comes from MPO contractions, α is the "
-  "triangle-inequality constant (Section 5), and circuits are **counted, not simulated** (no measured 1−F or P_succ; only the rigorous bound).")
+  "triangle-inequality constant (Table 1b), and circuits are **counted, not simulated** (no measured 1−F or P_succ; only the rigorous bound).")
 A("* **Time.** `T (scaled)` is the total evolution time Σtᵢ in units of 1/W; `T (phys)` = T/W in units of 1/J1 "
   "(H = Σ J S·S, J1 = 1). Pulses with kᵢ = 0 on the grid are dropped.")
 A("* **Counting.** One Trotter step of one pulse (all bonds, ancilla-controlled) is transpiled once with qiskit "
   "(`optimization_level=3`, basis cx/h/s/rz); filter counts = n × per-step + per pulse (one Rz(2φ), two H). "
-  "At small n this was checked against a full transpile of the real early-abort circuit (Section 8). "
+  "At small n this was checked against a full transpile of the real early-abort circuit (Section 9). "
   "`RZ` counts every `rz` gate in the basis; `RZ (non-Cliff.)` only those whose angle is not a multiple of π/2 "
   "(these drive the T-count). The T-count is the pipeline's rough estimate (1.15·log2(1/ε_synth)+9.2 T per rotation, "
   "ε_synth = 1e-3); its constants are unverified. "
@@ -134,7 +134,7 @@ A("")
 A("## 1. Case inputs (DMRG spectrum, certified bandwidth)")
 A("")
 rows, hd = [], ["N", "J2", "E0 (DMRG)", "E1", "E_top", "E_top−E0", "W (certified)", "W / (E_top−E0)", "Δ (scaled gap)", "γ (trial)", "γ source",
-                "1−γ", "α used", "Pauli terms", "trial CX", "trial RZ", "trial RZ (non-Cliff.)", "trial depth", "overlap DMRG–ED", "DMRG converged"]
+                "1−γ", "α used", "Pauli terms", "trial CX", "trial RZ", "trial RZ (non-Cliff.)", "trial depth", "E1 method", "DMRG converged"]
 for J2 in J2_ORDER:
     for N in (4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 28, 32):
         r = one("dmrg", N, J2, EPS_MAIN)
@@ -146,12 +146,13 @@ for J2 in J2_ORDER:
                      f(i["W"] / i["W_exact_dmrg"], ".2f"), f(i["gap_scaled"], ".5f"), f(i["gamma"], ".5f"), i["gamma_src"],
                      f(1 - i["gamma"], ".2e"), f(i["alpha"], ".4f"), i["n_pauli_terms"], f(tc["cx"], "int"), f(tc["rz"], "int"),
                      f(tc["rz_nonclifford"], "int"), f(tc["depth"], "int"),
-                     f(i["dmrg_ed_overlap"], ".10f") if i["dense"] else "not computed (N > 14)", conv_str(r)])
+                     i.get("e1_method") or "–", conv_str(r)])
 A(md(hd, rows))
 csv_dump("inputs.csv", hd, rows)
 A("")
 A("*Table 1.* *DMRG converged*: the ground-state, top-state and penalty-method excited-state DMRG runs each reached the sweep tolerance within 60 sweeps; "
   "a **NO** means that quantity (for the excited state, E1 and hence the gap Δ) is not converged and the design is only indicative. "
+  "*E1 method*: `penalty` = projector penalty on the ground state (N ≤ 14); `sector` = lowest S^z = 1 state (N ≥ 16; the lowest excitation is the triplet, checked against ED in Section 5). "
   "Trial circuit = L = 1 approximate brickwork circuit from the DMRG MPS. α is in scaled units: the tight commutator constant "
   "(exact spectral norms) for N ≤ 14, the triangle-inequality constant for N > 14. W is the certified bandwidth; the scaled gap Δ = (E1−E0)/W "
   "is correspondingly 1.6–1.9× smaller than with the exact bandwidth.")
@@ -246,7 +247,76 @@ A("*Table 4.* Transpiled counts of one Trotter step of one pulse (all bonds, anc
 A("")
 
 # ------------------------------------------------------------------ 5 certified bandwidth
-A("## 5. Effect of the certified bandwidth and of the MPS-only path")
+A("## 5. Accuracy of the DMRG inputs")
+A("")
+A("The certificate depends on E0, E1 (through Δ), the DMRG cross-check of E_top, and γ, all of which come from DMRG (`get_energies.py`). "
+  "The settings, chosen so that two-site DMRG reaches roughly machine precision on these 1D chains:")
+A("")
+A(md(["setting", "value", "role"], [
+    ["bond dimensions", "8, 16, 32, 64, 128, 256 (one per sweep stage)", "the cutoff, not this cap, limits the bond dimension here (χ reached: 40–100 for N = 12–24)"],
+    ["SVD cutoff", "1e-14", "discarded weight per bond ≈ energy error in 1D"],
+    ["energy tolerance", "1e-12", "stop when the energy changes by less between sweeps"],
+    ["inner Lanczos tolerance", "1e-10 (retry ×100, ×1e4 if ARPACK fails)", "quimb's default is 1e-3"],
+    ["penalty-MPO compression cutoff", "1e-15", "compression of H + λ|ψ0⟩⟨ψ0| (N ≤ 14)"],
+    ["E1 for N ≤ 14", "penalty: H + 1.1·bandwidth·|ψ0⟩⟨ψ0|", "projector MPO has bond dimension χ²"],
+    ["E1 for N ≥ 16", "lowest state of H + 1.1·bandwidth·(S^z_tot − 1)²", "MPO bond dimension +3 only; the projector MPO runs out of memory at N ≥ 16 (12 GB at N = 18)"],
+    ["max sweeps", "100", "convergence flags are recorded in Table 1"]]))
+A("")
+rows, hd = [], ["N", "J2", "|E0 − E0(ED)|", "|E1 − E1(ED)|", "|E_top − E_top(ED)|", "|ΔE1| / gap", "1 − |⟨ψ0|ψ0(ED)⟩|²", "E1 method", "converged", "max bond"]
+VAL = json.load(open(RES / "dmrg_validation.json")) if (RES / "dmrg_validation.json").exists() else {}
+for J2 in J2_ORDER:
+    for N in (4, 6, 8, 10, 12, 14):
+        r = one("dmrg", N, J2, EPS_MAIN)
+        if r is None or not r["inputs"].get("dmrg_vs_ed"):
+            continue
+        i = r["inputs"]; e = i["dmrg_vs_ed"]
+        rows.append([N, jl(J2), f(e.get("E0_diff"), ".1e"), f(e.get("E1_diff"), ".1e"), f(e.get("E_top_diff"), ".1e"),
+                     f(e.get("E1_diff", 0) / i["gap_raw"], ".1e"), f(1 - i["dmrg_ed_overlap"], ".1e"), i.get("e1_method") or "–",
+                     conv_str(r), max(x["max_bond"] for x in i["dmrg_runs"]) if i.get("dmrg_runs") else "–"])
+for key in sorted((k for k in VAL if k.startswith("ed_")), key=lambda k: (VAL[k]["J2"], VAL[k]["N"])):
+    v = VAL[key]
+    rows.append([v["N"], jl(v["J2"]), f(v["dE0"], ".1e"), f(v["dE1"], ".1e"), f(v["dEtop"], ".1e"), f(v["gap_rel"], ".1e"), f(v["one_minus_overlap"], ".1e"),
+                 v["e1_method"], "yes" if v["converged"] else "NO", max(v["max_bond"])])
+if rows:
+    A("**DMRG against exact diagonalisation** (N ≤ 14 from the main runs; N ≥ 16 from `scripts/validate_dmrg.py ed`, exact reference used for testing only)")
+    A("")
+    A(md(hd, rows))
+    csv_dump("dmrg_vs_ed.csv", hd, rows)
+    A("")
+    A("*Table 5a.* Absolute errors of the DMRG energies, the relative error of the gap (|ΔE1|/gap for N ≤ 14, where the E0 error is negligible next to it), "
+      "and the overlap deficit of the ground state, against exact diagonalisation.")
+    A("")
+cons = sorted((k for k in VAL if k.startswith("consist_")), key=lambda k: (VAL[k]["J2"], VAL[k]["N"]))
+if cons:
+    rows, hd = [], ["N", "J2", "E0", "E1", "run-to-run |ΔE0|", "|ΔE1|", "|ΔE_top|", "1 − overlap(ψ0, ψ0′)", "variance of ψ0 (a / b)", "variance of ψ1 (a / b)", "converged", "max bond"]
+    for key in cons:
+        v = VAL[key]
+        rows.append([v["N"], jl(v["J2"]), f(v["E0"], ".8f"), f(v["E1"], ".8f"), f(v["dE0"], ".1e"), f(v["dE1"], ".1e"), f(v["dEtop"], ".1e"),
+                     f(v["one_minus_overlap"], ".1e"), f"{v['var0']:.1e} / {v['var0_b']:.1e}", f"{v['var1']:.1e} / {v['var1_b']:.1e}",
+                     "yes" if v["converged"] else "NO", max(v["max_bond"])])
+    A("**No exact reference: two independent runs from different random starts (N ≥ 24)**")
+    A("")
+    A(md(hd, rows))
+    csv_dump("dmrg_consistency.csv", hd, rows)
+    A("")
+    A("*Table 5b.* Agreement between two independent DMRG runs and the energy variance ⟨H²⟩ − ⟨H⟩² of each state. A state with variance s² has an exact eigenvalue within s "
+      "of its energy; run-to-run agreement at 1e-13 or better together with variances of order 1e-12 is strong evidence of convergence, but it is not a proof that E1 is the second-lowest level.")
+    A("")
+gm = sorted((k for k in VAL if k.startswith("gamma_")), key=lambda k: (VAL[k]["J2"], VAL[k]["N"]))
+if gm:
+    rows, hd = [], ["N", "J2", "γ, MPS contraction (no ED, no statevector)", "γ, dense overlap with exact ground state", "difference"]
+    for key in gm:
+        v = VAL[key]
+        rows.append([v["N"], jl(v["J2"]), f(v["gamma_mps_contraction"], ".12f"), f(v["gamma_ed_dense"], ".12f"), f"{v['diff']:+.1e}"])
+    A("**The ground-state weight γ used for N > 14 against the dense value**")
+    A("")
+    A(md(hd, rows))
+    csv_dump("gamma_validation.csv", hd, rows)
+    A("")
+    A("*Table 5c.* γ is the overlap of the DMRG ground state with the trial circuit. The N > 14 path computes it by MPS contraction; the dense value is for checking only.")
+    A("")
+
+A("## 6. Effect of the certified bandwidth")
 A("")
 A("The certified bandwidth W = (c_I + Σ|c_β|) − E0 is a rigorous upper bound on E_top − E0 that does not rely on DMRG's E_top. "
   "It is larger than E_top − E0 (ratio in Table 1, column *W / (E_top−E0)*), which shrinks the scaled gap Δ = (E1−E0)/W, lengthens the "
@@ -268,31 +338,13 @@ A("")
 A("*Table 5.* Certified versus exact bandwidth: the scaled gap is smaller by the factor W / (E_top−E0). Because n ∝ T² ∝ Δ⁻², "
   "using the exact bandwidth would reduce the guaranteed step count by roughly the square of that ratio (not re-run here).")
 A("")
-vg = ROOT / "results" / "validation_gamma_ed.json"
-if vg.exists():
-    ref = json.load(open(vg))
-    rows, hd = [], ["N", "J2", "γ from MPS contraction (no ED, no statevector)", "γ from ED overlap (earlier run)", "difference"]
-    for key, g_ed in sorted(ref.items()):
-        N, J2 = int(key.split("_")[0][1:]), float(key.split("J2")[1])
-        r = one("dmrg", N, J2, EPS_MAIN) or one("dmrg", N, J2, 1e-1)
-        if r is not None:
-            rows.append([N, jl(J2), f(r["inputs"]["gamma"], ".6f"), f(g_ed, ".6f"), f"{r['inputs']['gamma'] - g_ed:+.1e}"])
-    if rows:
-        A("**Validation of the MPS-based γ (N > 14) against an earlier ED-based run**")
-        A("")
-        A(md(hd, rows))
-        A("")
-        A("*Table 5b.* The MPS-overlap γ agrees with the ED overlap to ~1e-6 at N = 16–18 (and to 1e-15 against the dense overlap at N ≤ 10 in a separate test). "
-          "The ED values come from a first pass of this study that used ED and statevectors for these sizes; they are kept only as this check.")
-        A("")
-
 # ------------------------------------------------------------------ 6 larger systems
-A(f"## 6. Larger J1–J2 chains (N = 14–{max(Ns_large) if Ns_large else 14}): resource costs")
+A(f"## 7. Larger J1–J2 chains (N = 14–{max(Ns_large) if Ns_large else 14}): resource costs")
 A("")
 A("N ≥ 16 is **DMRG/MPS only**: γ is the DMRG-MPS overlap of the trial circuit (uncertified), the gap is DMRG's (uncertified), W is certified, "
   "α is the triangle-inequality constant, and there is no ED, no statevector and no dense operator anywhere. The designs are therefore rigorous "
   "*given* γ and the DMRG gap. Circuits are **not simulated**; their counts are n × the transpiled per-step cost plus the trial circuit, validated "
-  "against full transpiles at n = 48 (Section 8). N = 14 (statevector-simulated, ED cross-checked) is included for continuity.")
+  "against full transpiles at n = 48 (Section 9). N = 14 (statevector-simulated, ED cross-checked) is included for continuity.")
 A("")
 Nl = [N for N in (14, 16, 18, 20, 24, 28, 32) if sel("dmrg", N)]
 for eps in (EPS_MAIN, 1e-1):
@@ -386,7 +438,7 @@ if rows:
     A("")
 
 # ------------------------------------------------------------------ 7 eps scan
-A("## 7. Dependence on the target ε")
+A("## 8. Dependence on the target ε")
 A("")
 for (N, J2) in ((6, 0.0), (8, 0.0), (6, 0.4)):
     rows, hd = [], ["ε", "design", "n", "pulses", "T (phys)", "CX total", "RZ (non-Cliff.)", "depth", "measured 1−F", "ε bound", "P_succ"]
@@ -407,7 +459,7 @@ for (N, J2) in ((6, 0.0), (8, 0.0), (6, 0.4)):
         A("")
 
 # ------------------------------------------------------------------ 8 validation + timing
-A("## 8. Checks and classical compute cost")
+A("## 9. Checks and classical compute cost")
 A("")
 rows, hd = [], ["source", "N", "J2", "n", "estimate CX (per-step × n)", "full-transpile CX", "CX error", "estimate depth", "full-transpile depth"]
 for r in sorted(R, key=lambda r: (r["source"], r["N"], r["J2"])):
@@ -545,7 +597,7 @@ if g_large:
              f"{f(max(g['n'] for _, g in g_large), 'int')} steps, {min(cxs):.2e}–{max(cxs):.2e} total CX, "
              f"{min(tot(g)['rz_nonclifford'] for _, g in g_large):.2e}–{max(tot(g)['rz_nonclifford'] for _, g in g_large):.2e} non-Clifford RZ, "
              f"T (phys) {f(min(g['T_phys'] for _, g in g_large), '.1f')}–{f(max(g['T_phys'] for _, g in g_large), '.1f')} "
-             f"(converged-DMRG points only; {nunc} further point(s) have an unconverged excited-state DMRG and are flagged in Section 6).")
+             f"(converged-DMRG points only; {nunc} further point(s) have an unconverged excited-state DMRG and are flagged in Section 7).")
 for J2 in J2_ORDER:
     k = ("CX total", J2, "dmrg")
     if k in FITS:

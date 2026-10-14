@@ -20,10 +20,19 @@ from qiskit.quantum_info import Statevector
 from hamiltonians import MPO_ham_j1j2, j1j2_hamiltonian, reorder_axes
 from mps_to_circuit import mps_to_circuit
 
-BOND_DIMS = [8, 16, 32, 64, 64]
-CUTOFF = 1e-10
-MAX_SWEEPS = 60
-TOL = 1e-10
+# DMRG accuracy settings.  The old values (bond dims <= 64, cutoff 1e-10, energy tol 1e-10, quimb's default
+# local-solver tolerance 1e-3, penalty-MPO compression 1e-12) left errors of ~1e-9 in E0/E1/gap and ~1e-10 in
+# the ground-state overlap, even for N <= 14.  These settings reach ~1e-13 (energies) / ~1e-14 (overlap) for N <= 14.
+BOND_DIMS = [8, 16, 32, 64, 128, 256]
+CUTOFF = 1e-14                 # SVD truncation per bond (1D chains: weight discarded ~ energy error)
+MAX_SWEEPS = 100
+TOL = 1e-12                    # absolute energy change between sweeps
+LOCAL_EIG_TOL = 1e-10          # inner Lanczos tolerance (quimb default 1e-3). Much below 1e-10 makes ARPACK fail.
+LOCAL_EIG_NCV = 8
+PENALTY_COMPRESS_CUTOFF = 1e-15   # compression of H + lambda|psi0><psi0| (was 1e-12, which limited E1 to ~1e-11)
+E1_METHOD = "local"            # "local": projector penalty applied inside each local DMRG solve (any N, any symmetry);
+                               # "mpo": projector penalty as a chi^2-bond MPO (original; runs out of memory for N >= 16)
+RUN_LOG = []                   # one dict per run_dmrg call: converged, energy, max bond, sweeps, local tol used
 ED_CHECK_MAX_N = 12      # dense eigh
 ED_SPARSE_MAX_N = 22     # Lanczos (low end + high end)
 
@@ -48,12 +57,89 @@ def build_projector_mpo(mps):
     return qtn.MatrixProductOperator(new_arrays, shape='lrud')
 
 
+class OrthoDMRG2(qtn.DMRG2):
+    """Two-site DMRG for the lowest state of H + lam * sum_k |phi_k><phi_k|, i.e. the lowest state (of ANY symmetry)
+    essentially orthogonal to the given states phi_k.  The projector enters each local two-site problem as the rank-1
+    term lam |w><w|, w = phi contracted with the current left/right environments.  This is mathematically the same
+    penalty as building H + lam|phi><phi| as an MPO, but never forms the chi^2-bond MPO (cost O(chi^3) per solve)."""
+
+    def __init__(self, ham, ortho_states, penalty, **kw):
+        super().__init__(ham, **kw)
+        self._pen = float(penalty)
+        self._ortho = []
+        for psi in ortho_states:
+            p = psi.copy()
+            p.retag_({p.site_tag(i): f"_O{i}" for i in range(p.L)})
+            p.reindex_({p.site_ind(j): self._b.site_ind(j) for j in range(p.L)})  # physical inds coincide with the bra's
+            p.add_tag("_ORTHO")
+            self._ortho.append(p)
+
+    def sweep(self, direction, canonize=True, verbosity=0, **update_opts):
+        # plain DMRG2 sweep; the overlap environments are rebuilt per local solve in form_local_ops
+        return super().sweep(direction, canonize=canonize, verbosity=verbosity, **update_opts)
+
+    def _block_overlaps(self, i, lix):
+        """w = <bra with sites i,i+1 removed | phi> as a tensor on the open indices lix of the 2-site block."""
+        tags = {self._b.site_tag(i), self._b.site_tag(i + 1)}
+        rest = [t for t in self._b if not any(g in t.tags for g in tags)]
+        ws = []
+        for p in self._ortho:
+            t = qtn.TensorNetwork(rest + list(p.tensors)) ^ all
+            assert set(t.inds) == set(lix), (t.inds, lix)
+            ws.append(np.asarray(t.transpose(*lix).data).reshape(-1))
+        return ws
+
+    def form_local_ops(self, i, dims, lix, uix):
+        Heff, Neff = super().form_local_ops(i, dims, lix, uix)
+        ws = self._block_overlaps(i, lix)
+        if isinstance(Heff, np.ndarray):
+            Heff = Heff + self._pen * sum(np.outer(w, w.conj()) for w in ws)
+        else:
+            from scipy.sparse.linalg import LinearOperator
+            pen, H0 = self._pen, Heff
+            Heff = LinearOperator(H0.shape, dtype=complex,
+                                  matvec=lambda x: H0 @ x + pen * sum(w * (w.conj() @ x) for w in ws))
+        return Heff, Neff
+
+
+def sz_sector_mpo(H, N, sz=1.0, factor=None):
+    """H + lam (S^z_tot - sz)^2 as an MPO (bond dimension of H + 3).  Its ground state is the lowest state with
+    S^z_tot = sz.  For the singlet-ground-state J1-J2 chain (even N) the lowest excitation is a triplet, so for sz = 1
+    that energy is E1; this avoids the chi^2-bond projector MPO of the penalty method.  lam is set in get_energies."""
+    spin = qtn.SpinHam1D(S=1 / 2)
+    spin += 1.0, "Z"                                   # S^z on every site
+    Sz = spin.build_mpo(N)
+    Sz2 = Sz.apply(Sz)
+    P = Sz2 + (-2.0 * sz) * Sz + (sz ** 2) * qtn.MPO_identity(N)
+    return H + factor * P
+
+
 def run_dmrg(mpo, bond_dims=BOND_DIMS, cutoff=CUTOFF, tol=TOL,
-             max_sweeps=MAX_SWEEPS, verbosity=0):
-    dmrg = qtn.DMRG2(mpo, bond_dims=bond_dims, cutoffs=cutoff)
-    converged = dmrg.solve(tol=tol, max_sweeps=max_sweeps, verbosity=verbosity)
+             max_sweeps=MAX_SWEEPS, verbosity=0, local_eig_tol=LOCAL_EIG_TOL,
+             local_eig_ncv=LOCAL_EIG_NCV, ortho_states=None, ortho_penalty=0.0):
+    """Two-site DMRG.  If the inner ARPACK solve fails to converge at local_eig_tol, retry with a looser one
+    (x100, x1e4) and record which tolerance was used in RUN_LOG."""
+    from scipy.sparse.linalg import ArpackNoConvergence
+    last = None
+    for factor in (1.0, 1e2, 1e4):
+        try:
+            if ortho_states:
+                dmrg = OrthoDMRG2(mpo, ortho_states, ortho_penalty, bond_dims=bond_dims, cutoffs=cutoff)
+            else:
+                dmrg = qtn.DMRG2(mpo, bond_dims=bond_dims, cutoffs=cutoff)
+            dmrg.opts["local_eig_tol"] = local_eig_tol * factor
+            dmrg.opts["local_eig_ncv"] = local_eig_ncv
+            converged = dmrg.solve(tol=tol, max_sweeps=max_sweeps, verbosity=verbosity)
+            break
+        except ArpackNoConvergence as e:
+            last = e
+    else:
+        raise last
     if not converged:
         print(f"  [warning] DMRG did not report convergence within {max_sweeps} sweeps")
+    RUN_LOG.append(dict(converged=bool(converged), energy=float(np.real(dmrg.energy)),
+                        max_bond=int(max(max(t.shape) for t in dmrg.state.arrays)),
+                        sweeps=len(dmrg.energies), local_eig_tol=float(local_eig_tol * factor)))
     return dmrg.energy, dmrg.state
 
 
@@ -128,12 +214,17 @@ def get_energies(H, N=None, j1=1.0, j2=0.0, safety_factor=1.1, run_ed_check=True
     penalty = safety_factor * bandwidth
     print(f"  spectral bandwidth = {bandwidth:.6g}, PENALTY = {penalty:.6g}")
 
-    P0 = build_projector_mpo(psi0)
-    H_exc = H + penalty * P0
-    H_exc.compress(cutoff=1e-12)
 
-    print("Running DMRG for first excited state...")
-    _, psi1 = run_dmrg(H_exc)
+    e1_method = E1_METHOD
+    if e1_method == "local":
+        print("Running DMRG for first excited state (projector penalty, local rank-1 form)...")
+        _, psi1 = run_dmrg(H, ortho_states=[psi0], ortho_penalty=penalty)
+    else:
+        print("Running DMRG for first excited state (projector penalty, MPO form)...")
+        P0 = build_projector_mpo(psi0)
+        H_exc = H + penalty * P0
+        H_exc.compress(cutoff=PENALTY_COMPRESS_CUTOFF)
+        _, psi1 = run_dmrg(H_exc)
     psi1.normalize()
     E1 = np.real(psi1.H @ H.apply(psi1))
 
@@ -143,7 +234,7 @@ def get_energies(H, N=None, j1=1.0, j2=0.0, safety_factor=1.1, run_ed_check=True
     elif run_ed_check:
         print(f"  [skip] N={N} > ED_SPARSE_MAX_N; no ED cross-check run.")
 
-    return dict(E0=E0, E1=E1, E_top=E_top, psi0=psi0, psi1=psi1, ed=ed_result)
+    return dict(E0=E0, E1=E1, E_top=E_top, psi0=psi0, psi1=psi1, ed=ed_result, e1_method=e1_method)
 
 
 # ----------------------------------------------------------------------
