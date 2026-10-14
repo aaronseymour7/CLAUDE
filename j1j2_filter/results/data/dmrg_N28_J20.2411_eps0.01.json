@@ -1,0 +1,170 @@
+{
+ "source": "dmrg",
+ "N": 28,
+ "J2": 0.2411,
+ "eps": 0.01,
+ "order": 1,
+ "bandwidth": "certified",
+ "sweep_L": 1,
+ "seed": 1234,
+ "inputs": {
+  "E0": -11.16322988504027,
+  "E1": -11.038476685230592,
+  "Etop": 8.317149999999952,
+  "W": 36.11467988504033,
+  "W_cert": 36.11467988504033,
+  "gap_scaled": 0.0034543626084127185,
+  "gap_raw": 0.12475319980967825,
+  "gamma": 0.5044938483085911,
+  "gamma_src": "DMRG-MPS overlap (uncertified)",
+  "trial_F_ed": NaN,
+  "trial_F_dmrg": 0.5044938483085911,
+  "dmrg_ed_overlap": NaN,
+  "alpha": 0.025041547807482196,
+  "alpha_tri": 0.029894479436712838,
+  "e0_dev_indicative": 4.851244971772217e-08,
+  "W_exact_dmrg": 19.48037988504022,
+  "dense": false,
+  "mpo_err": null,
+  "n_pauli_terms": 159,
+  "trial_layers": 1,
+  "trial_cost": {
+   "cx": 81.0,
+   "h": 434.0,
+   "s": 0.0,
+   "rz": 518.0,
+   "rz_nonclifford": 502.0,
+   "total": 1033.0,
+   "depth": 599.0,
+   "t_count_est": 10371.647267535423
+  },
+  "build_s": 71.91362500190735,
+  "dmrg_runs": [
+   {
+    "role": "ground",
+    "converged": true,
+    "energy": -11.16322988504027,
+    "max_bond": 101,
+    "sweeps": 7,
+    "local_eig_tol": 1e-10
+   },
+   {
+    "role": "top",
+    "converged": true,
+    "energy": -8.317149999999952,
+    "max_bond": 5,
+    "sweeps": 6,
+    "local_eig_tol": 1e-10
+   },
+   {
+    "role": "excited",
+    "converged": true,
+    "energy": -11.03847668523053,
+    "max_bond": 104,
+    "sweeps": 6,
+    "local_eig_tol": 1e-10
+   }
+  ],
+  "e1_method": "local",
+  "dmrg_vs_ed": null,
+  "dmrg_converged": true
+ },
+ "per_step": {
+  "a2a": {
+   "one": {
+    "cx": 371.0,
+    "h": 1141.0,
+    "s": 0.0,
+    "rz": 1141.0,
+    "rz_nonclifford": 479.0,
+    "total": 2653.0,
+    "depth": 1539.0
+   },
+   "avg3": {
+    "cx": 371.0,
+    "h": 1122.3333333333333,
+    "s": 0.0,
+    "rz": 1157.6666666666667,
+    "rz_nonclifford": 478.0,
+    "total": 2651.0,
+    "depth": 1537.6666666666667
+   }
+  },
+  "line": {
+   "one": {
+    "cx": 1647.0,
+    "h": 1141.0,
+    "s": 0.0,
+    "rz": 1168.0,
+    "rz_nonclifford": 533.0,
+    "total": 3956.0,
+    "depth": 1743.0
+   },
+   "avg3": {
+    "cx": 1999.0,
+    "h": 1122.3333333333333,
+    "s": 0.0,
+    "rz": 1184.6666666666667,
+    "rz_nonclifford": 531.6666666666666,
+    "total": 4306.0,
+    "depth": 1747.6666666666667
+   }
+  }
+ },
+ "designs": {
+  "guaranteed": {
+   "error": "not achievable (leakage alone exceeds the budget / not reached in sweep)"
+  }
+ },
+ "design": {
+  "source": "builder",
+  "m": 13,
+  "x": 1.0,
+  "T_scaled": 909.4565364790573,
+  "T_phys": 25.182461519083784,
+  "eta_cert": 0.16548315301329217,
+  "eta_target": null,
+  "leak_budget": null,
+  "times": [
+   303.1521788263524,
+   290.519957485136,
+   164.4580113235975,
+   75.02391034903702,
+   21.842884977562104,
+   34.93874747208322,
+   0.0,
+   10.893176810988564,
+   2.540384417991074,
+   4.2133540499746955e-14,
+   1.0318436081050026e-14,
+   6.087284816309296,
+   0.0
+  ],
+  "phases": [
+   0.27332161408244904,
+   0.16048122850955418,
+   0.05479209636825753,
+   0.023886237391149284,
+   0.002717091841598908,
+   0.013450196948082369,
+   -1.502117456991504e-06,
+   0.005110594015815338,
+   0.0030658713045955376,
+   -8.936023175058368e-07,
+   8.36387371353979e-08,
+   0.0065638642486952345,
+   -8.457833962814915e-07
+  ],
+  "candidates": [],
+  "design_s": 144.45007181167603
+ },
+ "validation": {
+  "n": 48,
+  "est_cx": 17808.0,
+  "est_depth": 73872.0,
+  "full_cx": 17808,
+  "full_depth": 73811,
+  "cx_err_pct": 0.0
+ },
+ "wall_s": 150.88961267471313
+}
