@@ -106,14 +106,14 @@ A("* **Two designs per case.** *Guaranteed* = smallest n whose a-priori rigorous
   "*Empirical* = smallest n whose **measured** 1−F (against the exact ground state) is ≤ ε. The empirical design "
   "uses the exact ground state, so it is an oracle lower envelope, not something a practitioner can know in advance; "
   "it needs simulation and is therefore only available for N ≤ 14.")
-A("* **Everything uses the DMRG spectrum.** E0, E1 (penalty method) and E_top from DMRG; the bandwidth is the **certified** "
+A("* **Everything uses the DMRG spectrum.** E0, E1 (orthogonality-penalty DMRG: lowest state of any symmetry orthogonal to ψ0) and E_top from DMRG; the bandwidth is the **certified** "
   "W = (c_I + Σ|c_β|) − E0, which is 1.6–1.9× larger than E_top − E0 here (XX+YY+ZZ is bounded term by term), so the scaled gap "
-  "is smaller and T longer (Section 6). The DMRG gap is **not certified**.")
+  "is smaller and T longer (Section 6). The DMRG gap, shift and γ are not certified: every guarantee below is a *conditional certificate* (exact only if the DMRG reference is exact; see `CERTIFICATION.tex`, Section 1 and Section 12).")
 A("* **N ≤ 14 versus N > 14.** For N ≤ 14 an exact-diagonalisation cross-check and statevector simulation of the filter are available: "
   "γ is the overlap with the ED ground state, and measured 1−F, P_succ and the state error are reported. "
   "For **N > 14 there is no ED, no statevector and no dense or sparse 2^N operator**: γ is the overlap of the DMRG MPS with the "
   "trial circuit simulated as an MPS (Aer matrix-product-state), the energy variance comes from MPO contractions, α is the "
-  "triangle-inequality constant (Table 1b), and circuits are **counted, not simulated** (no measured 1−F or P_succ; only the rigorous bound).")
+  "same exact commutator sum as for small N (Table 1b), and circuits are **counted, not simulated** (no measured 1−F or P_succ; only the rigorous bound).")
 A("* **Time.** `T (scaled)` is the total evolution time Σtᵢ in units of 1/W; `T (phys)` = T/W in units of 1/J1 "
   "(H = Σ J S·S, J1 = 1). Pulses with kᵢ = 0 on the grid are dropped.")
 A("* **Counting.** One Trotter step of one pulse (all bonds, ancilla-controlled) is transpiled once with qiskit "
@@ -151,26 +151,25 @@ csv_dump("inputs.csv", hd, rows)
 A("")
 A("*Table 1.* *DMRG converged*: the ground-state, top-state and penalty-method excited-state DMRG runs each reached the sweep tolerance within 60 sweeps; "
   "a **NO** means that quantity (for the excited state, E1 and hence the gap Δ) is not converged and the design is only indicative. "
-  "*E1 method*: `penalty` = projector penalty on the ground state (N ≤ 14); `sector` = lowest S^z = 1 state (N ≥ 16; the lowest excitation is the triplet, checked against ED in Section 5). "
-  "Trial circuit = L = 1 approximate brickwork circuit from the DMRG MPS. α is in scaled units: the tight commutator constant "
-  "(exact spectral norms) for N ≤ 14, the triangle-inequality constant for N > 14. W is the certified bandwidth; the scaled gap Δ = (E1−E0)/W "
+  "*E1 method*: `local` = projector penalty λ|ψ0⟩⟨ψ0| applied as a rank-1 term in every two-site local problem, giving the lowest state of any symmetry (checked against ED in Section 5). "
+  "Trial circuit = L = 1 approximate brickwork circuit from the DMRG MPS. α is in scaled units: the exact commutator sum Σ_g‖[H_g, Σ_{g'>g}H_g']‖ for every N (computed on the local support of each term). W is the certified bandwidth; the scaled gap Δ = (E1−E0)/W "
   "is correspondingly 1.6–1.9× smaller than with the exact bandwidth.")
 A("")
-rows, hd = [], ["N", "J2", "α tight (exact norms)", "α triangle", "triangle / tight"]
+rows, hd = [], ["N", "J2", "α (exact commutator sum)", "α triangle (diagnostic)", "triangle / exact"]
 for J2 in J2_ORDER:
-    for N in (4, 6, 8, 10, 12, 14):
+    for N in (4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 28, 32):
         r = one("dmrg", N, J2, EPS_MAIN)
-        if r is not None and r["inputs"]["dense"]:
+        if r is not None and "alpha_tri" in r["inputs"]:
             i = r["inputs"]
             rows.append([N, jl(J2), f(i["alpha"], ".5f"), f(i["alpha_tri"], ".5f"), f(i["alpha_tri"] / i["alpha"], ".3f")])
 if rows:
-    A("**α: exact norms against the triangle bound (N ≤ 14)**")
+    A("**α: exact commutator sum against the triangle bound**")
     A("")
     A(md(hd, rows))
     csv_dump("alpha_check.csv", hd, rows)
     A("")
-    A("*Table 1b.* The triangle-inequality α is rigorous and needs no 2^N operator; it is exact at J2 = 0 and about 1.0–1.25× the tight value otherwise. "
-      "It is what the N > 14 rows use, so their step counts are at most about 1.25× (J2 = 0.4), 1.19× (J2 = 0.2411) or 1.0× (J2 = 0) larger than with exact norms.")
+    A("*Table 1b.* α is the exact value of Σ_g‖[H_g, Σ_{g'>g}H_g']‖ for every N (for Pauli terms it reduces to a small dense eigenvalue problem on the support of each term). "
+      "The triangle-inequality value, which earlier versions used for N > 14, is shown for comparison: it is exact at J2 = 0 and up to about 1.25× larger otherwise.")
     A("")
 
 
@@ -256,9 +255,7 @@ A(md(["setting", "value", "role"], [
     ["SVD cutoff", "1e-14", "discarded weight per bond ≈ energy error in 1D"],
     ["energy tolerance", "1e-12", "stop when the energy changes by less between sweeps"],
     ["inner Lanczos tolerance", "1e-10 (retry ×100, ×1e4 if ARPACK fails)", "quimb's default is 1e-3"],
-    ["penalty-MPO compression cutoff", "1e-15", "compression of H + λ|ψ0⟩⟨ψ0| (N ≤ 14)"],
-    ["E1 for N ≤ 14", "penalty: H + 1.1·bandwidth·|ψ0⟩⟨ψ0|", "projector MPO has bond dimension χ²"],
-    ["E1 for N ≥ 16", "lowest state of H + 1.1·bandwidth·(S^z_tot − 1)²", "MPO bond dimension +3 only; the projector MPO runs out of memory at N ≥ 16 (12 GB at N = 18)"],
+    ["E1 (all N)", "H + 1.1·bandwidth·|ψ0⟩⟨ψ0|, projector applied as a rank-1 term in each two-site local solve", "lowest state of any symmetry; avoids the χ²-bond projector MPO, which ran out of memory at N ≥ 16 with these tolerances"],
     ["max sweeps", "100", "convergence flags are recorded in Table 1"]]))
 A("")
 rows, hd = [], ["N", "J2", "|E0 − E0(ED)|", "|E1 − E1(ED)|", "|E_top − E_top(ED)|", "|ΔE1| / gap", "1 − |⟨ψ0|ψ0(ED)⟩|²", "E1 method", "converged", "max bond"]
@@ -340,9 +337,9 @@ A("")
 # ------------------------------------------------------------------ 6 larger systems
 A(f"## 7. Larger J1–J2 chains (N = 14–{max(Ns_large) if Ns_large else 14}): resource costs")
 A("")
-A("N ≥ 16 is **DMRG/MPS only**: γ is the DMRG-MPS overlap of the trial circuit (uncertified), the gap is DMRG's (uncertified), W is certified, "
-  "α is the triangle-inequality constant, and there is no ED, no statevector and no dense operator anywhere. The designs are therefore rigorous "
-  "*given* γ and the DMRG gap. Circuits are **not simulated**; their counts are n × the transpiled per-step cost plus the trial circuit, validated "
+A("N ≥ 16 is **DMRG/MPS only**: γ is the DMRG-MPS overlap of the trial circuit, the gap is DMRG's, W is certified, "
+  "α is the exact commutator sum, and there is no ED, no statevector and no dense operator anywhere. The designs are therefore conditional certificates: rigorous *given* γ, the gap "
+  "and the shift (see `CERTIFICATION.tex`). Circuits are **not simulated**; their counts are n × the transpiled per-step cost plus the trial circuit, validated "
   "against full transpiles at n = 48 (Section 9). N = 14 (statevector-simulated, ED cross-checked) is included for continuity.")
 A("")
 Nl = [N for N in (14, 16, 18, 20, 24, 28, 32) if sel("dmrg", N)]
