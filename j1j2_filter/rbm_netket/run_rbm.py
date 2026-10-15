@@ -40,15 +40,18 @@ class RBM(nn.Module):                       # the tutorial's "FFNN" (== RBM with
 class RBMSymm(nn.Module):                   # same RBM, but symmetrised over the chain's automorphisms (reflection for an open chain)
     perms: object = None
     alpha: int = 2
+    flip: bool = False                          # also symmetrise over the global spin flip x -> -x (valid in the S^z=0 sector)
 
     @nn.compact
     def __call__(self, x):
         P = jnp.asarray(self.perms)             # (n_sym, N)
         xs = x[..., P]                          # (..., n_sym, N)
+        if self.flip:
+            xs = jnp.concatenate([xs, -xs], axis=-2)
         h = nn.Dense(features=self.alpha * x.shape[-1], use_bias=True, param_dtype=np.complex128,
                      kernel_init=nn.initializers.normal(stddev=0.01), bias_init=nn.initializers.normal(stddev=0.01))(xs)
         from jax.scipy.special import logsumexp
-        return logsumexp(jnp.sum(nknn.log_cosh(h), axis=-1), axis=-1) - jnp.log(P.shape[0])
+        return logsumexp(jnp.sum(nknn.log_cosh(h), axis=-1), axis=-1) - jnp.log(xs.shape[-2])
 
 
 def ref_energy(N, J2, sz):
@@ -77,11 +80,11 @@ def build(N, J2, sz, marshall=True):
     return g, hi, nk.operator.GraphOperator(hi, graph=g, bond_ops=ops, bond_ops_colors=[1, 2, 1, 2])
 
 
-def run(N, J2, sz, iters, samples, marshall, alpha, lr, diag_shift, seed, do_ed, model='rbm', sched='const', chains=16, discard=None):
+def run(N, J2, sz, iters, samples, marshall, alpha, lr, diag_shift, seed, do_ed, model='rbm', sched='const', chains=16, discard=None, flip=False):
     g, hi, H = build(N, J2, sz, marshall)
     sa = nk.sampler.MetropolisExchange(hilbert=hi, graph=g, d_max=2, n_chains=chains)
     if model == "symm":
-        ma = RBMSymm(perms=tuple(map(tuple, np.array(g.automorphisms().to_array()).tolist())), alpha=alpha)
+        ma = RBMSymm(perms=tuple(map(tuple, np.array(g.automorphisms().to_array()).tolist())), alpha=alpha, flip=flip)
     else:
         ma = RBM(alpha=alpha)
     vs = nk.vqs.MCState(sa, ma, n_samples=samples, n_discard_per_chain=discard, seed=seed)
@@ -113,7 +116,7 @@ if __name__ == "__main__":
     ap.add_argument("--iters", type=int, default=600); ap.add_argument("--samples", type=int, default=1008)
     ap.add_argument("--marshall", type=int, default=1); ap.add_argument("--alpha", type=int, default=2)
     ap.add_argument("--lr", type=float, default=0.01); ap.add_argument("--diag-shift", type=float, default=0.01)
-    ap.add_argument("--seed", type=int, default=0); ap.add_argument("--model", default="rbm", choices=["rbm", "symm"])
+    ap.add_argument("--seed", type=int, default=0); ap.add_argument("--model", default="rbm", choices=["rbm", "symm"]); ap.add_argument("--flip", type=int, default=0)
     ap.add_argument("--sched", default="const", choices=["const", "cos"]); ap.add_argument("--chains", type=int, default=16)
     ap.add_argument("--discard", type=int, default=None); ap.add_argument("--tag", default=""); ap.add_argument("--outdir", default="results")
     ap.add_argument("--ed", action="store_true", help="NetKet Lanczos ED reference (N<=20)")
@@ -121,7 +124,7 @@ if __name__ == "__main__":
     for N in a.N:
         for J2 in a.J2:
             for sz in a.sz:
-                r = run(N, J2, sz, a.iters, a.samples, bool(a.marshall), a.alpha, a.lr, a.diag_shift, a.seed, a.ed, a.model, a.sched, a.chains, a.discard)
+                r = run(N, J2, sz, a.iters, a.samples, bool(a.marshall), a.alpha, a.lr, a.diag_shift, a.seed, a.ed, a.model, a.sched, a.chains, a.discard, bool(a.flip))
                 json.dump(r, open(OUT / f"rbm_N{N}_J2{J2:g}_sz{sz:g}{a.tag}.json", "w"))
                 ex = f"  exact {r['E_exact']:.6f}  rel.err {r['rel_err']:.2e}" if "E_exact" in r else ""
                 print(f"{a.tag} N={N} J2={J2:g} Sz={sz:g}: E={r['E_final']:.6f}+-{r['E_final_err']:.1e}{ex}  R^={r['R_hat']:.3f} tau={r['tau_corr']:.1f} ({r['seconds']:.0f}s)", flush=True)
