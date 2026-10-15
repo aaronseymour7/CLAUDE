@@ -192,7 +192,7 @@ def run_size(N, J2, chi=2, epss=(0.1, 0.01, 0.001)):
     t0 = time.time()
     ref = DI.dmrg_reference(N, J2)
     E0d, E1d, Etd = ref["E0"], ref["E1"], ref["Etop"]
-    Wd = Etd - E0d
+    Wd = DI.weyl_top(N, J2) - E0d          # certified bandwidth (Weyl); equals Etop_dmrg - E0_dmrg to rounding
     tr = DI.trial_dmrg(N, J2, chi)
     ch = wf.Chain(N, J2, E0_used=E0d, W_used=Wd)
     psi = tr["psi"]

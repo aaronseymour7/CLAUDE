@@ -39,6 +39,43 @@ for k in ("bound", "hyb", "meas"):
 V["pk_lo"], V["pk_hi"] = f"{min(p['P_cap'] for p in P):.2f}", f"{max(p['P_cap'] for p in P):.2f}"
 V["pP_lo"], V["pP_hi"] = f"{min(p['P'] for p in P):.2f}", f"{max(p['P'] for p in P):.2f}"
 V["pn"] = str(len(P))
+
+# ---- larger chains + DMRG validation (make_large.py), hybrid cost ranges, bandwidth comparison
+import os
+L = json.loads((HERE / "results" / "large.json").read_text())
+V.update(large=L["large"], dmrg_ed=L["dmrg_ed"], dmrg_cons=L["dmrg_cons"])
+LS = L["stats"]
+g3 = lambda x: f"{x:.1e}".replace("e-0", "e-").replace("e+0", "e+")
+V.update(ed_max=g3(LS["ed_max"]), cons_max=g3(LS["cons_max"]), cons_var_max=g3(LS["cons_var_max"]), gamma_diff_max=g3(LS["gamma_diff_max"]),
+         large_Nmax=str(LS["large_Nmax"]), lg_n_lo=f"{LS['large_n'][0]:,}", lg_n_hi=f"{LS['large_n'][1]:,}",
+         lg_cx_lo=f"{LS['large_cx'][0]:.1e}".replace("e+0", "\\times10^{").replace("e+", "\\times10^{") + "}", lg_cx_hi=f"{LS['large_cx'][1]:.1e}".replace("e+0", "\\times10^{").replace("e+", "\\times10^{") + "}",
+         lg_rz_lo=f"{LS['large_rz'][0]:.1e}".replace("e+0", "\\times10^{").replace("e+", "\\times10^{") + "}", lg_rz_hi=f"{LS['large_rz'][1]:.1e}".replace("e+0", "\\times10^{").replace("e+", "\\times10^{") + "}",
+         lg_T_lo=f"{LS['large_T'][0]:.1f}", lg_T_hi=f"{LS['large_T'][1]:.1f}")
+for k_ in ("lg_cx_lo", "lg_cx_hi", "lg_rz_lo", "lg_rz_hi"):
+    V[k_] = "$" + V[k_] + "$"
+fl = LS["large_fits"]
+for idx, key in enumerate(("0.0", "0.2411", "0.4")):
+    V[f"lgfit{idx}_cx"] = f"{fl[key]['cx']:.1f}"; V[f"lgfit{idx}_n"] = f"{fl[key]['n']:.1f}"; V[f"lgfit{idx}_N"] = f"{fl[key]['Nrange'][0]}\\text{{--}}{fl[key]['Nrange'][1]}"
+gm = [m[2] for m in LS["large_missing"]]
+V["lg_gmin"], V["lg_gmax"] = (f"{min(gm):.2f}", f"{max(gm):.2f}") if gm else ("–", "–")
+hy = [v["hyb"] for v in S["cost"].values() if v["hyb"]]
+fmt = lambda x: f"${x/1e4:.0f}\\times10^{{4}}$" if x >= 1e4 else f"${x/1e3:.0f}\\times10^{{3}}$" if x >= 1e3 else f"${x:.0f}$"
+V["hyb_cx_lo"], V["hyb_cx_hi"] = fmt(min(hy)), fmt(max(hy))
+hf = [S[f"fit_J{J}"]["filt_hyb"] for J in (0.0, 0.4) if S.get(f"fit_J{J}") and S[f"fit_J{J}"].get("filt_hyb")]
+V["hybfit_lo"], V["hybfit_hi"] = f"{min(hf):.1f}", f"{max(hf):.1f}"
+bwf = HERE / "results" / "bandwidth_comparison.json"
+if bwf.exists():
+    B = json.loads(bwf.read_text())
+    V.update(bw_lo=f"{B['n_ratio_min']:.2f}", bw_hi=f"{B['n_ratio_max']:.2f}", bw_med=f"{B['n_ratio_median']:.2f}", bwT_lo=f"{B['T_ratio_min']:.2f}", bwT_hi=f"{B['T_ratio_max']:.2f}", bw_count=str(B["count"]))
+SE = json.loads((HERE / "results" / "extra_sens.json").read_text()) if (HERE / "results" / "extra_sens.json").exists() else []
+g20 = []
+for N_ in (8, 12):
+    base = [r for r in SE if r["N"] == N_ and r["kind"] == "gap" and abs(r["param"]) < 1e-12]
+    neg = [r for r in SE if r["N"] == N_ and r["kind"] == "gap" and abs(r["param"] + 0.2) < 1e-12]
+    if base and neg:
+        g20.append(neg[0]["n_bound"] / base[0]["n_bound"])
+if g20:
+    V["gapm20_lo"], V["gapm20_hi"] = f"{min(g20):.2f}", f"{max(g20):.2f}"
 for k, val in V.items():
     txt = txt.replace("{{" + k + "}}", str(val))
 left = re.findall(r"\{\{[A-Za-z_0-9]+\}\}", txt)
