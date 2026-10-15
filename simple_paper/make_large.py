@@ -15,7 +15,7 @@ J2S = (0.0, 0.2411, 0.4)
 Ns = (14, 16, 18, 20, 24, 28, 32)
 out, S = {}, {}
 
-rows = ["| $N$ | $J_2$ | $\\gamma$ | $\\Delta$ | $\\alpha$ | pulses | $n$ (guaranteed) | $T$ (phys.) | CX total | non-Clifford Rz | $P_{\\mathrm{succ}}\\ge$ |", "|---|---|---|---|---|---|---|---|---|---|---|"]
+rows = ["| $N$ | $J_2$ | $\\gamma$ | $\\Delta$ | $\\alpha$ | pulses | $n$ (guaranteed) | $T$ (phys.) | CX total (level 3) | CX (direct) | non-Clifford Rz (direct) | $P_{\\mathrm{succ}}\\ge$ |", "|---|---|---|---|---|---|---|---|---|---|---|---|"]
 missing, pts = [], []
 for J2 in J2S:
     for N in Ns:
@@ -25,23 +25,24 @@ for J2 in J2S:
         d = r["designs"]["guaranteed"]
         i = r["inputs"]
         if "n" not in d:
-            rows.append(f"| {N} | {J2:g} | {i['gamma']:.3f} | {i['gap_scaled']:.4f} | {i['alpha']:.4f} | – | not achievable | – | – | – | – |")
+            rows.append(f"| {N} | {J2:g} | {i['gamma']:.3f} | {i['gap_scaled']:.4f} | {i['alpha']:.4f} | – | not achievable | – | – | – | – | – |")
             missing.append((N, J2, i["gamma"])); continue
         t = d["counts_a2a"]["total"]
         fl = r["design"]["source"] in ("floor", "none")
-        rows.append(f"| {N} | {J2:g} | {i['gamma']:.3f} | {i['gap_scaled']:.4f} | {i['alpha']:.4f} | {d['n_pulses_used']} | {cnt(d['n'])}{'' if fl else '$^\\ddagger$'} | {d['T_phys']:.1f} | {t['cx']:.2e} | {t['rz_nonclifford']:.2e} | {d['p_succ_lb']:.3f} |")
+        rows.append(f"| {N} | {J2:g} | {i['gamma']:.3f} | {i['gap_scaled']:.4f} | {i['alpha']:.4f} | {d['n_pulses_used']} | {cnt(d['n'])}{'' if fl else '$^\\ddagger$'} | {d['T_phys']:.1f} | {t['cx']:.2e} | {d['counts_direct']['filter']['cx']:.2e} | {d['counts_direct']['filter']['rz_nonclifford']:.2e} | {d['p_succ_lb']:.3f} |")
         if fl and N >= 16:
-            pts.append((N, J2, d["n"], t["cx"], t["rz_nonclifford"], d["T_phys"]))
+            pts.append((N, J2, d["n"], t["cx"], d["counts_direct"]["filter"]["rz_nonclifford"], d["T_phys"], d["counts_direct"]["filter"]["cx"]))
 out["large"] = "\n".join(rows)
 S["large_missing"] = [(N, J2, round(g, 3)) for N, J2, g in missing]
 S["large_n"] = (min(p[2] for p in pts), max(p[2] for p in pts))
 S["large_cx"] = (min(p[3] for p in pts), max(p[3] for p in pts))
 S["large_rz"] = (min(p[4] for p in pts), max(p[4] for p in pts))
 S["large_T"] = (min(p[5] for p in pts), max(p[5] for p in pts))
+S["large_cxd"] = (min(p[6] for p in pts), max(p[6] for p in pts))
 S["large_Nmax"] = max(p[0] for p in pts)
 fits = {}
 for J2 in J2S:
-    q = [p for p in pts if p[1] == J2] + [(N, J2, R[(N, J2, 0.01)]["designs"]["guaranteed"]["n"], R[(N, J2, 0.01)]["designs"]["guaranteed"]["counts_a2a"]["total"]["cx"], 0, 0)
+    q = [p for p in pts if p[1] == J2] + [(N, J2, R[(N, J2, 0.01)]["designs"]["guaranteed"]["n"], R[(N, J2, 0.01)]["designs"]["guaranteed"]["counts_a2a"]["total"]["cx"], 0, 0, 0)
                                           for N in (6, 8, 10, 12, 14) if (N, J2, 0.01) in R and "n" in R[(N, J2, 0.01)]["designs"]["guaranteed"] and R[(N, J2, 0.01)]["design"]["source"] == "floor"]
     q.sort()
     if len(q) >= 3:

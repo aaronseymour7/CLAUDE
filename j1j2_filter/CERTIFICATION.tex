@@ -73,12 +73,12 @@ where $E_1^{\rm DMRG}$ is the energy found by the orthogonality-penalized solve 
 \end{align}
 
 \begin{lemma}[Spectral window]\label{lem:window}
-Scaled by $\Hs=(H-E_s)/W$ with $W\ge E_{\rm top}-E_0$: the ground space sits at $e_g=-\varepsilon_0/W\in[-\delta_0,0]$, every other eigenvalue
+Scaled by $\Hs=(H-E_s)/W$ with $W\ge E_{\rm top}-E_s$: the ground space sits at $e_g=-\varepsilon_0/W\in[-\delta_0,0]$, every other eigenvalue
 lies in $[\Delta_*,1]$.
 \end{lemma}
 \begin{proof}
 $e_g=(E_0-E_s)/W=-\varepsilon_0/W$. For the rest, $E_1\ge\mu_0$ by Courant--Fischer (Section~\ref{sec:status}), so $(E_1-E_s)/W\ge(\mu_0-E_s)/W
-=\Delta_{\rm D}-\varepsilon_1/W\ge\Delta_*$. The upper end: $(E_{\rm top}-E_s)/W\le(E_{\rm top}-E_0)/W\le1$.
+=\Delta_{\rm D}-\varepsilon_1/W\ge\Delta_*$. The upper end: $(E_{\rm top}-E_s)/W\le1$ because $W\ge E_{\rm top}-E_s$.
 \end{proof}
 
 \begin{lemma}[Purity of the reference and a certified $\gamma$]\label{lem:purity}
@@ -140,19 +140,19 @@ $\mathbf S=\boldsymbol\sigma/2$. Each bond is $\tfrac14(XX+YY+ZZ)$, so $H=\sum_\
 (plus an identity coefficient $c_I$, zero for plain Heisenberg bonds). There are $3(N-1)+3(N-2)$ terms for $J_2\neq0$.
 Code: \code{hamiltonians.j1j2\_hamiltonian}.
 
-\paragraph{Shift.} $E_0$ is the DMRG ground-state energy; $\Hs=(H-E_0)/W$ places the ground state at $0$. Since DMRG is variational the
-shift satisfies $E_s\ge E_0$; the effect of this offset is carried explicitly by Theorem~\ref{thm:main} through $\bar\varepsilon_0$, and the
+\paragraph{Shift.} The shift is the DMRG ground-state energy $E_s$ (written $E_0$ in the overview); $\Hs=(H-E_s)/W$ places the ground state at $0$ up to the
+offset below. Since DMRG is variational the shift satisfies $E_s\ge E_0$; the effect of this offset is carried explicitly by Theorem~\ref{thm:main} through $\bar\varepsilon_0$, and the
 reported runs take it to be zero (Section~\ref{sec:thm}).
 
 \paragraph{Chosen value: the bandwidth.}
 \begin{equation}\label{eq:W}
-  W \;=\; \sum_{b}\lambda_{\max}(h_b)\;-\;E_0,\qquad \lambda_{\max}(J\,\mathbf S\!\cdot\!\mathbf S)=\begin{cases}J/4,&J\ge0\\ 3\abs J/4,&J<0,\end{cases}
+  W \;=\; \sum_{b}\lambda_{\max}(h_b)\;-\;E_s,\qquad \lambda_{\max}(J\,\mathbf S\!\cdot\!\mathbf S)=\begin{cases}J/4,&J\ge0\\ 3\abs J/4,&J<0,\end{cases}
 \end{equation}
-summed over the $N-1$ nearest-neighbour and $N-2$ next-nearest-neighbour bonds, i.e.\ $W=(N-1)J_1/4+(N-2)J_2/4-E_0$ for $J_1,J_2\ge0$.
+summed over the $N-1$ nearest-neighbour and $N-2$ next-nearest-neighbour bonds, i.e.\ $W=(N-1)J_1/4+(N-2)J_2/4-E_s$ for $J_1,J_2\ge0$.
 \emph{Derivation.} By Weyl's inequality $\lambda_{\max}(A+B)\le\lambda_{\max}(A)+\lambda_{\max}(B)$, so
-$E_{\rm top}\le\sum_b\lambda_{\max}(h_b)$, hence $W\ge E_{\rm top}-E_0$ and $\operatorname{spec}(\Hs)\subset[0,1]$ without any DMRG value for
+$E_{\rm top}\le\sum_b\lambda_{\max}(h_b)$, hence $W\ge E_{\rm top}-E_s$ and the top of $\operatorname{spec}(\Hs)$ is at most $1$ without any DMRG value for
 $E_{\rm top}$. For $J_1,J_2\ge0$ the bound is attained by the fully polarized state ($\mathbf S_i\!\cdot\!\mathbf S_j=\tfrac14$ on every bond), so
-$W=E_{\rm top}-E_0$ exactly; the DMRG value agrees with it to $\lesssim10^{-13}$ in all cases run. (An earlier version used the looser Pauli bound
+$W=E_{\rm top}-E_s$ exactly (the top of the scaled spectrum is exactly $1$); the DMRG value of $E_{\rm top}-E_s$ agrees with it to $\lesssim10^{-13}$ in all cases run. (An earlier version used the looser Pauli bound
 $\sum_\beta\abs{c_\beta}-E_0$, which is $1.6$--$1.9\times$ larger because it counts $3/4$ rather than $1/4$ per bond at the top of the spectrum.)
 
 \paragraph{The bandwidth does not change $n$ or the physical time.} With $\alpha_{\rm scaled}=\alpha/W^2$ and $T_{\rm scaled}=x\pi W/g$ ($g=E_1-E_0$ the unscaled gap),
@@ -169,8 +169,9 @@ certificate. The Weyl bound \eqref{eq:W} is a true upper bound independent of DM
 $\max(W_{\rm cert},E_{\rm top}^{\rm DMRG}-E_0^{\rm DMRG})$).
 
 \paragraph{Chosen value: the scaled gap.} $\Delta=(E_1-E_0)/W$, with $E_1$ the lowest energy of \emph{any} symmetry
-sector other than the ground state. This matters near the BKT point $J_2^c\approx0.2411$~\cite{eggert,okamoto}: the first
-excitation is a triplet for $J_2<J_2^c$ but can be a singlet in the dimerized phase.
+sector other than the ground state. The symmetry of the first excitation is \emph{not assumed}: in every case checked by exact diagonalization
+($N=8,10,12$, $J_2\in\{0,0.2411,0.4\}$, open chains) it is a triplet, but the critical point $J_2^c\approx0.2411$~\cite{eggert,okamoto} is itself
+located by a singlet--triplet level crossing (in periodic chains), so the lowest excitation need not stay a triplet elsewhere in the phase diagram.
 
 \paragraph{What is needed.} $\operatorname{spec}(\Hs)\subset\{0\}\cup[\Delta,1]$. The upper end is rigorous (above); the
 non-degenerate ground state at $0$ and the true gap $\Delta$ are inputs (Section~\ref{sec:status}).
@@ -282,6 +283,9 @@ length $\Delta$. Since $\abs{F'}\le L=T$ (Lemma~\ref{lem:F2}),
 So $x=T\Delta/\pi$ cannot be taken arbitrarily small; the search covers
 $x\in\{0.4,0.5,0.6,0.75,1,1.25,1.5,1.75,2,2.5\}$.
 
+\paragraph{Where the settings below apply.} The values quoted are those of \code{pipeline.py}/\code{scripts/run\_results.py}. The older bond-level workflow of \code{simple\_paper/} uses the same
+certificate with a fixed leakage share $\eps/4$, $x\in\{0.6,1,1.5,2\}$, $m\in\{4,6\}$ (widened if no design is feasible) and $t_{\max}=T/3$; these are search choices and play no role in the proof.
+
 \paragraph{Choices made by hand (not derived).} $m\in\{4,6,8\}$; $t_{\min}=0.05\,T/m$ so no pulse has zero duration;
 $t_{\max}=T/2$; and the cost proxy $x^2/F(0)^2$ for ranking $(x,m)$ (Trotter steps scale as $T^2$, repetitions as
 $1/F(0)^2$), with ties within $2\%$ going to fewer pulses.
@@ -298,12 +302,13 @@ Each pulse needs $e^{-it\Hs\otimes Z}$, implemented with $k$ first-order Lie--Tr
 with $H_g=c_gP_g$ a single Pauli string.
 
 \begin{lemma}[First-order commutator bound]\label{lem:comm}
-For the product $S(\tau)=e^{-i\tau H_\Gamma}\cdots e^{-i\tau H_1}$ in the order the circuit applies,
+For the product $S(\tau)=e^{-i\tau H_\Gamma}\cdots e^{-i\tau H_1}$ ($H_1$ applied first),
 \[
-  \norm{e^{-i\tau\Hs}-S(\tau)}\;\le\;\frac{\tau^2}{2}\,\alpha,\qquad
-  \alpha:=\sum_{g}\Bigl\lVert\bigl[H_g,\textstyle\sum_{g'>g}H_{g'}\bigr]\Bigr\rVert
+  \norm{e^{-i\tau\Hs}-S(\tau)}\;\le\;\frac{\tau^2}{2}\,\alpha_{\rm fwd},\qquad
+  \alpha_{\rm fwd}:=\sum_{g}\Bigl\lVert\bigl[H_g,\textstyle\sum_{g'<g}H_{g'}\bigr]\Bigr\rVert ,
 \]
-(for either ordering convention the bound holds for the corresponding product; Section~\ref{sec:alpha} on which order is used).
+and for the reversed product ($H_\Gamma$ applied first) the same holds with $\alpha_{\rm rev}:=\sum_g\|[H_g,\sum_{g'>g}H_{g'}]\|$. The pipeline uses
+$\alpha:=\max(\alpha_{\rm fwd},\alpha_{\rm rev})$, which is valid for either order (Section~\ref{sec:alpha}).
 \end{lemma}
 \begin{proof}[Proof for two terms; the general case follows by induction]
 Let $V(s)=e^{-isA}e^{-isB}$. Then $V'=-i(A+B)V-i\,[e^{-isA},B]\,e^{-isB}$, so by Duhamel
@@ -312,8 +317,8 @@ Let $V(s)=e^{-isA}e^{-isB}$. Then $V'=-i(A+B)V-i\,[e^{-isA},B]\,e^{-isB}$, so by
 \]
 Also $[e^{-isA},B]\,e^{isA}=e^{-isA}Be^{isA}-B$, whose derivative in $s$ is $-ie^{-isA}[A,B]e^{isA}$, so its norm is at
 most $s\norm{[A,B]}$. Hence $\norm{e^{-i\tau(A+B)}-V(\tau)}\le\int_0^\tau s\norm{[A,B]}\,\mathrm ds=\tfrac{\tau^2}2\norm{[A,B]}$.
-For $\Gamma$ terms peel off $H_1$ against the sum of the others and iterate; this produces the sum over $g$ of
-$\norm{[H_g,\sum_{g'>g}H_{g'}]}$. This is the standard result; see Childs et al.~\cite{childs} and the early references
+For $\Gamma$ terms write $e^{-i\tau\Hs}\approx e^{-i\tau H_\Gamma}e^{-i\tau(H_1+\dots+H_{\Gamma-1})}$ (two-term bound with $A=H_\Gamma$, $B=H_1+\dots+H_{\Gamma-1}$) and iterate on
+the second factor; the triangle inequality then gives the sum over $g$ of $\norm{[H_g,\sum_{g'<g}H_{g'}]}$. This is the standard result; see Childs et al.~\cite{childs} and the early references
 \cite{lloyd,trotter}.
 \end{proof}
 
@@ -336,14 +341,14 @@ $[P_g,P_{g'}]=2P_gP_{g'}$ if they anticommute and $0$ otherwise, and $P_g$ is un
 \end{equation}
 The inner sum acts on the few qubits near term $g$ (a handful for a J1--J2 bond), so its norm is a tiny dense eigenvalue
 problem. The cost is linear in the number of terms, independent of $N$, and the value is \emph{exact}. It agrees with the
-exact sparse computation to $10^{-14}$ for $N=4,6,8$ and $J_2\in\{0,0.2411,0.4\}$ in both term orders, and takes $16$\,s at
+exact sparse computation (spectral norm of each grouped commutator) to $10^{-14}$ for $N=4,6,8,10,12$ and $J_2\in\{0,0.2411,0.4\}$ in both term orders, and takes $16$\,s at
 $N=64$. The former large-$N$ fallback, the triangle bound $\sum_{g<g',\,\text{anticomm.}}2\abs{c_g}\abs{c_{g'}}$,
 overestimates $\alpha$ by up to $1.25\times$ (at $J_2=0.4$: $28.1$ vs.\ $22.4$, $61.3$ vs.\ $48.5$, $127.5$ vs.\ $100.6$ for
 $N=16,32,64$) and is no longer used. $\alpha$ grows linearly with $N$. Code: \code{core/trotter.py: alpha\_commutator}.
 
-\paragraph{Term order.} The bound holds for the order the circuit realizes. The pipeline takes the larger of the two possible
-orders (\code{trotter\_alpha}), and \code{lie\_trotter\_order} checks numerically which one qiskit's
-\code{LieTrotter(preserve\_order=True)} realizes.
+\paragraph{Term order.} The bound holds for the order the circuit realizes. The pipeline takes the larger of the two orders (\code{trotter\_alpha}), so it
+does not depend on which one qiskit uses; \code{lie\_trotter\_order} confirms numerically that \code{LieTrotter(preserve\_order=True)} realizes the forward
+product ($H_1$ first). At $J_2=0$ the two sums coincide; at $J_2>0$ the larger is up to about $15\%$ above the other.
 
 \section{From pulse error to state error}\label{sec:state}
 Let $A_i=\bra0_{\rm anc}W'_i\ket0_{\rm anc}$ where $W'_i$ is the full pulse of Section~\ref{sec:pulse}, and $\tilde A_i$ its
@@ -410,18 +415,23 @@ The costs separate into three kinds with different standing.
 counts $k_i$, hence the number of controlled Pauli rotations $n\times\#\text{terms}$; and $P_{\rm succ}\ge\pg$, so that under independent attempts
 the expected number of repetitions is at most $1/\pg$.
 
-\paragraph{Compiler-dependent counts (estimates, not bounds).} One Trotter step of one pulse is transpiled once (optimization level 3, basis
-$\{h,s,\mathrm{cx},r_z\}$) and its CX count and depth multiplied by $n$, with the $m$ ancilla rotations and the trial-state circuit added.
-These are outputs of qiskit's heuristic compiler on an all-to-all (or a line) topology, not minimal counts. The per-step method was validated against
-a full transpile of the whole circuit ($0.0\%$ CX difference at $n=48$). The metric for fault-tolerant cost is the number of
-\emph{non-Clifford} $r_z$ rotations (angles not a multiple of $\pi/2$); no $T$-count is reported, because the cost of synthesizing a rotation depends on
-constants that are not verified here and on the downstream synthesis method.
+\paragraph{Compiled counts (estimates, not bounds).} One Trotter step of one pulse is transpiled once (basis $\{h,s,\mathrm{cx},r_z\}$, all-to-all or a line) and its counts multiplied by $n$, with one
+$R_z(2\varphi)$ per pulse added. Two compilations of the \emph{same} circuit are reported because they trade CX against non-Clifford rotations:
+\begin{itemize}[leftmargin=*]
+\item \textbf{direct} (qiskit optimisation level 1): every Pauli rotation $e^{-i\theta P\otimes Z}$ becomes a CX ladder around one $R_z$. For the Heisenberg chain this
+ gives exactly $4\times(\#\text{Pauli terms})$ CX and $\#\text{terms}+1$ non-Clifford $R_z$ per step (the $+1$ is the ancilla rotation from the constant shift);
+\item \textbf{level 3}: two-qubit blocks are re-synthesised, giving about $1.7\times$ fewer CX but about $3\times$ more non-Clifford $R_z$ (e.g.\ $N=8$, $J_2=0$: $84$ CX and $22$ non-Clifford $R_z$ per step direct, $49$ CX and $65$ at level 3).
+\end{itemize}
+The number of non-Clifford rotations is the cost metric for fault-tolerant hardware (no $T$-count is reported: the cost of synthesizing a rotation depends on constants that are not verified here and on
+the downstream synthesis method), so it is quoted for the direct compilation, which is the smaller; CX is the metric for near-term hardware and is smaller at level 3. Per-step $\times\,n$ was checked against a full
+transpile of a 48-step circuit: CX exact for both compilations, non-Clifford $R_z$ exact for direct and up to about $4\%$ too high (conservative) for level 3; depth is overestimated by $1$--$2\%$. These are outputs of qiskit's
+heuristic compiler, not minimal counts.
 
 \paragraph{Not included.} The expected-repetition figure is not the whole hardware cost: ancilla measurement and reset time, classical feed-forward
 for the early abort, the native implementation of the controlled Pauli rotations on a real connectivity, calibration and error mitigation or
-correction overhead, and routing beyond the topologies tested are all additional. The totals above are gate counts of an ideal circuit.
+correction overhead, and routing beyond the topologies tested are all additional. The totals are gate counts of an ideal circuit.
 
-Code: \code{core/resources.py}, \code{pipeline.py: per\_step\_costs, costs, measured\_cost}.
+Code: \code{core/resources.py} (\code{direct\_step\_counts}), \code{scripts/run\_results.py}, \code{scripts/add\_direct\_counts.py}.
 
 \section{What is rigorous and what is an assumption}\label{sec:status}
 \begin{center}
@@ -439,7 +449,7 @@ Combination \eqref{eq:star} & Rigorous & Sec.~\ref{sec:combine}\\
 Shift $E_s$ & Conditional on $\bar\varepsilon_0$ & Thm.~\ref{thm:main}; runs use $\bar\varepsilon_0=0$\\
 Gap $\Delta$ & Conditional on $\bar\varepsilon_1$ & $\Delta_{\rm true}\ge\Delta_{\rm D}-\varepsilon_1/W$ (below); runs use $\bar\varepsilon_1=0$\\
 Trial weight $\gamma$ & Conditional on $\bar\varepsilon_0,\bar\varepsilon_1$ & $\gamma\ge\gamma_*$ by Lemma~\ref{lem:purity}; runs use the overlap with the DMRG reference\\
-Degeneracy & Handled & target is the ground space $\Pi_0$ (Thm.~\ref{thm:main}); the open even-$N$ J1--J2 chain is expected to have a nondegenerate singlet ground state, and a degenerate space would show up as $\Delta\approx0$\\
+Degeneracy & Handled & target is the ground space $\Pi_0$ (Thm.~\ref{thm:main}); in every case computed the gap $E_1-E_0$ is positive, i.e.\ the ground state is nondegenerate; a degenerate space would show up as $\Delta\approx0$\\
 Resource counts & See Sec.~\ref{sec:cost} & only $n$, pulse counts and the repetition bound are bounds\\
 \bottomrule
 \end{tabular}
@@ -467,7 +477,26 @@ difference between the penalized energy and $\mu_0$ is absorbed in $\varepsilon_
 
 \paragraph{How $E_1$ is obtained.} $E_1$ is the lowest energy of any symmetry orthogonal to $\psi_0$, from DMRG on
 $H+\lambda\ket{\psi_0}\!\bra{\psi_0}$ with $\lambda=1.1\,W$, applying the projector as a rank-one term in each local two-site
-problem (\code{get\_energies.py: OrthoDMRG2}). An $S^z$-sector shortcut is not valid across the BKT point and is not used.
+problem (\code{get\_energies.py: OrthoDMRG2}). An $S^z$-sector shortcut (lowest state with $S^z=1$) is not used because it presupposes the symmetry of the first excitation.
+
+\section{How each statement is checked}\label{sec:verify}
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.34\linewidth}p{0.6\linewidth}@{}}
+\toprule
+Statement & Check (script) \\
+\midrule
+Pulse implements $\cos(\Hs t+\varphi)$, sign of $\varphi$ & \code{verify\_pulse\_convention}: circuit, numpy and classical filter agree to $10^{-15}$; $\varphi\to-\varphi$ rejected \\
+Trotter step bound $\alpha t^2/(2k)$ & operator-norm test on the real qiskit circuits (exact vs.\ \code{LieTrotter}), $N=4,6$: measured $\|W-\tilde W\|$ is $0.18$--$0.38\times$ the bound \\
+$\alpha$ (local exact) & equals the sparse spectral norm to $10^{-16}$ for $N\le12$; recomputed for all $66$ stored points (\code{audit\_results.py --alpha}) \\
+$\eta$ certificate & never below a $2\times10^{6}$-point dense maximum, at most $0.5\%$ above it ($92$ designs) \\
+Weyl bandwidth & equals DMRG $E_{\rm top}-E_s$ to $\le10^{-13}$ (all cases); $E_{\rm top}\le\sum\lambda_{\max}$ asserted for every stored point \\
+MPO (DMRG) $=$ Pauli Hamiltonian (circuits) & energies agree to $10^{-14}$ on random product states, $N=12,24,32$; DMRG vs.\ ED $\le4\times10^{-13}$, $N\le20$ \\
+Stored results & \code{audit\_results.py}: every bound, leakage, $p_g$, $\eps_T$, $T$, step count and gate count is re-derived from the stored inputs (over $2000$ checks) and measured infidelity $\le$ bound for every simulated design \\
+Gate counts & per-step $\times\,n$ vs.\ full transpile (CX exact; see Section~\ref{sec:cost}) \\
+\bottomrule
+\end{tabular}
+\end{center}
 
 \section{Simplifications}\label{sec:simp}
 \paragraph{Done.}

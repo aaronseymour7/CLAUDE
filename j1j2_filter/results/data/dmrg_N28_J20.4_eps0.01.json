@@ -109,6 +109,14 @@
     "total": 4306.0,
     "depth": 1747.6666666666667
    }
+  },
+  "direct": {
+   "cx": 636.0,
+   "h": 426.0,
+   "s": 212.0,
+   "rz": 373.0,
+   "rz_nonclifford": 160.0,
+   "depth": 1170.0
   }
  },
  "designs": {
@@ -205,7 +213,15 @@
     }
    },
    "full_transpile_check": null,
-   "search_s": 0.467832088470459
+   "search_s": 0.467832088470459,
+   "counts_direct": {
+    "filter": {
+     "cx": 73669152.0,
+     "rz_nonclifford": 18533128.0,
+     "rz": 43205344.0,
+     "depth": 135523440.0
+    }
+   }
   }
  },
  "design": {

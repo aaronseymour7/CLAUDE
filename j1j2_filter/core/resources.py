@@ -30,7 +30,7 @@ def rotation_synthesis_t_count(n_rot, eps=1e-3):
 
 
 def resource_costs(circuit, label="", flatten=False, verbose=True, basis=BASIS,
-                   coupling_map=None, synth_eps=1e-3, seed_transpiler=0):
+                   coupling_map=None, synth_eps=1e-3, seed_transpiler=0, optimization_level=3):
     """Transpile to `basis` (opt level 3) and count gates. flatten=True for the
     early-abort circuit. coupling_map: optional qiskit CouplingMap (routing
     overhead shows up as extra cx). Also returns non-Clifford rz count and an
@@ -38,7 +38,7 @@ def resource_costs(circuit, label="", flatten=False, verbose=True, basis=BASIS,
     separately (or inside the circuit via trial_prep) to include it (A11)."""
     circ = flatten_success_path(circuit) if flatten else circuit
     rc = transpile(circ, basis_gates=list(basis) + ["measure", "reset"],
-                   coupling_map=coupling_map, optimization_level=3,
+                   coupling_map=coupling_map, optimization_level=optimization_level,
                    seed_transpiler=seed_transpiler)
     counts = rc.count_ops()
     tidy = {g: int(counts.get(g, 0)) for g in basis}
@@ -74,3 +74,14 @@ def cx_depth_per_step(H, order=1, basis=BASIS, optimization_level=3):
     rc = transpile(qc, basis_gates=list(basis),
                    optimization_level=optimization_level, seed_transpiler=0)
     return rc.count_ops().get("cx", 0), rc.depth()
+
+
+def direct_step_counts(H, N, order=1):
+    """Counts of ONE Trotter step of one pulse compiled DIRECTLY (qiskit optimization level 1: every Pauli rotation exp(-i theta P (x) Z)
+    becomes a CX ladder around one Rz, no block re-synthesis), all-to-all.  Level 3 (the default elsewhere) re-synthesises two-qubit
+    blocks: ~1.7x fewer CX but ~3x more non-Clifford Rz.  Direct compilation gives, for the Heisenberg chain with ancilla,
+    CX = 4 x (#Pauli terms) and non-Clifford Rz = #Pauli terms + 1 per step (verified against a full transpile)."""
+    qc = QuantumCircuit(N + 1)
+    apply_filter_pulse(qc, list(range(N)), N, H, 1.0, 0.0, trotter_steps=1, order=order)
+    c = resource_costs(qc, verbose=False, optimization_level=1)
+    return {k: float(c[k]) for k in ("cx", "h", "s", "rz", "rz_nonclifford", "depth")}

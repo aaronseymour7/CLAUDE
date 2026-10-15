@@ -51,8 +51,8 @@ end is accurate to 3.7e-13 against exact diagonalisation
 (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>≤</mo><mn>20</mn></mrow><annotation encoding="application/x-tex">N\le20</annotation></semantics></math>)
 and reproducible to 1.2e-13 between independent runs
 (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>≤</mo><mn>32</mn></mrow><annotation encoding="application/x-tex">N\le32</annotation></semantics></math>);
-the excited state is the lowest state of any symmetry, as required
-across the Berezinskii–Kosterlitz–Thouless point of the chain, and the
+the excited state is the lowest state of any symmetry (its symmetry is
+not assumed; it was a triplet in every exact case checked), and the
 bandwidth is certified by Weyl’s inequality without a DMRG value for the
 top of the spectrum. The paper is organised around three questions.
 <strong>(1) Can the filter be certified without knowing the exact ground
@@ -98,11 +98,13 @@ fidelity; the certified filter for
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>=</mo><mn>16</mn></mrow><annotation encoding="application/x-tex">N=16</annotation></semantics></math>–<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>32</mn><annotation encoding="application/x-tex">32</annotation></semantics></math>
 needs
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2.8</mn><mo>×</mo><msup><mn>10</mn><mn>6</mn></msup></mrow><annotation encoding="application/x-tex">2.8\times10^{6}</annotation></semantics></math>–<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>9.6</mn><mo>×</mo><msup><mn>10</mn><mn>7</mn></msup></mrow><annotation encoding="application/x-tex">9.6\times10^{7}</annotation></semantics></math>
-CX and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>3.6</mn><mo>×</mo><msup><mn>10</mn><mn>6</mn></msup></mrow><annotation encoding="application/x-tex">3.6\times10^{6}</annotation></semantics></math>–<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1.2</mn><mo>×</mo><msup><mn>10</mn><mn>8</mn></msup></mrow><annotation encoding="application/x-tex">1.2\times10^{8}</annotation></semantics></math>
-non-Clifford rotations. The workflow is a conditionally certified,
-reproducible way to use the filter and a calibrated account of its cost,
-not a resource advantage on these chains.</p>
+CX (re-synthesised;
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>4.8</mn><mo>×</mo><msup><mn>10</mn><mn>6</mn></msup></mrow><annotation encoding="application/x-tex">4.8\times10^{6}</annotation></semantics></math>–<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1.6</mn><mo>×</mo><msup><mn>10</mn><mn>8</mn></msup></mrow><annotation encoding="application/x-tex">1.6\times10^{8}</annotation></semantics></math>
+direct) and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1.2</mn><mo>×</mo><msup><mn>10</mn><mn>6</mn></msup></mrow><annotation encoding="application/x-tex">1.2\times10^{6}</annotation></semantics></math>–<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>4.1</mn><mo>×</mo><msup><mn>10</mn><mn>7</mn></msup></mrow><annotation encoding="application/x-tex">4.1\times10^{7}</annotation></semantics></math>
+non-Clifford rotations (direct). The workflow is a conditionally
+certified, reproducible way to use the filter and a calibrated account
+of its cost, not a resource advantage on these chains.</p>
 <h2 id="introduction">1. Introduction</h2>
 <p>A standard hybrid route to a ground state is to run DMRG, compile the
 resulting matrix-product state (MPS) into a shallow circuit, and repair
@@ -221,12 +223,16 @@ at the tolerances used here) at
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mrow><mo stretchy="true" form="prefix">(</mo><msup><mi>χ</mi><mn>3</mn></msup><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">O(\chi^3)</annotation></semantics></math>
 cost. It returns the lowest state of <em>any</em> symmetry orthogonal to
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ψ</mi><mn>0</mn></msub><annotation encoding="application/x-tex">\psi_0</annotation></semantics></math>,
-which matters because the first excitation of the
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>J</mi><mn>1</mn></msub><annotation encoding="application/x-tex">J_1</annotation></semantics></math>–<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>J</mi><mn>2</mn></msub><annotation encoding="application/x-tex">J_2</annotation></semantics></math>
-chain is a triplet below the Berezinskii–Kosterlitz–Thouless point
+so the symmetry of the first excitation is not assumed. In every exact
+case checked
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>=</mo><mn>8</mn><mo>,</mo><mn>10</mn><mo>,</mo><mn>12</mn></mrow><annotation encoding="application/x-tex">N=8,10,12</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>J</mi><mn>2</mn></msub><mo>=</mo><mn>0</mn><mo>,</mo><mn>0.2411</mn><mo>,</mo><mn>0.4</mn></mrow><annotation encoding="application/x-tex">J_2=0,0.2411,0.4</annotation></semantics></math>,
+open chains) it is a triplet, but the critical point
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>J</mi><mn>2</mn><mi>c</mi></msubsup><mo>≈</mo><mn>0.2411</mn></mrow><annotation encoding="application/x-tex">J_2^c\approx0.2411</annotation></semantics></math>
-[12,13] but can be a singlet in the dimerised phase. The bandwidth is
-certified without DMRG: by Weyl’s inequality
+[12,13] is itself located by a singlet–triplet level crossing in
+periodic chains, so the lowest excitation need not stay a triplet
+elsewhere in the phase diagram. The bandwidth is certified without DMRG:
+by Weyl’s inequality
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>λ</mi><mo>max</mo></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mo>∑</mo><mi>b</mi></msub><msub><mi>h</mi><mi>b</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>≤</mo><msub><mo>∑</mo><mi>b</mi></msub><msub><mi>λ</mi><mo>max</mo></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>h</mi><mi>b</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\lambda_{\max}(\sum_bh_b)\le\sum_b\lambda_{\max}(h_b)</annotation></semantics></math>,
 and a bond
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>J</mi><mspace width="0.167em"></mspace><mi>𝐒</mi><mspace width="-0.167em"></mspace><mo>⋅</mo><mspace width="-0.167em"></mspace><mi>𝐒</mi></mrow><annotation encoding="application/x-tex">J\,\mathbf S\!\cdot\!\mathbf S</annotation></semantics></math>
@@ -522,8 +528,8 @@ the pruning tolerance)</td>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Π</mi><mn>0</mn></msub><annotation encoding="application/x-tex">\Pi_0</annotation></semantics></math>
 and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>γ</mi><annotation encoding="application/x-tex">\gamma</annotation></semantics></math>
-its total weight; the chains studied have a nondegenerate singlet ground
-state (a degenerate space would show up as
+its total weight; in every case computed the gap is positive, i.e. the
+ground state is nondegenerate (a degenerate space would show up as
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Δ</mi><mo>≈</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\Delta\approx0</annotation></semantics></math>)</td>
 </tr>
 <tr class="even">
@@ -557,7 +563,7 @@ inner Lanczos tolerance
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mo>−</mo><mn>10</mn></mrow></msup><annotation encoding="application/x-tex">10^{-10}</annotation></semantics></math>,
 bond dimensions up to 256 (the cutoff, not the cap, limits the bond
 dimension reached:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>χ</mi><mo>≤</mo><mn>114</mn></mrow><annotation encoding="application/x-tex">\chi\le114</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>χ</mi><mo>≤</mo><mn>133</mn></mrow><annotation encoding="application/x-tex">\chi\le133</annotation></semantics></math>
 at
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>≤</mo><mn>32</mn></mrow><annotation encoding="application/x-tex">N\le32</annotation></semantics></math>),
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>E</mi><mn>1</mn></msub><annotation encoding="application/x-tex">E_1</annotation></semantics></math>
@@ -580,6 +586,33 @@ and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mn>10</mn><mrow><mo>−</mo><mn>3</mn></mrow></msup><annotation encoding="application/x-tex">10^{-3}</annotation></semantics></math>
 (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>≤</mo><mn>8</mn></mrow><annotation encoding="application/x-tex">N\le8</annotation></semantics></math>),
 i.e. <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>D</mi><mo>≤</mo><mn>0.32</mn><mo>,</mo><mn>0.1</mn><mo>,</mo><mn>0.032</mn></mrow><annotation encoding="application/x-tex">D\le0.32,0.1,0.032</annotation></semantics></math>.</li>
+<li><strong>Filter design search.</strong> For
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>≤</mo><mn>16</mn></mrow><annotation encoding="application/x-tex">N\le16</annotation></semantics></math>
+(<code>simple_paper/run_experiments.py</code>): leakage share
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>ε</mi><mo>ℓ</mo></msub><mo>=</mo><mi>ε</mi><mi>/</mi><mn>4</mn></mrow><annotation encoding="application/x-tex">\varepsilon_\ell=\varepsilon/4</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo>=</mo><mi>T</mi><mi>Δ</mi><mi>/</mi><mi>π</mi><mo>∈</mo><mo stretchy="false" form="prefix">{</mo><mn>0.6</mn><mo>,</mo><mn>1</mn><mo>,</mo><mn>1.5</mn><mo>,</mo><mn>2</mn><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">x=T\Delta/\pi\in\{0.6,1,1.5,2\}</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>∈</mo><mo stretchy="false" form="prefix">{</mo><mn>4</mn><mo>,</mo><mn>6</mn><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">m\in\{4,6\}</annotation></semantics></math>
+pulses, widened to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo>≤</mo><mn>4</mn></mrow><annotation encoding="application/x-tex">x\le4</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>≤</mo><mn>10</mn></mrow><annotation encoding="application/x-tex">m\le10</annotation></semantics></math>
+if no design is feasible;
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>t</mi><mo>min</mo></msub><mo>=</mo><mn>0.05</mn><mspace width="0.167em"></mspace><mi>T</mi><mi>/</mi><mi>m</mi></mrow><annotation encoding="application/x-tex">t_{\min}=0.05\,T/m</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>t</mi><mo>max</mo></msub><mo>=</mo><mi>T</mi><mi>/</mi><mn>3</mn></mrow><annotation encoding="application/x-tex">t_{\max}=T/3</annotation></semantics></math>;
+ties go to fewer pulses. For
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>≥</mo><mn>14</mn></mrow><annotation encoding="application/x-tex">N\ge14</annotation></semantics></math>
+(<code>j1j2_filter/pipeline.py</code>): leakage shares
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">{</mo><mn>0.4</mn><mo>,</mo><mn>0.2</mn><mo>,</mo><mn>0.1</mn><mo>,</mo><mn>0.05</mn><mo>,</mo><mn>0.02</mn><mo>,</mo><mn>0.01</mn><mo stretchy="false" form="postfix">}</mo><mi>ε</mi></mrow><annotation encoding="application/x-tex">\{0.4,0.2,0.1,0.05,0.02,0.01\}\varepsilon</annotation></semantics></math>
+scanned,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo>∈</mo><mrow><mo stretchy="true" form="prefix">[</mo><mn>0.4</mn><mo>,</mo><mn>2.5</mn><mo stretchy="true" form="postfix">]</mo></mrow></mrow><annotation encoding="application/x-tex">x\in[0.4,2.5]</annotation></semantics></math>
+(ten values),
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>∈</mo><mo stretchy="false" form="prefix">{</mo><mn>4</mn><mo>,</mo><mn>6</mn><mo>,</mo><mn>8</mn><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">m\in\{4,6,8\}</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>t</mi><mo>max</mo></msub><mo>=</mo><mi>T</mi><mi>/</mi><mn>2</mn></mrow><annotation encoding="application/x-tex">t_{\max}=T/2</annotation></semantics></math>,
+and the share minimising
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mi>/</mi><msub><mi>p</mi><mi>g</mi></msub></mrow><annotation encoding="application/x-tex">n/p_g</annotation></semantics></math>
+is kept. Both use the same certificate; the settings are search choices,
+not part of the proof.</li>
 <li><strong>Simulation.</strong> Exact statevector simulation of the
 Trotterised filter, the ideal filter, and the ground state. A run is
 simulated only if
@@ -619,12 +652,25 @@ on the ancilla) is transpiled once with qiskit (level 3) to
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">{</mo><mrow><mi mathvariant="normal">C</mi><mi mathvariant="normal">X</mi></mrow><mo>,</mo><mrow><mi mathvariant="normal">R</mi><mi mathvariant="normal">z</mi></mrow><mo>,</mo><mi mathvariant="normal">H</mi><mo>,</mo><mi mathvariant="normal">S</mi><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">\{\mathrm{CX},\mathrm{Rz},\mathrm{H},\mathrm{S}\}</annotation></semantics></math>;
 total CX is trial CX plus
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>×</mo></mrow><annotation encoding="application/x-tex">n\times</annotation></semantics></math>
-CX per step. The fault-tolerant metric reported for the larger chains is
-the number of <em>non-Clifford</em>
+CX per step. The CX counts of this paper are for qiskit’s level-3
+compilation, which re-synthesises two-qubit blocks (21 CX per step at
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>=</mo><mn>4</mn></mrow><annotation encoding="application/x-tex">N=4</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>J</mi><mn>2</mn></msub><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">J_2=0</annotation></semantics></math>);
+direct compilation of the same circuit (one CX ladder per Pauli
+rotation, level 1) uses
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>12</mn><annotation encoding="application/x-tex">12</annotation></semantics></math>
+CX per bond, about
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1.7</mn><mo>×</mo></mrow><annotation encoding="application/x-tex">1.7\times</annotation></semantics></math>
+more, but about
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>3</mn><mo>×</mo></mrow><annotation encoding="application/x-tex">3\times</annotation></semantics></math>
+fewer non-Clifford
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>z</mi></msub><annotation encoding="application/x-tex">R_z</annotation></semantics></math>.
+The fault-tolerant metric reported for the larger chains is the number
+of <em>non-Clifford</em>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>z</mi></msub><annotation encoding="application/x-tex">R_z</annotation></semantics></math>
 rotations (angles not a multiple of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>π</mi><mi>/</mi><mn>2</mn></mrow><annotation encoding="application/x-tex">\pi/2</annotation></semantics></math>);
-no
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>π</mi><mi>/</mi><mn>2</mn></mrow><annotation encoding="application/x-tex">\pi/2</annotation></semantics></math>)
+of the direct compilation; no
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi><annotation encoding="application/x-tex">T</annotation></semantics></math>-count
 is reported, because it depends on the synthesis method and its
 constants. All-to-all connectivity unless stated. The trial circuit is
@@ -2904,17 +2950,18 @@ trial circuit, Pauli-level Trotter terms;
 is the BKT point):</p>
 <table>
 <colgroup>
-<col style="width: 9%" />
-<col style="width: 9%" />
-<col style="width: 9%" />
-<col style="width: 9%" />
-<col style="width: 9%" />
-<col style="width: 9%" />
-<col style="width: 9%" />
-<col style="width: 9%" />
-<col style="width: 9%" />
-<col style="width: 9%" />
-<col style="width: 9%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
+<col style="width: 8%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -2928,8 +2975,9 @@ is the BKT point):</p>
 (guaranteed)</th>
 <th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi><annotation encoding="application/x-tex">T</annotation></semantics></math>
 (phys.)</th>
-<th>CX total</th>
-<th>non-Clifford Rz</th>
+<th>CX total (level 3)</th>
+<th>CX (direct)</th>
+<th>non-Clifford Rz (direct)</th>
 <th><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>P</mi><mrow><mi mathvariant="normal">s</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">c</mi></mrow></msub><mo>≥</mo></mrow><annotation encoding="application/x-tex">P_{\mathrm{succ}}\ge</annotation></semantics></math></th>
 </tr>
 </thead>
@@ -2944,7 +2992,8 @@ is the BKT point):</p>
 <td>16,975</td>
 <td>12.8</td>
 <td>1.54e+06</td>
-<td>2.02e+06</td>
+<td>2.65e+06</td>
+<td>6.79e+05</td>
 <td>0.595</td>
 </tr>
 <tr class="even">
@@ -2957,7 +3006,8 @@ is the BKT point):</p>
 <td>26,578</td>
 <td>14.3</td>
 <td>2.79e+06</td>
-<td>3.64e+06</td>
+<td>4.78e+06</td>
+<td>1.22e+06</td>
 <td>0.526</td>
 </tr>
 <tr class="odd">
@@ -2970,7 +3020,8 @@ is the BKT point):</p>
 <td>42,194</td>
 <td>15.9</td>
 <td>5.02e+06</td>
-<td>6.54e+06</td>
+<td>8.61e+06</td>
+<td>2.19e+06</td>
 <td>0.454</td>
 </tr>
 <tr class="even">
@@ -2983,7 +3034,8 @@ is the BKT point):</p>
 <td>60,428</td>
 <td>17.4</td>
 <td>8.04e+06</td>
-<td>1.05e+07</td>
+<td>1.38e+07</td>
+<td>3.50e+06</td>
 <td>0.407</td>
 </tr>
 <tr class="odd">
@@ -2996,7 +3048,8 @@ is the BKT point):</p>
 <td>168,243</td>
 <td>20.5</td>
 <td>2.71e+07</td>
-<td>3.52e+07</td>
+<td>4.64e+07</td>
+<td>1.18e+07</td>
 <td>0.332</td>
 </tr>
 <tr class="even">
@@ -3007,6 +3060,7 @@ is the BKT point):</p>
 <td>0.0542</td>
 <td>–</td>
 <td>not achievable</td>
+<td>–</td>
 <td>–</td>
 <td>–</td>
 <td>–</td>
@@ -3024,6 +3078,7 @@ is the BKT point):</p>
 <td>–</td>
 <td>–</td>
 <td>–</td>
+<td>–</td>
 </tr>
 <tr class="even">
 <td>14</td>
@@ -3035,7 +3090,8 @@ is the BKT point):</p>
 <td>22,902</td>
 <td>13.3</td>
 <td>4.01e+06</td>
-<td>5.20e+06</td>
+<td>6.87e+06</td>
+<td>1.74e+06</td>
 <td>0.694</td>
 </tr>
 <tr class="odd">
@@ -3048,7 +3104,8 @@ is the BKT point):</p>
 <td>37,598</td>
 <td>15.0</td>
 <td>7.63e+06</td>
-<td>9.89e+06</td>
+<td>1.31e+07</td>
+<td>3.31e+06</td>
 <td>0.629</td>
 </tr>
 <tr class="even">
@@ -3061,7 +3118,8 @@ is the BKT point):</p>
 <td>56,486</td>
 <td>16.7</td>
 <td>1.30e+07</td>
-<td>1.69e+07</td>
+<td>2.24e+07</td>
+<td>5.65e+06</td>
 <td>0.562</td>
 </tr>
 <tr class="odd">
@@ -3074,7 +3132,8 @@ is the BKT point):</p>
 <td>89,033</td>
 <td>18.4</td>
 <td>2.31e+07</td>
-<td>2.98e+07</td>
+<td>3.95e+07</td>
+<td>9.97e+06</td>
 <td>0.583</td>
 </tr>
 <tr class="even">
@@ -3087,7 +3146,8 @@ is the BKT point):</p>
 <td>174,959</td>
 <td>16.3</td>
 <td>5.51e+07</td>
-<td>7.12e+07</td>
+<td>9.45e+07</td>
+<td>2.38e+07</td>
 <td>0.313</td>
 </tr>
 <tr class="odd">
@@ -3098,6 +3158,7 @@ is the BKT point):</p>
 <td>0.0861</td>
 <td>–</td>
 <td>not achievable</td>
+<td>–</td>
 <td>–</td>
 <td>–</td>
 <td>–</td>
@@ -3115,6 +3176,7 @@ is the BKT point):</p>
 <td>–</td>
 <td>–</td>
 <td>–</td>
+<td>–</td>
 </tr>
 <tr class="odd">
 <td>14</td>
@@ -3126,7 +3188,8 @@ is the BKT point):</p>
 <td>10,571</td>
 <td>7.2</td>
 <td>1.85e+06</td>
-<td>2.40e+06</td>
+<td>3.17e+06</td>
+<td>8.03e+05</td>
 <td>0.689</td>
 </tr>
 <tr class="even">
@@ -3139,7 +3202,8 @@ is the BKT point):</p>
 <td>17,333</td>
 <td>7.9</td>
 <td>3.52e+06</td>
-<td>4.56e+06</td>
+<td>6.03e+06</td>
+<td>1.53e+06</td>
 <td>0.587</td>
 </tr>
 <tr class="odd">
@@ -3152,7 +3216,8 @@ is the BKT point):</p>
 <td>28,325</td>
 <td>10.9</td>
 <td>6.54e+06</td>
-<td>8.47e+06</td>
+<td>1.12e+07</td>
+<td>2.83e+06</td>
 <td>0.602</td>
 </tr>
 <tr class="even">
@@ -3165,7 +3230,8 @@ is the BKT point):</p>
 <td>42,215</td>
 <td>11.8</td>
 <td>1.09e+07</td>
-<td>1.41e+07</td>
+<td>1.87e+07</td>
+<td>4.73e+06</td>
 <td>0.717</td>
 </tr>
 <tr class="odd">
@@ -3178,7 +3244,8 @@ is the BKT point):</p>
 <td>73,076</td>
 <td>13.5</td>
 <td>2.30e+07</td>
-<td>2.97e+07</td>
+<td>3.95e+07</td>
+<td>9.94e+06</td>
 <td>0.619</td>
 </tr>
 <tr class="even">
@@ -3191,7 +3258,8 @@ is the BKT point):</p>
 <td>115,832</td>
 <td>15.1</td>
 <td>4.30e+07</td>
-<td>5.55e+07</td>
+<td>7.37e+07</td>
+<td>1.85e+07</td>
 <td>0.544</td>
 </tr>
 <tr class="odd">
@@ -3204,7 +3272,8 @@ is the BKT point):</p>
 <td>224,514</td>
 <td>16.6</td>
 <td>9.59e+07</td>
-<td>1.24e+08</td>
+<td>1.64e+08</td>
+<td>4.13e+07</td>
 <td>0.625</td>
 </tr>
 </tbody>
@@ -3226,11 +3295,16 @@ pulses.</p>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>=</mo><mn>16</mn></mrow><annotation encoding="application/x-tex">N=16</annotation></semantics></math>–<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>32</mn><annotation encoding="application/x-tex">32</annotation></semantics></math>
 need 17,333–224,514 Trotter steps,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2.8</mn><mo>×</mo><msup><mn>10</mn><mn>6</mn></msup></mrow><annotation encoding="application/x-tex">2.8\times10^{6}</annotation></semantics></math>–<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>9.6</mn><mo>×</mo><msup><mn>10</mn><mn>7</mn></msup></mrow><annotation encoding="application/x-tex">9.6\times10^{7}</annotation></semantics></math>
-CX and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>3.6</mn><mo>×</mo><msup><mn>10</mn><mn>6</mn></msup></mrow><annotation encoding="application/x-tex">3.6\times10^{6}</annotation></semantics></math>–<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1.2</mn><mo>×</mo><msup><mn>10</mn><mn>8</mn></msup></mrow><annotation encoding="application/x-tex">1.2\times10^{8}</annotation></semantics></math>
+CX with block re-synthesis
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>4.8</mn><mo>×</mo><msup><mn>10</mn><mn>6</mn></msup></mrow><annotation encoding="application/x-tex">4.8\times10^{6}</annotation></semantics></math>–<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1.6</mn><mo>×</mo><msup><mn>10</mn><mn>8</mn></msup></mrow><annotation encoding="application/x-tex">1.6\times10^{8}</annotation></semantics></math>
+with direct compilation) and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1.2</mn><mo>×</mo><msup><mn>10</mn><mn>6</mn></msup></mrow><annotation encoding="application/x-tex">1.2\times10^{6}</annotation></semantics></math>–<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>4.1</mn><mo>×</mo><msup><mn>10</mn><mn>7</mn></msup></mrow><annotation encoding="application/x-tex">4.1\times10^{7}</annotation></semantics></math>
 non-Clifford
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>z</mi></msub><annotation encoding="application/x-tex">R_z</annotation></semantics></math>,
-with a physical evolution time of 7.9–20.5 (units of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>z</mi></msub><annotation encoding="application/x-tex">R_z</annotation></semantics></math>
+(direct compilation; about
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>3</mn><mo>×</mo></mrow><annotation encoding="application/x-tex">3\times</annotation></semantics></math>
+more with re-synthesis), with a physical evolution time of 7.9–20.5
+(units of
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mi>/</mi><msub><mi>J</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">1/J_1</annotation></semantics></math>).</li>
 <li><strong>Scaling.</strong> Total CX grows as
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>N</mi><mn>5.1</mn></msup><annotation encoding="application/x-tex">N^{5.1}</annotation></semantics></math>
@@ -3356,8 +3430,8 @@ at larger
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math>,
 two at
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>≤</mo><mn>16</mn></mrow><annotation encoding="application/x-tex">N\le16</annotation></semantics></math>.
-The ground state is a nondegenerate singlet; the theorem is stated for a
-ground space, but a degenerate target is not tested.</li>
+The ground state is nondegenerate in every case computed; the theorem is
+stated for a ground space, but a degenerate target is not tested.</li>
 <li><em>Interval arithmetic.</em> The bound on
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>η</mi><annotation encoding="application/x-tex">\eta</annotation></semantics></math>
 is computed in double precision without outward rounding; its rounding

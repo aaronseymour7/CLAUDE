@@ -94,6 +94,7 @@ J2_ORDER = (0.0, 0.2411, 0.4)
 jl = lambda j: f"{j:g}"
 tot = lambda d, topo="a2a": d[f"counts_{topo}"]["total"]
 fil = lambda d, topo="a2a": d[f"counts_{topo}"]["filter"]
+drc = lambda d: d["counts_direct"]["filter"]      # direct (level-1) compilation, filter only
 
 L = []
 A = L.append
@@ -126,12 +127,13 @@ A("* **N ≤ 14 versus N > 14.** For N ≤ 14 an exact-diagonalisation cross-che
   "same exact commutator sum as for small N (Table 1b), and circuits are **counted, not simulated** (no measured 1−F or P_succ; only the rigorous bound).")
 A("* **Time.** `T (scaled)` is the total evolution time Σtᵢ in units of 1/W; `T (phys)` = T/W in units of 1/J1 "
   "(H = Σ J S·S, J1 = 1). Pulses with kᵢ = 0 on the grid are dropped.")
-A("* **Counting.** One Trotter step of one pulse (all bonds, ancilla-controlled) is transpiled once with qiskit "
-  "(`optimization_level=3`, basis cx/h/s/rz); filter counts = n × per-step + per pulse (one Rz(2φ), two H). "
-  "At small n this was checked against a full transpile of the real early-abort circuit (Section 9). "
-  "`RZ` counts every `rz` gate in the basis; `RZ (non-Cliff.)` only those whose angle is not a multiple of π/2 "
-  "(the metric used for fault-tolerant cost; no T-count is reported because the synthesis constants are unverified). "
-  "**Totals include the trial circuit.** Connectivity is all-to-all unless marked *line* "
+A("* **Counting and the two compilations.** One Trotter step of one pulse (every Pauli term of H, controlled by the ancilla) is transpiled once and multiplied by n; "
+  "per pulse one Rz(2φ) is added. Two compilations of the same circuit are reported because they trade CX against non-Clifford rotations: "
+  "**direct** (qiskit `optimization_level=1`, every Pauli rotation becomes a CX ladder around one Rz): CX = 4 × (#Pauli terms) per step and non-Clifford Rz = #Pauli terms + 1 per step; "
+  "**level 3** (block re-synthesis): about 1.7× fewer CX but about 3× more non-Clifford Rz. `RZ (non-Cliff.)` counts the Rz gates whose angle is not a multiple of π/2 "
+  "(the cost metric for fault-tolerant hardware; no T-count is reported because the synthesis constants are unverified). Per-step × n was checked against a full transpile of a 48-step circuit: "
+  "CX exact for both compilations, non-Clifford Rz exact for direct and up to 4% too high for level 3 (Section 9). "
+  "**Level-3 totals include the trial circuit**; direct counts are for the filter only (the trial circuit is 45–93 CX). Connectivity is all-to-all unless marked *line* "
   "(ancilla at the end of a line: pessimistic).")
 A("* **Success path.** All counts are for the all-zeros (success) path. The expected cost per accepted run is "
   "total ÷ P_succ (early abort makes it lower).")
@@ -192,7 +194,7 @@ def design_tables(source, which, N_list, title_prefix, eps=EPS_MAIN, tag=""):
     out = []
     rows1, rows2, rows3 = [], [], []
     h1 = ["N", "J2", "pulses", "n (steps)", "kᵢ", "T (scaled)", "T (phys)", "η cert.", "ε bound", "P_succ lb"]
-    h2 = ["N", "J2", "CX trial", "CX filter", "CX total", "RZ total", "RZ (non-Cliff.)", "H total", "depth total",
+    h2 = ["N", "J2", "CX trial", "CX filter", "CX total", "CX filter (direct)", "RZ non-Cliff. (level 3)", "RZ non-Cliff. (direct)", "depth total",
           "E[CX]/accept", "CX total (line)"]
     h3 = ["N", "J2", "measured 1−F", "F (ED)", "P_succ meas.", "state err vs exact", "bound holds", "full-transpile CX (n ≤ 200)"]
     for J2 in J2_ORDER:
@@ -206,7 +208,7 @@ def design_tables(source, which, N_list, title_prefix, eps=EPS_MAIN, tag=""):
             rows1.append([N, jl(J2), d["n_pulses_used"], f(d["n"], "int"), ks(d["k"]), f(d["T_scaled"], ".2f"),
                           f(d["T_phys"], ".2f"), f(d["eta"], ".3f"), f(d["eps_bound"], ".2e"), f(d["p_succ_lb"], ".3f")])
             rows2.append([N, jl(J2), f(r["inputs"]["trial_cost"]["cx"], "int"), f(fil(d)["cx"], "int"), f(c["cx"], "int"),
-                          f(c["rz"], "int"), f(c["rz_nonclifford"], "int"), f(c["h"], "int"), f(c["depth"], "int"),
+                          f(drc(d)["cx"], "int"), f(c["rz_nonclifford"], "int"), f(drc(d)["rz_nonclifford"], "int"), f(c["depth"], "int"),
                           f(c["cx"] / ps, "int"), f(tot(d, "line")["cx"], "int")])
             ft = d.get("full_transpile_check")
             rows3.append([N, jl(J2), f(d.get("eps_actual"), ".2e"), f(d.get("F_ed"), ".5f"), f(d.get("p_succ"), ".3f"),
@@ -215,7 +217,7 @@ def design_tables(source, which, N_list, title_prefix, eps=EPS_MAIN, tag=""):
                           f(ft["cx"], "int") if ft and "cx" in ft else "–"])
     if rows1:
         out += [f"**{title_prefix}: design and evolution time**", "", md(h1, rows1), "",
-                f"**{title_prefix}: gate counts (incl. trial circuit)**", "", md(h2, rows2), "",
+                f"**{title_prefix}: gate counts (level-3 columns include the trial circuit; direct columns are filter only)**", "", md(h2, rows2), "",
                 f"**{title_prefix}: measured quality (noiseless)**", "", md(h3, rows3), ""]
         csv_dump(f"{source}_{which}_{tag}eps{eps:g}_design.csv", h1, rows1)
         csv_dump(f"{source}_{which}_{tag}eps{eps:g}_counts.csv", h2, rows2)
@@ -240,7 +242,7 @@ A("")
 # ------------------------------------------------------------------ 4 per step
 A("## 4. Cost of one Trotter step")
 A("")
-rows, hd = [], ["N", "J2", "bonds", "Pauli terms", "CX", "H", "RZ", "RZ (non-Cliff.)", "depth", "CX (line, 3-step avg)", "line / a2a"]
+rows, hd = [], ["N", "J2", "bonds", "Pauli terms", "CX (level 3)", "RZ non-Cliff. (level 3)", "CX (direct)", "RZ non-Cliff. (direct)", "depth (level 3)", "CX (line, 3-step avg)", "line / a2a"]
 for J2 in J2_ORDER:
     for N in sorted({r["N"] for r in R}):
         r = (sel("dmrg", N, J2, EPS_MAIN) or sel("dmrg", N, J2) or [None])[0]
@@ -248,7 +250,7 @@ for J2 in J2_ORDER:
             continue
         s1, sl = r["per_step"]["a2a"]["one"], r["per_step"]["line"]["avg3"]
         rows.append([N, jl(J2), (N - 1) + ((N - 2) if J2 else 0), r["inputs"]["n_pauli_terms"], f(s1["cx"], "int"),
-                     f(s1["h"], "int"), f(s1["rz"], "int"), f(s1["rz_nonclifford"], "int"), f(s1["depth"], "int"),
+                     f(s1["rz_nonclifford"], "int"), f(r["per_step"]["direct"]["cx"], "int"), f(r["per_step"]["direct"]["rz_nonclifford"], "int"), f(s1["depth"], "int"),
                      f(sl["cx"], ".1f"), f(sl["cx"] / s1["cx"], ".2f")])
 A(md(hd, rows))
 csv_dump("per_step.csv", hd, rows)
@@ -366,7 +368,7 @@ A("")
 Nl = [N for N in (14, 16, 18, 20, 24, 28, 32) if sel("dmrg", N)]
 for eps in (EPS_MAIN, 1e-1):
     rows, hd = [], ["N", "J2", "γ", "Δ", "W", "α", "pulses", "n (steps)", "T (scaled)", "T (phys)", "CX trial", "CX filter", "CX total",
-                    "RZ total", "RZ (non-Cliff.)", "H total", "depth", "P_succ lb", "ε bound", "CX total (line)", "DMRG converged"]
+                    "CX filter (direct)", "RZ non-Cliff. (level 3)", "RZ non-Cliff. (direct)", "depth", "P_succ lb", "ε bound", "CX total (line)", "DMRG converged"]
     for J2 in J2_ORDER:
         for N in Nl:
             r = one("dmrg", N, J2, eps)
@@ -376,8 +378,8 @@ for eps in (EPS_MAIN, 1e-1):
             i, c = r["inputs"], tot(d)
             rows.append([N, jl(J2), f(i["gamma"], ".4f"), f(i["gap_scaled"], ".4f"), f(i["W"], ".2f"), f(i["alpha"], ".4f"),
                          d["n_pulses_used"], f(d["n"], "int") + ("" if from_floor(r) else " †"), f(d["T_scaled"], ".1f"), f(d["T_phys"], ".2f"),
-                         f(i["trial_cost"]["cx"], "int"), f(fil(d)["cx"], "int"), f(c["cx"], "int"), f(c["rz"], "int"),
-                         f(c["rz_nonclifford"], "int"), f(c["h"], "int"), f(c["depth"], "int"),
+                         f(i["trial_cost"]["cx"], "int"), f(fil(d)["cx"], "int"), f(c["cx"], "int"), f(drc(d)["cx"], "int"),
+                         f(c["rz_nonclifford"], "int"), f(drc(d)["rz_nonclifford"], "int"), f(c["depth"], "int"),
                          f(d["p_succ_lb"], ".3f"), f(d["eps_bound"], ".2e"), f(tot(d, "line")["cx"], "int"), conv_str(r)])
     if rows:
         A(f"**Guaranteed designs, ε = {eps:g}**")
@@ -403,7 +405,7 @@ if rows:
     A("")
 
 # empirical at N = 14
-rows, hd = [], ["N", "J2", "design", "n", "pulses", "T (phys)", "CX total", "RZ (non-Cliff.)", "measured 1−F", "P_succ", "ε bound (rigorous)"]
+rows, hd = [], ["N", "J2", "design", "n", "pulses", "T (phys)", "CX total", "RZ non-Cliff. (direct)", "measured 1−F", "P_succ", "ε bound (rigorous)"]
 for J2 in J2_ORDER:
     for N in (12, 14):
         for src in ("dmrg",):
@@ -413,7 +415,7 @@ for J2 in J2_ORDER:
                 if ok(d) and d.get("simulated"):
                     c = tot(d)
                     rows.append([N, jl(J2), which, f(d["n"], "int"), d["n_pulses_used"], f(d["T_phys"], ".2f"), f(c["cx"], "int"),
-                                 f(c["rz_nonclifford"], "int"), f(d["eps_actual"], ".2e"), f(d["p_succ"], ".3f"), f(d["eps_bound"], ".2e")])
+                                 f(drc(d)["rz_nonclifford"], "int"), f(d["eps_actual"], ".2e"), f(d["p_succ"], ".3f"), f(d["eps_bound"], ".2e")])
 if rows:
     A("**Measured (statevector-simulated) points, N = 12 and 14**")
     A("")
@@ -440,7 +442,8 @@ def fit(xs, ys):
 rows, hd = [], ["quantity", "J2", "source", "N range", "p in y ~ N^p", "R²", "points"]
 FITS = {}
 metrics = [("n (steps)", lambda r, d: d["n"]), ("T (scaled)", lambda r, d: d["T_scaled"]), ("CX per step", lambda r, d: r["per_step"]["a2a"]["one"]["cx"]),
-           ("CX total", lambda r, d: tot(d)["cx"]), ("RZ non-Cliff. total", lambda r, d: tot(d)["rz_nonclifford"]),
+           ("CX total", lambda r, d: tot(d)["cx"]), ("CX (direct)", lambda r, d: drc(d)["cx"]),
+           ("RZ non-Cliff. (level 3)", lambda r, d: tot(d)["rz_nonclifford"]), ("RZ non-Cliff. (direct)", lambda r, d: drc(d)["rz_nonclifford"]),
            ("depth total", lambda r, d: tot(d)["depth"])]
 for src, Nrange in (("dmrg", (6, 32)),):
     for J2 in J2_ORDER:
@@ -462,7 +465,7 @@ if rows:
 A("## 8. Dependence on the target ε")
 A("")
 for (N, J2) in ((6, 0.0), (8, 0.0), (6, 0.4)):
-    rows, hd = [], ["ε", "design", "n", "pulses", "T (phys)", "CX total", "RZ (non-Cliff.)", "depth", "measured 1−F", "ε bound", "P_succ"]
+    rows, hd = [], ["ε", "design", "n", "pulses", "T (phys)", "CX total", "RZ non-Cliff. (direct)", "depth", "measured 1−F", "ε bound", "P_succ"]
     for eps in (1e-1, 3e-2, 1e-2, 3e-3, 1e-3):
         r = one("dmrg", N, J2, eps)
         for which in ("guaranteed", "empirical"):
@@ -470,7 +473,7 @@ for (N, J2) in ((6, 0.0), (8, 0.0), (6, 0.4)):
             if ok(d):
                 c = tot(d)
                 rows.append([f(eps, ".0e"), which, f(d["n"], "int"), d["n_pulses_used"], f(d["T_phys"], ".2f"), f(c["cx"], "int"),
-                             f(c["rz_nonclifford"], "int"), f(c["depth"], "int"), f(d.get("eps_actual"), ".2e"), f(d["eps_bound"], ".2e"),
+                             f(drc(d)["rz_nonclifford"], "int"), f(c["depth"], "int"), f(d.get("eps_actual"), ".2e"), f(d["eps_bound"], ".2e"),
                              f(d.get("p_succ", d["p_succ_lb"]), ".3f")])
     if rows:
         A(f"**N = {N}, J2 = {J2:g}**")
@@ -494,6 +497,12 @@ if rows:
     A(md(hd, rows))
     csv_dump("validation.csv", hd, rows)
     A("")
+    vd = [r["validation_direct"] for r in R if r.get("validation_direct")]
+    if vd:
+        A(f"*Direct compilation:* per-step × n against a full transpile of a 48-step circuit (4 pulses of 12 steps) for {len(vd)} cases with N ≤ 12: maximum difference "
+          f"{max(abs(v['est_cx'] - v['full_cx']) for v in vd):.0f} CX and {max(abs(v['est_nc'] - v['full_nc']) for v in vd):.0f} non-Clifford Rz. "
+          "For the level-3 compilation CX is exact and the per-step non-Clifford Rz estimate is up to about 4% too high (conservative). Per-step depth × n overestimates depth by about 1–2%.")
+        A("")
 rows, hd = [], ["source", "N", "J2", "ε", "context build (DMRG+ED+trial+per-step) s", "filter design s", "guaranteed search s", "empirical search s"]
 for r in sorted(R, key=lambda r: (r["source"], r["N"], r["J2"], -r["eps"])):
     rows.append([r["source"], r["N"], jl(r["J2"]), f(r["eps"], ".0e"), f(r["inputs"]["build_s"], ".0f"), f(r["design"]["design_s"], ".0f"),
@@ -534,7 +543,7 @@ def series(src, J2, which, fn, Nmin=4, Nmax=34):
 
 
 panels = [("n (Trotter steps)", lambda r, d: d["n"]), ("T (physical, 1/J1)", lambda r, d: d["T_phys"]),
-          ("total CX", lambda r, d: tot(d)["cx"]), ("non-Clifford RZ", lambda r, d: tot(d)["rz_nonclifford"])]
+          ("total CX", lambda r, d: tot(d)["cx"]), ("non-Clifford RZ (direct)", lambda r, d: drc(d)["rz_nonclifford"])]
 fig, axes = plt.subplots(1, 4, figsize=(14, 3.3))
 for ax, (title, fn) in zip(axes, panels):
     for J2 in J2_ORDER:
@@ -587,6 +596,8 @@ A("")
 A("```")
 A("export OMP_NUM_THREADS=1")
 A("for i in 0 1 2 3; do python scripts/run_results.py --worker $i --of 4 & done; wait   # resumable")
+A("python scripts/add_direct_counts.py   # direct-compilation counts (run_results.py now writes them itself)")
+A("python scripts/audit_results.py [--alpha]   # independent re-derivation of every stored bound and count; must print ALL CHECKS PASSED")
 A("python scripts/build_results.py")
 A("```")
 A("")
@@ -616,8 +627,8 @@ if g_large:
     cxs = [tot(g)["cx"] for _, g in g_large]
     nunc = sum(1 for r, _ in g_large_all if not r["inputs"].get("dmrg_converged", True))
     S.append(f"* **N = {min(r['N'] for r, _ in g_large)}–{max(r['N'] for r, _ in g_large)} (DMRG/MPS only, counted not simulated), ε = 10⁻²:** {f(min(g['n'] for _, g in g_large), 'int')}–"
-             f"{f(max(g['n'] for _, g in g_large), 'int')} steps, {min(cxs):.2e}–{max(cxs):.2e} total CX, "
-             f"{min(tot(g)['rz_nonclifford'] for _, g in g_large):.2e}–{max(tot(g)['rz_nonclifford'] for _, g in g_large):.2e} non-Clifford RZ, "
+             f"{f(max(g['n'] for _, g in g_large), 'int')} steps, {min(cxs):.2e}–{max(cxs):.2e} total CX (level 3; direct compilation {min(drc(g)['cx'] for _, g in g_large):.2e}–{max(drc(g)['cx'] for _, g in g_large):.2e}), "
+             f"{min(drc(g)['rz_nonclifford'] for _, g in g_large):.2e}–{max(drc(g)['rz_nonclifford'] for _, g in g_large):.2e} non-Clifford RZ (direct; level 3: {min(tot(g)['rz_nonclifford'] for _, g in g_large):.2e}–{max(tot(g)['rz_nonclifford'] for _, g in g_large):.2e}), "
              f"T (phys) {f(min(g['T_phys'] for _, g in g_large), '.1f')}–{f(max(g['T_phys'] for _, g in g_large), '.1f')} "
              f"(converged-DMRG points only; {nunc} further point(s) have an unconverged excited-state DMRG and are flagged in Section 7; {n_fallback} point(s) designed by the fallback FilterBuilder, marked † there, are excluded from these ranges and from the fits).")
 for J2 in J2_ORDER:

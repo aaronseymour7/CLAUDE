@@ -113,6 +113,14 @@
     "total": 1439.0,
     "depth": 830.0
    }
+  },
+  "direct": {
+   "cx": 300.0,
+   "h": 202.0,
+   "s": 100.0,
+   "rz": 177.0,
+   "rz_nonclifford": 76.0,
+   "depth": 554.0
   }
  },
  "designs": {
@@ -217,7 +225,15 @@
     }
    },
    "full_transpile_check": null,
-   "search_s": 454.9212851524353
+   "search_s": 454.9212851524353,
+   "counts_direct": {
+    "filter": {
+     "cx": 6870600.0,
+     "rz_nonclifford": 1740560.0,
+     "rz": 4053662.0,
+     "depth": 12687708.0
+    }
+   }
   },
   "empirical": {
    "which": "empirical",
@@ -320,7 +336,15 @@
     "cx": 7175,
     "depth": 29760
    },
-   "search_s": 100.17839980125427
+   "search_s": 100.17839980125427,
+   "counts_direct": {
+    "filter": {
+     "cx": 12300.0,
+     "rz_nonclifford": 3123.0,
+     "rz": 7264.0,
+     "depth": 22714.0
+    }
+   }
   }
  },
  "design": {

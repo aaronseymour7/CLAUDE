@@ -51,7 +51,9 @@ V.update(ed_max=g3(LS["ed_max"]), cons_max=g3(LS["cons_max"]), cons_var_max=g3(L
          lg_cx_lo=f"{LS['large_cx'][0]:.1e}".replace("e+0", "\\times10^{").replace("e+", "\\times10^{") + "}", lg_cx_hi=f"{LS['large_cx'][1]:.1e}".replace("e+0", "\\times10^{").replace("e+", "\\times10^{") + "}",
          lg_rz_lo=f"{LS['large_rz'][0]:.1e}".replace("e+0", "\\times10^{").replace("e+", "\\times10^{") + "}", lg_rz_hi=f"{LS['large_rz'][1]:.1e}".replace("e+0", "\\times10^{").replace("e+", "\\times10^{") + "}",
          lg_T_lo=f"{LS['large_T'][0]:.1f}", lg_T_hi=f"{LS['large_T'][1]:.1f}")
-for k_ in ("lg_cx_lo", "lg_cx_hi", "lg_rz_lo", "lg_rz_hi"):
+V["lg_cxd_lo"] = f"{LS['large_cxd'][0]:.1e}".replace("e+0", "\\times10^{").replace("e+", "\\times10^{") + "}"
+V["lg_cxd_hi"] = f"{LS['large_cxd'][1]:.1e}".replace("e+0", "\\times10^{").replace("e+", "\\times10^{") + "}"
+for k_ in ("lg_cx_lo", "lg_cx_hi", "lg_rz_lo", "lg_rz_hi", "lg_cxd_lo", "lg_cxd_hi"):
     V[k_] = "$" + V[k_] + "$"
 fl = LS["large_fits"]
 for idx, key in enumerate(("0.0", "0.2411", "0.4")):

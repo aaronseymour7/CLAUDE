@@ -33,7 +33,7 @@ os.chdir(ROOT)
 import numpy as np                                    # noqa: E402
 import pipeline as P                                  # noqa: E402
 from core.circuits import apply_filter_pulse          # noqa: E402
-from core.resources import resource_costs, rotation_synthesis_t_count   # noqa: E402
+from core.resources import resource_costs, rotation_synthesis_t_count, direct_step_counts   # noqa: E402
 from qiskit import QuantumCircuit                     # noqa: E402
 from qiskit.transpiler import CouplingMap             # noqa: E402
 
@@ -88,6 +88,7 @@ def step_counts(H_scaled, N):
             c = resource_costs(qc, verbose=False, coupling_map=cmap, synth_eps=P.SYNTH_EPS)
             per[reps] = {k: float(c[k]) / reps for k in COUNT_KEYS}
         out[label] = dict(one=per[1], avg3=per[3])
+    out["direct"] = direct_step_counts(H_scaled, N)       # level-1 (no re-synthesis) compilation, see core.resources
     return out
 
 
@@ -123,6 +124,9 @@ def describe(ctx, des, pt, step, which, W):
                  circ_dev=None if pt["circ_dev"] is None else float(pt["circ_dev"]), warn=pt["warn"])
     d["counts_a2a"] = totals(ctx, pt, step, "a2a")
     d["counts_line"] = totals(ctx, pt, step, "line")
+    sd = step["direct"]
+    d["counts_direct"] = dict(filter=dict(cx=sd["cx"] * pt["n"], rz_nonclifford=sd["rz_nonclifford"] * pt["n"] + pt["n_nz"],
+                                          rz=sd["rz"] * pt["n"] + pt["n_nz"], depth=sd["depth"] * pt["n"]))
     try:
         m = P.measured_cost(ctx, pt)                 # full transpile of the actual early-abort circuit (n <= 200)
     except Exception as e:

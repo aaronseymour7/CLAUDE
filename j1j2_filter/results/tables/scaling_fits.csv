@@ -3,17 +3,23 @@ n (steps),0,dmrg,6–24,3.99,0.997,9
 T (scaled),0,dmrg,6–24,2.17,0.994,9
 CX per step,0,dmrg,6–24,1.10,1.000,9
 CX total,0,dmrg,6–24,5.08,0.999,9
-RZ non-Cliff. total,0,dmrg,6–24,5.06,0.999,9
+CX (direct),0,dmrg,6–24,5.08,0.999,9
+RZ non-Cliff. (level 3),0,dmrg,6–24,5.06,0.999,9
+RZ non-Cliff. (direct),0,dmrg,6–24,5.05,0.999,9
 depth total,0,dmrg,6–24,5.08,0.999,9
 n (steps),0.2411,dmrg,6–24,4.07,0.998,9
 T (scaled),0.2411,dmrg,6–24,2.31,0.978,9
 CX per step,0.2411,dmrg,6–24,1.16,0.999,9
 CX total,0.2411,dmrg,6–24,5.22,0.998,9
-RZ non-Cliff. total,0.2411,dmrg,6–24,5.21,0.998,9
+CX (direct),0.2411,dmrg,6–24,5.22,0.998,9
+RZ non-Cliff. (level 3),0.2411,dmrg,6–24,5.21,0.998,9
+RZ non-Cliff. (direct),0.2411,dmrg,6–24,5.20,0.998,9
 depth total,0.2411,dmrg,6–24,5.22,0.998,9
 n (steps),0.4,dmrg,6–32,3.78,0.998,11
 T (scaled),0.4,dmrg,6–32,2.30,0.992,11
 CX per step,0.4,dmrg,6–32,1.13,0.999,11
 CX total,0.4,dmrg,6–32,4.92,0.999,11
-RZ non-Cliff. total,0.4,dmrg,6–32,4.91,0.999,11
+CX (direct),0.4,dmrg,6–32,4.92,0.999,11
+RZ non-Cliff. (level 3),0.4,dmrg,6–32,4.91,0.999,11
+RZ non-Cliff. (direct),0.4,dmrg,6–32,4.90,0.999,11
 depth total,0.4,dmrg,6–32,4.91,0.999,11
