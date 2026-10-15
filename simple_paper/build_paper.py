@@ -59,8 +59,10 @@ for idx, key in enumerate(("0.0", "0.2411", "0.4")):
 gm = [m[2] for m in LS["large_missing"]]
 V["lg_gmin"], V["lg_gmax"] = (f"{min(gm):.2f}", f"{max(gm):.2f}") if gm else ("–", "–")
 hy = [v["hyb"] for v in S["cost"].values() if v["hyb"]]
-fmt = lambda x: f"${x/1e4:.0f}\\times10^{{4}}$" if x >= 1e4 else f"${x/1e3:.0f}\\times10^{{3}}$" if x >= 1e3 else f"${x:.0f}$"
+fmt = lambda x: "$%d\\times10^{%d}$" % (round(x / 10 ** int(np.floor(np.log10(x)))), int(np.floor(np.log10(x))))
 V["hyb_cx_lo"], V["hyb_cx_hi"] = fmt(min(hy)), fmt(max(hy))
+hy6 = [v["hyb"] for kk, v in S["cost"].items() if v["hyb"] and int(kk.split("_")[0][1:]) >= 6]
+V["hyb6_cx_lo"], V["hyb6_cx_hi"] = fmt(min(hy6)), fmt(max(hy6))
 hf = [S[f"fit_J{J}"]["filt_hyb"] for J in (0.0, 0.4) if S.get(f"fit_J{J}") and S[f"fit_J{J}"].get("filt_hyb")]
 V["hybfit_lo"], V["hybfit_hi"] = f"{min(hf):.1f}", f"{max(hf):.1f}"
 bwf = HERE / "results" / "bandwidth_comparison.json"

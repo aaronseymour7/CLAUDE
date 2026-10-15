@@ -233,7 +233,7 @@ ax.set_xlabel("$N$"); ax.set_ylabel("total CX (trial + filter), $\\varepsilon=10
 fig.tight_layout(); fig.savefig(FIG / "fig_cx.png", dpi=200); plt.close(fig)
 
 fig, ax = plt.subplots(figsize=(7.4, 1.9)); ax.axis("off"); ax.set_xlim(0, 100); ax.set_ylim(2, 31)
-boxes = [(1, "classical front end", "DMRG: $E_0,E_1,E_{\\mathrm{top}}$\nMPS, compiled to a circuit\n$\\gamma$, $\\Delta$, $W$"),
+boxes = [(1, "classical front end", "DMRG: $E_0,E_1$, MPS $\\to$ circuit\n$\\gamma$, $\\Delta$\n$W$ (Weyl bound)"),
          (21, "scale", "$H_s=(H-E_0)/W$\nspec $\\subset\\{0\\}\\cup[\\Delta,1]$\n$\\alpha$ (commutators)"),
          (41, "filter", "$F(E)=\\prod_i\\cos(Et_i{+}\\phi_i)$\ncertified $\\eta$, $F(0)^2$\ntotal time $T$"),
          (61, "choose $n$", "certified: $\\bar D(n)\\leq\\sqrt{\\varepsilon}$\nhybrid: $\\sqrt{\\bar\\ell}$ + n vs 2n\nTrotter estimate"),

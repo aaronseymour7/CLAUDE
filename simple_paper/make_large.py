@@ -50,16 +50,16 @@ for J2 in J2S:
 S["large_fits"] = {str(k): v for k, v in fits.items()}
 
 # DMRG accuracy beyond the main table: ED rows (N = 16-20) and run-to-run consistency (N = 24-32)
-rows = ["| $N$ | $J_2$ | $|E_0-E_0^{\\rm ED}|$ | $|E_1-E_1^{\\rm ED}|$ | $|E_{\\rm top}-E_{\\rm top}^{\\rm ED}|$ | $1-|\\langle\\psi_0|\\psi_0^{\\rm ED}\\rangle|^2$ |", "|---|---|---|---|---|---|"]
+rows = ["| $N$ | $J_2$ | $|E_0-E_0^{\\mathrm{ED}}|$ | $|E_1-E_1^{\\mathrm{ED}}|$ | $|E_{\\mathrm{top}}-E_{\\mathrm{top}}^{\\mathrm{ED}}|$ | $1-|\\langle\\psi_0|\\psi_0^{\\mathrm{ED}}\\rangle|^2$ |", "|---|---|---|---|---|---|"]
 ed = [v for k, v in VAL.items() if k.startswith("ed_")]
 for v in sorted(ed, key=lambda v: (v["J2"], v["N"])):
-    rows.append(f"| {v['N']} | {v['J2']:g} | {v['dE0']} | {v['dE1']} | {v['dEtop']} | {v['one_minus_overlap']} |")
+    rows.append(f"| {v['N']} | {v['J2']:g} | {sci(v['dE0'])} | {sci(v['dE1'])} | {sci(v['dEtop'])} | {sci(v['one_minus_overlap'])} |")
 out["dmrg_ed"] = "\n".join(rows)
 S["ed_max"] = max(max(float(v["dE0"]), float(v["dE1"]), float(v["dEtop"])) for v in ed)
-rows = ["| $N$ | $J_2$ | run-to-run $|\\Delta E_0|$ | $|\\Delta E_1|$ | $|\\Delta E_{\\rm top}|$ | $1-|\\langle\\psi_0|\\psi_0'\\rangle|^2$ | variance of $\\psi_0$ | variance of $\\psi_1$ |", "|---|---|---|---|---|---|---|---|"]
+rows = ["| $N$ | $J_2$ | run-to-run $|\\Delta E_0|$ | $|\\Delta E_1|$ | $|\\Delta E_{\\mathrm{top}}|$ | $1-|\\langle\\psi_0|\\psi_0'\\rangle|^2$ | variance of $\\psi_0$ | variance of $\\psi_1$ |", "|---|---|---|---|---|---|---|---|"]
 co = [v for k, v in VAL.items() if k.startswith("consist_")]
 for v in sorted(co, key=lambda v: (v["J2"], v["N"])):
-    rows.append(f"| {v['N']} | {v['J2']:g} | {v['dE0']} | {v['dE1']} | {v['dEtop']} | {v['one_minus_overlap']} | {v['var0']} | {v['var1']} |")
+    rows.append(f"| {v['N']} | {v['J2']:g} | {sci(v['dE0'])} | {sci(v['dE1'])} | {sci(v['dEtop'])} | {sci(v['one_minus_overlap'])} | {sci(v['var0'])} | {sci(v['var1'])} |")
 out["dmrg_cons"] = "\n".join(rows)
 S["cons_max"] = max(max(float(v["dE0"]), float(v["dE1"]), float(v["dEtop"])) for v in co)
 S["cons_var_max"] = max(max(float(v["var0"]), float(v["var1"])) for v in co)
