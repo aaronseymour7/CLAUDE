@@ -52,12 +52,14 @@ end is accurate to 3.7e-13 against exact diagonalisation
 and reproducible to 1.2e-13 between independent runs
 (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>≤</mo><mn>32</mn></mrow><annotation encoding="application/x-tex">N\le32</annotation></semantics></math>);
 the excited state is the lowest state of any symmetry (its symmetry is
-not assumed; it was a triplet in every exact case checked), and the
-bandwidth is certified by Weyl’s inequality without a DMRG value for the
-top of the spectrum. The paper is organised around three questions.
-<strong>(1) Can the filter be certified without knowing the exact ground
-state?</strong> Yes, conditionally: an a-priori bound on the trace
-distance to the ground state,
+not assumed; it was a triplet in every exact case checked,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>≤</mo><mn>16</mn></mrow><annotation encoding="application/x-tex">N\le16</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>J</mi><mn>2</mn></msub><mo>∈</mo><mrow><mo stretchy="true" form="prefix">[</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="true" form="postfix">]</mo></mrow></mrow><annotation encoding="application/x-tex">J_2\in[0,1]</annotation></semantics></math>),
+and the bandwidth is certified by Weyl’s inequality without a DMRG value
+for the top of the spectrum. The paper is organised around three
+questions. <strong>(1) Can the filter be certified without knowing the
+exact ground state?</strong> Yes, conditionally: an a-priori bound on
+the trace distance to the ground state,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>D</mi><mo>≤</mo><msqrt><mover><mo>ℓ</mo><mo accent="true">‾</mo></mover></msqrt><mo>+</mo><msub><mi>ϵ</mi><mi>T</mi></msub><mi>/</mi><msqrt><msub><mi>p</mi><mi>g</mi></msub></msqrt></mrow><annotation encoding="application/x-tex">D\le\sqrt{\bar\ell}+\epsilon_T/\sqrt{p_g}</annotation></semantics></math>,
 needs only DMRG-derived inputs and held on all 99 simulated points. It
 is a <em>conditional certificate</em>: it assumes the DMRG shift, gap
@@ -223,16 +225,24 @@ at the tolerances used here) at
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mrow><mo stretchy="true" form="prefix">(</mo><msup><mi>χ</mi><mn>3</mn></msup><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">O(\chi^3)</annotation></semantics></math>
 cost. It returns the lowest state of <em>any</em> symmetry orthogonal to
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ψ</mi><mn>0</mn></msub><annotation encoding="application/x-tex">\psi_0</annotation></semantics></math>,
-so the symmetry of the first excitation is not assumed. In every exact
-case checked
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>=</mo><mn>8</mn><mo>,</mo><mn>10</mn><mo>,</mo><mn>12</mn></mrow><annotation encoding="application/x-tex">N=8,10,12</annotation></semantics></math>,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>J</mi><mn>2</mn></msub><mo>=</mo><mn>0</mn><mo>,</mo><mn>0.2411</mn><mo>,</mo><mn>0.4</mn></mrow><annotation encoding="application/x-tex">J_2=0,0.2411,0.4</annotation></semantics></math>,
-open chains) it is a triplet, but the critical point
+so the symmetry of the first excitation is not assumed. Exact
+diagonalisation (scripts/check_first_excitation.py) of open chains with
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>=</mo><mn>8</mn></mrow><annotation encoding="application/x-tex">N=8</annotation></semantics></math>–<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>16</mn><annotation encoding="application/x-tex">16</annotation></semantics></math>
+at 22 values of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>J</mi><mn>2</mn></msub><mo>∈</mo><mrow><mo stretchy="true" form="prefix">[</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="true" form="postfix">]</mo></mrow></mrow><annotation encoding="application/x-tex">J_2\in[0,1]</annotation></semantics></math>
+(step 0.05, plus 0.2411) finds a non-degenerate singlet ground state and
+a triplet first excitation in every case (lowest
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>S</mi><mi>z</mi></msup><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">S^z=1</annotation></semantics></math>
+level equals the second
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>S</mi><mi>z</mi></msup><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">S^z=0</annotation></semantics></math>
+level and lies below the lowest
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>S</mi><mi>z</mi></msup><mo>=</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">S^z=2</annotation></semantics></math>
+level); this is a finite-size, finite-grid check, not a proof for larger
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math>.
+The critical point
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>J</mi><mn>2</mn><mi>c</mi></msubsup><mo>≈</mo><mn>0.2411</mn></mrow><annotation encoding="application/x-tex">J_2^c\approx0.2411</annotation></semantics></math>
-[12,13] is itself located by a singlet–triplet level crossing in
-periodic chains, so the lowest excitation need not stay a triplet
-elsewhere in the phase diagram. The bandwidth is certified without DMRG:
-by Weyl’s inequality
+[12,13] is located by a singlet–triplet crossing in <em>periodic</em>
+chains. The bandwidth is certified without DMRG: by Weyl’s inequality
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>λ</mi><mo>max</mo></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mo>∑</mo><mi>b</mi></msub><msub><mi>h</mi><mi>b</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>≤</mo><msub><mo>∑</mo><mi>b</mi></msub><msub><mi>λ</mi><mo>max</mo></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>h</mi><mi>b</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\lambda_{\max}(\sum_bh_b)\le\sum_b\lambda_{\max}(h_b)</annotation></semantics></math>,
 and a bond
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>J</mi><mspace width="0.167em"></mspace><mi>𝐒</mi><mspace width="-0.167em"></mspace><mo>⋅</mo><mspace width="-0.167em"></mspace><mi>𝐒</mi></mrow><annotation encoding="application/x-tex">J\,\mathbf S\!\cdot\!\mathbf S</annotation></semantics></math>

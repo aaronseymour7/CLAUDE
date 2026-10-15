@@ -480,7 +480,7 @@ A shallow circuit built from a DMRG state leaves some excited-state weight. A \e
 \section{How the numbers are produced}\label{sec:method}
 For each chain $(N,J_2)$ the pipeline does the following; all steps use only DMRG and circuits (no ground-state knowledge) except where marked.
 \begin{enumerate}
-\item \textbf{DMRG} finds $E_0$ and the ground-state MPS; a second DMRG run finds $E_1$ as the lowest state orthogonal to it, whatever its symmetry (the symmetry of the first excitation is not assumed: it was a triplet in every exact case checked, $N\leq12$).
+\item \textbf{DMRG} finds $E_0$ and the ground-state MPS; a second DMRG run finds $E_1$ as the lowest state orthogonal to it, whatever its symmetry (the symmetry of the first excitation is not assumed: exact diagonalization finds a triplet for every $J_2\in[0,1]$ on the grid, open chains $N=8$--$16$).
 \item \textbf{Scale} $H\to H_s=(H-E_0)/W$ so that the spectrum lies in $\{0\}\cup[\Delta,1]$ (Section~\ref{sec:bandwidth}).
 \item \textbf{Trial circuit}: the MPS is compiled to a shallow brickwork circuit ($L=1$ layer); $\gamma$ is its overlap with the DMRG ground state (computed from an MPS simulation of the circuit for $N>14$).
 \item \textbf{Design the filter}: choose $m\leq8$ pulses, times $t_i$ and phases $\phi_i$ that maximise $F(0)^2$ subject to a \emph{certified} bound $\eta\leq\eta_{\rm target}(\varepsilon,\gamma)$.

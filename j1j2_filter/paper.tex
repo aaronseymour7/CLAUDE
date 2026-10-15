@@ -100,27 +100,27 @@ to 32 in a DMRG/MPS-only regime where circuits are counted. The front
 end is accurate to 3.7e-13 against exact diagonalisation (\(N\le20\))
 and reproducible to 1.2e-13 between independent runs (\(N\le32\)); the
 excited state is the lowest state of any symmetry (its symmetry is not
-assumed; it was a triplet in every exact case checked), and the
-bandwidth is certified by Weyl's inequality without a DMRG value for the
-top of the spectrum. The paper is organised around three questions.
-\textbf{(1) Can the filter be certified without knowing the exact ground
-state?} Yes, conditionally: an a-priori bound on the trace distance to
-the ground state, \(D\le\sqrt{\bar\ell}+\epsilon_T/\sqrt{p_g}\), needs
-only DMRG-derived inputs and held on all 99 simulated points. It is a
-\emph{conditional certificate}: it assumes the DMRG shift, gap and
-ground-state weight are right, which DMRG cannot certify, and we state
-exactly how it changes when they are off by given amounts. It fails if
-the weight \(\gamma\) or the gap \(\Delta\) is over-estimated (a gap
-\(25\%\) too large already breaks it). \textbf{(2) How conservative is
-the certificate?} Its leakage term is reasonably tight
-(1.1--2.7\(\times\)); its worst-case Trotter term is extremely
-conservative (9--77\(\times\), growing with \(N\)), so the certified
-step count is 11--168\(\times\) what is empirically sufficient.
-\textbf{(3) Can the practical cost be recovered without the exact ground
-state?} A hybrid rule, certified leakage plus a measured
-\(n\)-versus-\(2n\) Trotter estimate, met every target (25 of 25) with
-6--66\(\times\) fewer steps than the certificate, but it is empirical,
-not rigorous. In gates, the hybrid filter costs
+assumed; it was a triplet in every exact case checked, \(N\le16\),
+\(J_2\in[0,1]\)), and the bandwidth is certified by Weyl's inequality
+without a DMRG value for the top of the spectrum. The paper is organised
+around three questions. \textbf{(1) Can the filter be certified without
+knowing the exact ground state?} Yes, conditionally: an a-priori bound
+on the trace distance to the ground state,
+\(D\le\sqrt{\bar\ell}+\epsilon_T/\sqrt{p_g}\), needs only DMRG-derived
+inputs and held on all 99 simulated points. It is a \emph{conditional
+certificate}: it assumes the DMRG shift, gap and ground-state weight are
+right, which DMRG cannot certify, and we state exactly how it changes
+when they are off by given amounts. It fails if the weight \(\gamma\) or
+the gap \(\Delta\) is over-estimated (a gap \(25\%\) too large already
+breaks it). \textbf{(2) How conservative is the certificate?} Its
+leakage term is reasonably tight (1.1--2.7\(\times\)); its worst-case
+Trotter term is extremely conservative (9--77\(\times\), growing with
+\(N\)), so the certified step count is 11--168\(\times\) what is
+empirically sufficient. \textbf{(3) Can the practical cost be recovered
+without the exact ground state?} A hybrid rule, certified leakage plus a
+measured \(n\)-versus-\(2n\) Trotter estimate, met every target (25 of
+25) with 6--66\(\times\) fewer steps than the certificate, but it is
+empirical, not rigorous. In gates, the hybrid filter costs
 \(3\times10^{2}\)--\(4\times10^{4}\) CX including the trial circuit for
 \(N\le16\), growing as roughly \(N^{2.5}\)--\(N^{3.1}\), which is
 28--150\(\times\) the cost of preparing the state directly from the MPS
@@ -218,12 +218,15 @@ projector as an MPO (whose bond dimension is \(\chi^2\) and which ran
 out of memory beyond \(N=14\) at the tolerances used here) at
 \(O(\chi^3)\) cost. It returns the lowest state of \emph{any} symmetry
 orthogonal to \(\psi_0\), so the symmetry of the first excitation is not
-assumed. In every exact case checked (\(N=8,10,12\),
-\(J_2=0,0.2411,0.4\), open chains) it is a triplet, but the critical
-point \(J_2^c\approx0.2411\) {[}12,13{]} is itself located by a
-singlet--triplet level crossing in periodic chains, so the lowest
-excitation need not stay a triplet elsewhere in the phase diagram. The
-bandwidth is certified without DMRG: by Weyl's inequality
+assumed. Exact diagonalisation (scripts/check\_first\_excitation.py) of
+open chains with \(N=8\)--\(16\) at 22 values of \(J_2\in[0,1]\) (step
+0.05, plus 0.2411) finds a non-degenerate singlet ground state and a
+triplet first excitation in every case (lowest \(S^z=1\) level equals
+the second \(S^z=0\) level and lies below the lowest \(S^z=2\) level);
+this is a finite-size, finite-grid check, not a proof for larger \(N\).
+The critical point \(J_2^c\approx0.2411\) {[}12,13{]} is located by a
+singlet--triplet crossing in \emph{periodic} chains. The bandwidth is
+certified without DMRG: by Weyl's inequality
 \(\lambda_{\max}(\sum_bh_b)\le\sum_b\lambda_{\max}(h_b)\), and a bond
 \(J\,\mathbf S\!\cdot\!\mathbf S\) has \(\lambda_{\max}=J/4\) for
 \(J\ge0\), so

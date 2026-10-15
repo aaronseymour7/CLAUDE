@@ -169,9 +169,13 @@ certificate. The Weyl bound \eqref{eq:W} is a true upper bound independent of DM
 $\max(W_{\rm cert},E_{\rm top}^{\rm DMRG}-E_0^{\rm DMRG})$).
 
 \paragraph{Chosen value: the scaled gap.} $\Delta=(E_1-E_0)/W$, with $E_1$ the lowest energy of \emph{any} symmetry
-sector other than the ground state. The symmetry of the first excitation is \emph{not assumed}: in every case checked by exact diagonalization
-($N=8,10,12$, $J_2\in\{0,0.2411,0.4\}$, open chains) it is a triplet, but the critical point $J_2^c\approx0.2411$~\cite{eggert,okamoto} is itself
-located by a singlet--triplet level crossing (in periodic chains), so the lowest excitation need not stay a triplet elsewhere in the phase diagram.
+sector other than the ground state. The symmetry of the first excitation is \emph{not assumed} by the code. Independently,
+exact diagonalization of the open chain in the $S^z=0,1,2$ sectors (\texttt{scripts/check\_first\_excitation.py}) shows that for
+$N=8,10,12,14,16$ and $J_2\in\{0,0.05,\dots,1\}\cup\{0.2411\}$ (22 values) the lowest excitation is a triplet: the lowest $S^z=1$ level
+equals the second $S^z=0$ level (its $S^z=0$ partner) to within $10^{-7}$, lies below the lowest $S^z=2$ level, and the ground level is a
+non-degenerate singlet. This is a finite-size, finite-grid check (even $N\le16$, step $0.05$); it is not a proof for larger $N$ or all $J_2$.
+Note that the critical point $J_2^c\approx0.2411$~\cite{eggert,okamoto} is itself located by a singlet--triplet level crossing, but in
+\emph{periodic} chains; the open chains studied here show no such crossing.
 
 \paragraph{What is needed.} $\operatorname{spec}(\Hs)\subset\{0\}\cup[\Delta,1]$. The upper end is rigorous (above); the
 non-degenerate ground state at $0$ and the true gap $\Delta$ are inputs (Section~\ref{sec:status}).
@@ -519,7 +523,7 @@ Gate counts & per-step $\times\,n$ vs.\ full transpile (CX exact; see Section~\r
 \bibitem{sbc} I.~Stetcu, A.~Baroni, J.~Carlson, \emph{Projection algorithm for state preparation on quantum computers},
   Phys.\ Rev.\ C \textbf{108}, L031306 (2023), arXiv:2211.10545.
 \bibitem{okamoto} K.~Okamoto, K.~Nomura, \emph{Fluid-dimer critical point in $S=\tfrac12$ antiferromagnetic Heisenberg chain with
-  next nearest neighbor interactions}, Phys.\ Lett.\ A \textbf{169}, 433 (1992). \emph{(From memory.)}
+  next nearest neighbor interactions}, Phys.\ Lett.\ A \textbf{169}, 433 (1992).
 \bibitem{eggert} S.~Eggert, \emph{Numerical evidence for multiplicative logarithmic corrections from marginal operators},
   Phys.\ Rev.\ B \textbf{54}, R9612 (1996), arXiv:cond-mat/9602026 (reports $J_2^c=0.241167\pm0.000005$).
 \bibitem{childs} A.~M.~Childs, Y.~Su, M.~C.~Tran, N.~Wiebe, S.~Zhu, \emph{Theory of Trotter error with commutator scaling},
@@ -527,10 +531,10 @@ Gate counts & per-step $\times\,n$ vs.\ full transpile (CX exact; see Section~\r
 \bibitem{lloyd} S.~Lloyd, \emph{Universal quantum simulators}, Science \textbf{273}, 1073 (1996).
 \bibitem{trotter} H.~F.~Trotter, \emph{On the product of semi-groups of operators}, Proc.\ Amer.\ Math.\ Soc.\ \textbf{10}, 545 (1959).
 \bibitem{rodeo} K.~Choi, D.~Lee, J.~Bonitati, Z.~Qian, J.~Watkins, \emph{Rodeo algorithm for quantum computing},
-  Phys.\ Rev.\ Lett.\ \textbf{127}, 040505 (2021). \emph{(From memory.)}
+  Phys.\ Rev.\ Lett.\ \textbf{127}, 040505 (2021), arXiv:2009.04092.
 \end{thebibliography}
 
-\noindent\emph{Items marked ``from memory'' were not checked against the source in this session; the SBC paper, Eggert's paper
-and Childs et al.\ were confirmed by search.}
+\noindent\emph{Verification of references.} Journal, volume, year and author lists were confirmed by web search for all entries; Okamoto--Nomura (journal reference and $J_2^c=0.2411$ confirmed via citing papers, not the original text), Lloyd, Trotter, and the
+textbook theorem numbers (Horn--Johnson Thm.~4.3.1 for Weyl's inequality) were not read at the source.
 
 \end{document}
