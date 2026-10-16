@@ -33,7 +33,8 @@ os.chdir(ROOT)
 import numpy as np                                    # noqa: E402
 import pipeline as P                                  # noqa: E402
 from core.circuits import apply_filter_pulse          # noqa: E402
-from core.resources import resource_costs, rotation_synthesis_t_count, direct_step_counts   # noqa: E402
+from core.resources import resource_costs, rotation_synthesis_t_count, direct_step_counts, RZZ_BASIS   # noqa: E402
+from core.circuits import build_early_abort_circuit   # noqa: E402
 from qiskit import QuantumCircuit                     # noqa: E402
 from qiskit.transpiler import CouplingMap             # noqa: E402
 
@@ -41,7 +42,7 @@ import get_energies as GE                             # noqa: E402   (settings +
 
 _ROLES = ("ground", "top", "excited")
 
-OUT = ROOT / "results" / "data"
+OUT = Path(os.environ["RESULTS_DATA"]) if "RESULTS_DATA" in os.environ else ROOT / "results" / "data"
 OUT.mkdir(parents=True, exist_ok=True)
 
 SMALL_N = (4, 6, 8, 10, 12, 14)       # statevector-simulated (measured 1-F, P_succ); ED cross-check available
@@ -92,6 +93,44 @@ def step_counts(H_scaled, N):
     return out
 
 
+RZZ_KEYS = ("rzz", "rzz_nonclifford", "rz", "rz_nonclifford", "nc_total", "sx", "x", "total", "depth")
+
+
+def step_counts_rzz(H_scaled, N):
+    """Same as step_counts but compiled to the RZZ basis (rzz, rz, sx, x): level-3 (all-to-all and line) and direct level-1 (all-to-all).
+    nc_total = non-Clifford Rz + non-Clifford RZZ (rotation angle not a multiple of pi/2)."""
+    out = {}
+    for label, cmap in (("a2a", None), ("line", CouplingMap.from_line(N + 1))):
+        per = {}
+        for reps in (1, 3):
+            qc = QuantumCircuit(N + 1)
+            apply_filter_pulse(qc, list(range(N)), N, H_scaled, 1.0, 0.0, reps, P.ORDER)
+            c = resource_costs(qc, verbose=False, coupling_map=cmap, synth_eps=P.SYNTH_EPS, basis=RZZ_BASIS)
+            per[reps] = {k: float(c[k]) / reps for k in RZZ_KEYS}
+        out[label] = dict(one=per[1], avg3=per[3])
+    out["direct"] = direct_step_counts(H_scaled, N, basis=RZZ_BASIS)
+    return out
+
+
+def totals_rzz(ctx, pt, step, topo):
+    """Filter and total counts in the RZZ basis: n x per-step + one Rz(2 phi) (non-Clifford) per non-zero pulse (+ trial circuit).
+    The ancilla Hadamards are Clifford single-qubit gates and are not tracked."""
+    if topo == "direct":
+        s = step["direct"]
+    else:
+        s = step[topo]["one"] if topo == "a2a" else step[topo]["avg3"]
+    n, nz = pt["n"], pt["n_nz"]
+    keys = [k for k in s if k != "depth"]
+    f = {k: s[k] * n for k in keys}
+    f["rz"] += nz; f["rz_nonclifford"] += nz; f["nc_total"] += nz
+    f["depth"] = s["depth"] * n
+    out = dict(filter=f)
+    if topo != "direct":
+        tc = ctx["trial_cost_rzz"]
+        out["total"] = {k: f.get(k, 0.0) + float(tc[k]) for k in ("rzz", "rzz_nonclifford", "rz", "rz_nonclifford", "nc_total", "depth")}
+    return out
+
+
 def totals(ctx, pt, step, topo):
     """Filter and total (with trial) counts for the success path = n * (per-step) + per-pulse Rz(2 phi) + 2 H."""
     s = step[topo]["one"] if topo == "a2a" else step[topo]["avg3"]
@@ -124,6 +163,10 @@ def describe(ctx, des, pt, step, which, W):
                  circ_dev=None if pt["circ_dev"] is None else float(pt["circ_dev"]), warn=pt["warn"])
     d["counts_a2a"] = totals(ctx, pt, step, "a2a")
     d["counts_line"] = totals(ctx, pt, step, "line")
+    sr = step["rzz"]
+    d["counts_rzz_a2a"] = totals_rzz(ctx, pt, sr, "a2a")
+    d["counts_rzz_line"] = totals_rzz(ctx, pt, sr, "line")
+    d["counts_rzz_direct"] = totals_rzz(ctx, pt, sr, "direct")
     sd = step["direct"]
     d["counts_direct"] = dict(filter=dict(cx=sd["cx"] * pt["n"], rz_nonclifford=sd["rz_nonclifford"] * pt["n"] + pt["n_nz"],
                                           rz=sd["rz"] * pt["n"] + pt["n_nz"], depth=sd["depth"] * pt["n"]))
@@ -147,6 +190,23 @@ def validation(ctx, des, step, W, n=48):
         return dict(n=n, error=f"{type(e).__name__}: {e}")
 
 
+def validation_rzz(ctx, W, N, ks=(12, 12, 12, 12)):
+    """Per-step x n estimate against a FULL transpile of the real 48-step early-abort circuit in the RZZ basis, both compilations (all-to-all)."""
+    try:
+        rng = np.random.default_rng(3)
+        qc, _ = build_early_abort_circuit(ctx["H_scaled"], np.array(ks) * 0.37, rng.uniform(0.02, 0.2, 4), trial_prep=None,
+                                          trotter_steps=list(ks), order=P.ORDER)
+        n = sum(ks); out = dict(n=n)
+        for tag, lvl, est in (("l3", 3, ctx_step_rzz["a2a"]["one"]), ("direct", 1, ctx_step_rzz["direct"])):
+            c = resource_costs(qc, flatten=True, verbose=False, optimization_level=lvl, basis=RZZ_BASIS)
+            out[tag] = dict(est_rzz=est["rzz"] * n, full_rzz=int(c["rzz"]), est_rzz_nc=est["rzz_nonclifford"] * n,
+                            full_rzz_nc=int(c["rzz_nonclifford"]), est_nc=est["nc_total"] * n + 4, full_nc=int(c["nc_total"]),
+                            est_depth=est["depth"] * n, full_depth=int(c["depth"]))
+        return out
+    except Exception as e:
+        return dict(error=f"{type(e).__name__}: {e}")
+
+
 # ----------------------------------------------------------------------------- one case
 def run_point(source, N, J2, eps, whichs, cache):
     P.SPECTRUM_SOURCE = source
@@ -158,6 +218,7 @@ def run_point(source, N, J2, eps, whichs, cache):
         ctx = P.run_quiet(P.build_ctx, N, P.J1, J2)
         ctx["dmrg_runs"] = [dict(role=_ROLES[i % 3], **x) for i, x in enumerate(GE.RUN_LOG)]
         step = step_counts(ctx["H_scaled"], N)
+        step["rzz"] = step_counts_rzz(ctx["H_scaled"], N)
         cache.clear()
         cache[key] = dict(ctx=ctx, step=step, build_s=time.time() - t0, des={})
     c = cache[key]
@@ -174,7 +235,9 @@ def run_point(source, N, J2, eps, whichs, cache):
                            W_exact_dmrg=float(spec["Etop"] - spec["E0"]), dense=bool(ctx["dense"]),
                            mpo_err=None if ctx.get("mpo_err") is None else float(ctx["mpo_err"]),
                            n_pauli_terms=int(len(ctx["H_scaled"]) - 1), trial_layers=P.SWEEP_L,
-                           trial_cost=pick(ctx["trial_cost"]), build_s=c["build_s"], dmrg_runs=ctx.get("dmrg_runs", []),
+                           trial_cost=pick(ctx["trial_cost"]),
+                           trial_cost_rzz={k: float(ctx["trial_cost_rzz"][k]) for k in RZZ_KEYS},
+                           build_s=c["build_s"], dmrg_runs=ctx.get("dmrg_runs", []),
                            e1_method=(spec.get("dmrg_res") or {}).get("e1_method"),
                            dmrg_vs_ed=({k: float(spec["ed"][k]) for k in ("E0_diff", "E1_diff", "E_top_diff") if k in spec["ed"]}
                                        if spec.get("ed") else None),
@@ -197,6 +260,9 @@ def run_point(source, N, J2, eps, whichs, cache):
         rec["note"] = "gamma = 1: trial state already exact, no filter"
         return rec
     rec["validation"] = validation(ctx, des, step, W)
+    global ctx_step_rzz
+    ctx_step_rzz = step["rzz"]
+    rec["validation_rzz"] = validation_rzz(ctx, W, N)
     for which in whichs:
         t1 = time.time()
         try:
@@ -236,6 +302,8 @@ def main():
         J = [j for j in J if j[1] <= 14]
     elif a.only == "large":
         J = [j for j in J if j[1] > 14]
+    if os.environ.get("ONLY_N"):
+        J = [j for j in J if j[1] in {int(x) for x in os.environ["ONLY_N"].split(",")}]
     J = sorted(J, key=lambda j: -(j[1] * 10 + len(j[3])))          # biggest first, spread over workers
     mine = [j for i, j in enumerate(J) if i % a.of == a.worker]
     if a.list:

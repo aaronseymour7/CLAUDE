@@ -157,19 +157,19 @@ ax.set_xlabel("number of spins $N$"); ax.set_ylabel("Trotter steps $n$ for $\\va
 ax.legend(frameon=False, fontsize=6.5, ncol=2)
 fig.tight_layout(); fig.savefig(FIG / "steps_vs_N.png", dpi=200); plt.close(fig)
 
-# F4: CX and non-Clifford RZ, log-log, both compilations; fits on level 3 CX
+# F4: RZZ and non-Clifford rotations (Rz + RZZ), log-log, both compilations; fits on level 3 RZZ
 fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.4))
 FITTXT = {}
-for key, ax, lab in (("cx", axes[0], "total CX"), ("rz", axes[1], "total non-Clifford $R_z$")):
+for key, ax, lab in (("cx", axes[0], "total RZZ"), ("rz", axes[1], "total non-Clifford rotations")):
     for J2 in J2S:
         p3, pd = [], []
         for N in (6, 8, 10, 12, 14, 16, 18, 20, 24, 28, 32):
             d = des(N, J2)
             if d and one(N, J2)["design"]["source"] in ("floor", "none"):
                 if key == "cx":
-                    p3.append((N, d["counts_a2a"]["total"]["cx"])); pd.append((N, d["counts_direct"]["filter"]["cx"]))
+                    p3.append((N, d["counts_rzz_a2a"]["total"]["rzz"])); pd.append((N, d["counts_rzz_direct"]["filter"]["rzz"]))
                 else:
-                    p3.append((N, d["counts_a2a"]["total"]["rz_nonclifford"])); pd.append((N, d["counts_direct"]["filter"]["rz_nonclifford"]))
+                    p3.append((N, d["counts_rzz_a2a"]["total"]["nc_total"])); pd.append((N, d["counts_rzz_direct"]["filter"]["nc_total"]))
         if not p3:
             continue
         ax.loglog([p[0] for p in p3], [p[1] for p in p3], MK[J2], color=COL[J2], ms=4)
@@ -223,12 +223,12 @@ fig.tight_layout(); fig.savefig(FIG / "eps_scan.png", dpi=200); plt.close(fig)
 # F8: per step cost
 fig, ax = plt.subplots(figsize=(5.4, 3.2))
 for J2 in J2S:
-    pts = [(N, one(N, J2)["per_step"]["a2a"]["one"]["cx"], one(N, J2)["per_step"]["line"]["avg3"]["cx"]) for N in (4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 28, 32) if one(N, J2)]
+    pts = [(N, one(N, J2)["per_step"]["rzz"]["a2a"]["one"]["rzz"], one(N, J2)["per_step"]["rzz"]["line"]["avg3"]["rzz"]) for N in (4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 28, 32) if one(N, J2)]
     ax.plot([p[0] for p in pts], [p[1] for p in pts], MK[J2] + "-", color=COL[J2], ms=4, label=f"all-to-all, $J_2={J2NAME[J2]}$")
     ax.plot([p[0] for p in pts], [p[2] for p in pts], MK[J2] + ":", color=COL[J2], ms=4, mfc="white", label=f"line, $J_2={J2NAME[J2]}$")
-ax.set_xlabel("number of spins $N$"); ax.set_ylabel("CX per Trotter step of one pulse")
+ax.set_xlabel("number of spins $N$"); ax.set_ylabel("RZZ per Trotter step of one pulse")
 ax.legend(frameon=False, fontsize=6.5, ncol=2)
-fig.tight_layout(); fig.savefig(FIG / "cx_per_step.png", dpi=200); plt.close(fig)
+fig.tight_layout(); fig.savefig(FIG / "rzz_per_step.png", dpi=200); plt.close(fig)
 
 
 # ------------------------------------------------------------------------------------------------ tables
@@ -242,8 +242,8 @@ for J2 in J2S:
         if not r:
             continue
         i = r["inputs"]
-        rows.append([N, J2NAME[J2], fx(i["E0"], 6), fx(i["gap_raw"], 5), fx(i["W"], 3), fx(i["gap_scaled"], 5), fx(i["gamma"], 4), sci(1 - i["gamma"], 2), fx(i["alpha"], 4), i["n_pauli_terms"], i["trial_cost"]["cx"] and int(i["trial_cost"]["cx"])])
-T["inputs"] = tab(["$N$", "$J_2$", "$E_0$", "$g=E_1-E_0$", "$W$", "$\\Delta=g/W$", "$\\gamma$", "$1-\\gamma$", "$\\alpha$", "Pauli terms", "trial CX"],
+        rows.append([N, J2NAME[J2], fx(i["E0"], 6), fx(i["gap_raw"], 5), fx(i["W"], 3), fx(i["gap_scaled"], 5), fx(i["gamma"], 4), sci(1 - i["gamma"], 2), fx(i["alpha"], 4), i["n_pauli_terms"], i["trial_cost_rzz"]["rzz"] and int(i["trial_cost_rzz"]["rzz"])])
+T["inputs"] = tab(["$N$", "$J_2$", "$E_0$", "$g=E_1-E_0$", "$W$", "$\\Delta=g/W$", "$\\gamma$", "$1-\\gamma$", "$\\alpha$", "Pauli terms", "trial RZZ"],
                   rows, "rrrrrrrrrrr", "Inputs to the filter for every case (DMRG values; $J_1=1$). Definitions in Section~\\ref{sec:glossary}.", "tab:inputs")
 
 # DMRG vs ED
@@ -290,11 +290,11 @@ for J2 in J2S:
         d = des(N, J2)
         if not d:
             continue
-        r = one(N, J2); t = d["counts_a2a"]["total"]; f_ = d["counts_a2a"]["filter"]; ps = d["p_succ"] if d.get("simulated") else d["p_succ_lb"]
-        dd = d["counts_direct"]["filter"]
-        rows.append([N, J2NAME[J2], int(r["inputs"]["trial_cost"]["cx"]), num(f_["cx"]), num(t["cx"]), num(dd["cx"]), num(t["rz_nonclifford"]), num(dd["rz_nonclifford"]), num(t["depth"]), num(t["cx"] / ps)])
-T["gc"] = tab(["$N$", "$J_2$", "CX trial", "CX filter", "CX total", "CX filter (direct)", "non-Cliff.\\ $R_z$ (level 3)", "non-Cliff.\\ $R_z$ (direct)", "depth", "CX / accept"], rows, "rrrrrrrrrr",
-              "Gate counts of the guaranteed designs ($\\varepsilon=10^{-2}$, all-to-all connectivity). Totals include the trial circuit. ``CX / accept'' = CX total divided by the success probability: the expected CX per accepted run.", "tab:gc")
+        r = one(N, J2); t = d["counts_rzz_a2a"]["total"]; f_ = d["counts_rzz_a2a"]["filter"]; ps = d["p_succ"] if d.get("simulated") else d["p_succ_lb"]
+        dd = d["counts_rzz_direct"]["filter"]
+        rows.append([N, J2NAME[J2], int(r["inputs"]["trial_cost_rzz"]["rzz"]), num(f_["rzz"]), num(t["rzz"]), num(dd["rzz"]), num(t["nc_total"]), num(dd["nc_total"]), num(t["depth"]), num(t["rzz"] / ps)])
+T["gc"] = tab(["$N$", "$J_2$", "RZZ trial", "RZZ filter", "RZZ total", "RZZ filter (direct)", "non-Cliff.\\ rot. (level 3)", "non-Cliff.\\ rot. (direct)", "depth", "RZZ / accept"], rows, "rrrrrrrrrr",
+              "Gate counts of the guaranteed designs ($\\varepsilon=10^{-2}$, all-to-all connectivity). Totals include the trial circuit. ``RZZ / accept'' = RZZ total divided by the success probability: the expected RZZ per accepted run. Non-Clifford rotations = $R_z$ plus RZZ gates whose angle is not a multiple of $\\pi/2$.", "tab:gc")
 
 # guaranteed vs empirical
 rows = []
@@ -302,8 +302,8 @@ for J2 in J2S:
     for N in (4, 6, 8, 10, 12, 14):
         g, e = des(N, J2), des(N, J2, "empirical")
         if g and e:
-            rows.append([N, J2NAME[J2], num(g["n"]), num(e["n"]), f"{g['n'] / e['n']:.0f}$\\times$", num(g["counts_a2a"]["total"]["cx"]), num(e["counts_a2a"]["total"]["cx"]), sci(e.get("eps_actual"), 2)])
-T["ge"] = tab(["$N$", "$J_2$", "$n$ guaranteed", "$n$ empirical", "ratio", "CX guaranteed", "CX empirical", "measured $1-F$ (emp.)"], rows, "rrrrrrrr",
+            rows.append([N, J2NAME[J2], num(g["n"]), num(e["n"]), f"{g['n'] / e['n']:.0f}$\\times$", num(g["counts_rzz_a2a"]["total"]["rzz"]), num(e["counts_rzz_a2a"]["total"]["rzz"]), sci(e.get("eps_actual"), 2)])
+T["ge"] = tab(["$N$", "$J_2$", "$n$ guaranteed", "$n$ empirical", "ratio", "RZZ guaranteed", "RZZ empirical", "measured $1-F$ (emp.)"], rows, "rrrrrrrr",
               "Guaranteed versus empirical (oracle) designs, $\\varepsilon=10^{-2}$. The empirical design is the smallest $n$ whose \\emph{measured} infidelity is below $\\varepsilon$; it uses the exact ground state.", "tab:ge")
 
 # per step
@@ -313,11 +313,23 @@ for J2 in J2S:
         r = one(N, J2)
         if not r:
             continue
-        a = r["per_step"]["a2a"]["one"]; l = r["per_step"]["line"]["avg3"]
-        dr_ = r["per_step"]["direct"]
-        rows.append([N, J2NAME[J2], r["inputs"]["n_pauli_terms"], int(a["cx"]), int(a["rz_nonclifford"]), int(dr_["cx"]), int(dr_["rz_nonclifford"]), int(a["depth"]), f"{l['cx']:.0f}"])
-T["ps"] = tab(["$N$", "$J_2$", "Pauli terms", "CX (level 3)", "non-Cliff.\\ $R_z$ (level 3)", "CX (direct)", "non-Cliff.\\ $R_z$ (direct)", "depth (level 3)", "CX (line, level 3)"], rows, "rrrrrrrrr",
+        a = r["per_step"]["rzz"]["a2a"]["one"]; l = r["per_step"]["rzz"]["line"]["avg3"]
+        dr_ = r["per_step"]["rzz"]["direct"]
+        rows.append([N, J2NAME[J2], r["inputs"]["n_pauli_terms"], int(a["rzz"]), int(a["nc_total"]), int(dr_["rzz"]), int(dr_["nc_total"]), int(a["depth"]), f"{l['rzz']:.0f}"])
+T["ps"] = tab(["$N$", "$J_2$", "Pauli terms", "RZZ (level 3)", "non-Cliff.\\ rot. (level 3)", "RZZ (direct)", "non-Cliff.\\ rot. (direct)", "depth (level 3)", "RZZ (line, level 3)"], rows, "rrrrrrrrr",
               "Transpiled cost of \\emph{one} Trotter step of one pulse (every term of $H$, controlled by the ancilla). ``Line'': ancilla at the end of a linear chain of qubits (routing included; average of three transpiler seeds).", "tab:ps")
+
+# CX -> RZZ comparison (legacy CX-basis counts are kept in the data files)
+rows = []
+for J2 in J2S:
+    for N in (6, 10, 14, 16, 20, 24, 32):
+        d = des(N, J2)
+        if not d:
+            continue
+        c3 = d["counts_a2a"]["total"]; z3 = d["counts_rzz_a2a"]["total"]; cd = d["counts_direct"]["filter"]; zd = d["counts_rzz_direct"]["filter"]
+        rows.append([N, J2NAME[J2], num(c3["cx"]), num(z3["rzz"]), f"{z3['rzz'] / c3['cx']:.2f}", num(cd["cx"]), num(zd["rzz"]), f"{zd['rzz'] / cd['cx']:.2f}", num(c3["rz_nonclifford"]), num(z3["nc_total"])])
+T["cxrzz"] = tab(["$N$", "$J_2$", "CX (level 3)", "RZZ (level 3)", "ratio", "CX (direct)", "RZZ (direct)", "ratio", "non-Cliff.\\ $R_z$ (CX, level 3)", "non-Cliff.\\ rot. (RZZ, level 3)"], rows, "rrrrrrrrrr",
+                 "Previous CX basis versus the RZZ basis, guaranteed designs at $\\varepsilon=10^{-2}$. The direct compilation maps each CX onto one Clifford RZZ($\\pi/2$) (ratio 1.00); level 3 needs only two RZZ per ancilla-controlled Pauli rotation, one of them a non-Clifford RZZ($\\theta$).", "tab:cxrzz")
 
 # large N
 rows = []
@@ -331,10 +343,10 @@ for J2 in J2S:
         if not d:
             rows.append([N, J2NAME[J2], fx(i["gamma"], 3), fx(i["gap_scaled"], 4), "--", "not achievable", "--", "--", "--", "--", "--"])
             continue
-        t = d["counts_a2a"]["total"]
+        t = d["counts_rzz_a2a"]["total"]
         flag = "" if r["design"]["source"] in ("floor", "none") else "$^\\ddagger$"
-        rows.append([N, J2NAME[J2], fx(i["gamma"], 3), fx(i["gap_scaled"], 4), d["n_pulses_used"], num(d["n"]) + flag, fx(d["T_phys"], 1), sci(t["cx"], 2), sci(d["counts_direct"]["filter"]["cx"], 2), sci(d["counts_direct"]["filter"]["rz_nonclifford"], 2), fx(d["p_succ_lb"], 3)])
-T["large"] = tab(["$N$", "$J_2$", "$\\gamma$", "$\\Delta$", "$m$", "$n$", "$T_{\\rm phys}$", "CX total (level 3)", "CX (direct)", "non-Cliff.\\ $R_z$ (direct)", "$p_g$"], rows, "rrrrrrrrrrr",
+        rows.append([N, J2NAME[J2], fx(i["gamma"], 3), fx(i["gap_scaled"], 4), d["n_pulses_used"], num(d["n"]) + flag, fx(d["T_phys"], 1), sci(t["rzz"], 2), sci(d["counts_rzz_direct"]["filter"]["rzz"], 2), sci(d["counts_rzz_direct"]["filter"]["nc_total"], 2), fx(d["p_succ_lb"], 3)])
+T["large"] = tab(["$N$", "$J_2$", "$\\gamma$", "$\\Delta$", "$m$", "$n$", "$T_{\\rm phys}$", "RZZ total (level 3)", "RZZ (direct)", "non-Cliff.\\ rot. (direct)", "$p_g$"], rows, "rrrrrrrrrrr",
                  "Guaranteed designs for $N\\geq14$, $\\varepsilon=10^{-2}$ (DMRG/MPS only; circuits counted, not simulated). ``Not achievable'': no filter with at most 8 pulses meets the target for this trial state (Fig.~\\ref{fig:gamma}). $^\\ddagger$: fallback design.", "tab:large")
 rows = []
 for J2 in J2S:
@@ -342,9 +354,9 @@ for J2 in J2S:
         r = one(N, J2, 0.1)
         d = des(N, J2, "guaranteed", 0.1)
         if r and d:
-            t = d["counts_a2a"]["total"]
-            rows.append([N, J2NAME[J2], d["n_pulses_used"], num(d["n"]), fx(d["T_phys"], 1), sci(t["cx"], 2), sci(d["counts_direct"]["filter"]["cx"], 2), sci(d["counts_direct"]["filter"]["rz_nonclifford"], 2), fx(d["p_succ_lb"], 3)])
-T["large1"] = tab(["$N$", "$J_2$", "$m$", "$n$", "$T_{\\rm phys}$", "CX total (level 3)", "CX (direct)", "non-Cliff.\\ $R_z$ (direct)", "$p_g$"], rows, "rrrrrrrrr",
+            t = d["counts_rzz_a2a"]["total"]
+            rows.append([N, J2NAME[J2], d["n_pulses_used"], num(d["n"]), fx(d["T_phys"], 1), sci(t["rzz"], 2), sci(d["counts_rzz_direct"]["filter"]["rzz"], 2), sci(d["counts_rzz_direct"]["filter"]["nc_total"], 2), fx(d["p_succ_lb"], 3)])
+T["large1"] = tab(["$N$", "$J_2$", "$m$", "$n$", "$T_{\\rm phys}$", "RZZ total (level 3)", "RZZ (direct)", "non-Cliff.\\ rot. (direct)", "$p_g$"], rows, "rrrrrrrrr",
                   "Guaranteed designs for $N\\geq14$ at the looser target $\\varepsilon=10^{-1}$.", "tab:large1")
 
 # eps scan
@@ -354,8 +366,8 @@ for (N, J2) in ((6, 0.0), (8, 0.0), (6, 0.4)):
         for which in ("guaranteed", "empirical"):
             d = des(N, J2, which, e)
             if d:
-                rows.append([N, J2NAME[J2], f"{e:g}", which, num(d["n"]), d["n_pulses_used"], fx(d["T_phys"], 2), sci(d["counts_a2a"]["total"]["cx"], 2), sci(d.get("eps_actual"), 2) if d.get("simulated") else "--"])
-T["eps"] = tab(["$N$", "$J_2$", "$\\varepsilon$", "design", "$n$", "$m$", "$T_{\\rm phys}$", "CX total", "measured $1-F$"], rows, "rrrlrrrrr",
+                rows.append([N, J2NAME[J2], f"{e:g}", which, num(d["n"]), d["n_pulses_used"], fx(d["T_phys"], 2), sci(d["counts_rzz_a2a"]["total"]["rzz"], 2), sci(d.get("eps_actual"), 2) if d.get("simulated") else "--"])
+T["eps"] = tab(["$N$", "$J_2$", "$\\varepsilon$", "design", "$n$", "$m$", "$T_{\\rm phys}$", "RZZ total", "measured $1-F$"], rows, "rrrlrrrrr",
                "Dependence on the target $\\varepsilon$ for three small cases.", "tab:eps")
 
 # bandwidth
@@ -370,10 +382,10 @@ T["bw"] = tab(["$N$", "$J_2$", "$W$ (Weyl)", "$|W-(E_{\\rm top}-E_0)_{\\rm DMRG}
               "The certified bandwidth $W=\\sum_{\\rm bonds}\\lambda_{\\max}-E_0$ against the DMRG value of $E_{\\rm top}-E_0$ and against the looser Pauli bound used earlier.", "tab:bw")
 
 # validation + timing
-vals = [(k, r["validation"]) for k, r in R.items() if r.get("validation")]
-vdir = [r["validation_direct"] for r in R.values() if r.get("validation_direct")]
-cxe = [abs(v["cx_err_pct"]) for _, v in vals]
-dpe = [abs(v["est_depth"] - v["full_depth"]) / v["full_depth"] * 100 for _, v in vals]
+vals = [(k, r["validation_rzz"]) for k, r in R.items() if r.get("validation_rzz") and "l3" in r["validation_rzz"]]
+vz3 = max(abs(v["l3"]["est_rzz"] - v["l3"]["full_rzz"]) for _, v in vals); vzd = max(abs(v["direct"]["est_rzz"] - v["direct"]["full_rzz"]) for _, v in vals)
+vnd = max(abs(v["direct"]["est_nc"] - v["direct"]["full_nc"]) for _, v in vals); vo3 = 100 * max((v["l3"]["est_nc"] - v["l3"]["full_nc"]) / v["l3"]["full_nc"] for _, v in vals)
+dpe = [abs(v["l3"]["est_depth"] - v["l3"]["full_depth"]) / v["l3"]["full_depth"] * 100 for _, v in vals]
 timing = {}
 for (N, J2, e), r in R.items():
     timing.setdefault(N, []).append((r["inputs"]["build_s"], r["design"].get("design_s", 0.0), r["wall_s"]))
@@ -402,8 +414,8 @@ def rng(vals_):
 
 smallg = [des(N, J2) for J2 in J2S for N in (4, 6, 8, 10, 12, 14) if des(N, J2)]
 bigg = [(N, J2, des(N, J2)) for J2 in J2S for N in (16, 18, 20, 24, 28, 32) if des(N, J2) and one(N, J2)["design"]["source"] in ("floor", "none")]
-sm_n = rng([d["n"] for d in smallg]); sm_cx = rng([d["counts_a2a"]["total"]["cx"] for d in smallg])
-bg_n = rng([d["n"] for _, _, d in bigg]); bg_cx = rng([d["counts_a2a"]["total"]["cx"] for _, _, d in bigg]); bg_rz = rng([d["counts_direct"]["filter"]["rz_nonclifford"] for _, _, d in bigg]); bg_cxd = rng([d["counts_direct"]["filter"]["cx"] for _, _, d in bigg])
+sm_n = rng([d["n"] for d in smallg]); sm_cx = rng([d["counts_rzz_a2a"]["total"]["rzz"] for d in smallg])
+bg_n = rng([d["n"] for _, _, d in bigg]); bg_cx = rng([d["counts_rzz_a2a"]["total"]["rzz"] for _, _, d in bigg]); bg_rz = rng([d["counts_rzz_direct"]["filter"]["nc_total"] for _, _, d in bigg]); bg_nc3 = rng([d["counts_rzz_a2a"]["total"]["nc_total"] for _, _, d in bigg]); bg_cxd = rng([d["counts_rzz_direct"]["filter"]["rzz"] for _, _, d in bigg])
 bg_T = rng([d["T_phys"] for _, _, d in bigg])
 ed_err = max(max(float(v["dE0"]), float(v["dE1"]), float(v["dEtop"])) for k, v in VAL.items() if k.startswith("ed_"))
 for J2 in J2S:
@@ -438,9 +450,9 @@ GLOSS = [
     ("$\\alpha$", "commutator constant $\\alpha=\\sum_g\\|[H_g,\\sum_{g'>g}H_{g'}]\\|$ of the scaled Hamiltonian: it sets the Trotter error $\\alpha T^2/(2n)$."),
     ("guaranteed design", "smallest $n$ for which the \\emph{proven} bound on $1-F$ is $\\leq\\varepsilon$ (needs no ground state)."),
     ("empirical (oracle) design", "smallest $n$ for which the \\emph{measured} $1-F$ is $\\leq\\varepsilon$; requires simulation and the exact ground state, so it is a reference, only available for $N\\leq14$."),
-    ("CX, $R_z$, depth", "two-qubit CNOT gates, single-qubit $z$-rotations, and circuit depth after transpiling to the basis $\\{{\\rm CX},R_z,{\\rm H},{\\rm S}\\}$. ``Non-Clifford $R_z$'' counts the rotations whose angle is not a multiple of $\\pi/2$: the expensive gates on fault-tolerant hardware."),
-    ("direct / level 3", "two compilations of the same circuit. \\emph{Direct} (qiskit optimisation level 1): every Pauli rotation is a CX ladder around one $R_z$, giving $4\\times$(Pauli terms) CX and (Pauli terms $+1$) non-Clifford $R_z$ per Trotter step. \\emph{Level 3}: two-qubit blocks are re-synthesised, giving about $1.7\\times$ fewer CX but about $3\\times$ more non-Clifford $R_z$. CX count suits near-term hardware; non-Clifford $R_z$ count (direct) suits fault-tolerant hardware."),
-    ("all-to-all / line", "qubit connectivity assumed in the transpile: every qubit couples to every other, or the qubits sit on a line (extra CX from routing)."),
+    ("RZZ, $R_z$, non-Clifford rotations, depth", "two-qubit gates ${\\rm RZZ}(\\theta)=e^{-i\\theta ZZ/2}$ (CX is not in the gate set; ${\\rm RZZ}(\\pi/2)$ is Clifford), single-qubit $z$-rotations, and circuit depth after transpiling to the basis $\\{{\\rm RZZ},R_z,\\sqrt{X},X\\}$. ``Non-Clifford rotations'' = $R_z$ plus RZZ gates whose angle is not a multiple of $\\pi/2$: the expensive gates on fault-tolerant hardware. Clifford single-qubit gates are not tracked."),
+    ("direct / level 3", "two compilations of the same circuit. \\emph{Direct} (qiskit optimisation level 1): every ancilla-controlled Pauli rotation is a ladder of four Clifford RZZ($\\pi/2$) around one $R_z$, giving $4\\times$(Pauli terms) RZZ and (Pauli terms $+1$) non-Clifford rotations per Trotter step. \\emph{Level 3}: blocks are re-synthesised, giving two RZZ per Pauli term (one of them a non-Clifford RZZ($\\theta$)), i.e. half the RZZ count, plus some extra non-Clifford $R_z$."),
+    ("all-to-all / line", "qubit connectivity assumed in the transpile: every qubit couples to every other, or the qubits sit on a line (extra RZZ from routing)."),
     ("conditional certificate", "the proven bound holds if the DMRG inputs ($E_0$, $E_1$, $\\gamma$) are exact; they cannot be certified by DMRG itself (see Section~\\ref{sec:limits})."),
 ]
 gl_rows = [[a, b] for a, b in GLOSS]
@@ -468,8 +480,8 @@ A shallow circuit built from a DMRG state leaves some excited-state weight. A \e
 \section{Headline results}
 \begin{itemize}
 \item \textbf{DMRG inputs are accurate.} Energies agree with exact diagonalisation to $""" + f"{ed_err:.1e}" + r"""$ ($N\leq20$); independent DMRG runs agree to $""" + f"{cons_err:.1e}" + r"""$ for $N=24$--$32$.
-\item \textbf{Small chains ($N\leq14$, $\varepsilon=10^{-2}$).} Guaranteed designs need """ + num(sm_n[0]) + "--" + num(sm_n[1]) + r""" Trotter steps and """ + num(sm_cx[0]) + "--" + num(sm_cx[1]) + r""" CX; the measured error stays below the proven bound in all """ + str(sum(1 for r in R.values() for d in r["designs"].values() if d and d.get("simulated"))) + r""" simulated designs (violations: """ + str(nviol) + r"""). The guaranteed design needs """ + f"{min(ratios):.0f}--{max(ratios):.0f}" + r"""$\times$ the steps of the oracle design.
-\item \textbf{Larger chains ($N=16$--$32$, $\varepsilon=10^{-2}$).} """ + num(bg_n[0]) + "--" + num(bg_n[1]) + r""" steps, """ + sci(bg_cx[0], 1) + "--" + sci(bg_cx[1], 1) + r""" CX with block re-synthesis (""" + sci(bg_cxd[0], 1) + "--" + sci(bg_cxd[1], 1) + r""" CX with direct compilation) and """ + sci(bg_rz[0], 1) + "--" + sci(bg_rz[1], 1) + r""" non-Clifford $R_z$ (direct compilation; about $3\times$ more with re-synthesis), with physical evolution time """ + f"{bg_T[0]:.1f}--{bg_T[1]:.1f}" + r""" (units of $1/J_1$). Total CX grows like """ + fits_txt + r""".
+\item \textbf{Small chains ($N\leq14$, $\varepsilon=10^{-2}$).} Guaranteed designs need """ + num(sm_n[0]) + "--" + num(sm_n[1]) + r""" Trotter steps and """ + num(sm_cx[0]) + "--" + num(sm_cx[1]) + r""" RZZ gates; the measured error stays below the proven bound in all """ + str(sum(1 for r in R.values() for d in r["designs"].values() if d and d.get("simulated"))) + r""" simulated designs (violations: """ + str(nviol) + r"""). The guaranteed design needs """ + f"{min(ratios):.0f}--{max(ratios):.0f}" + r"""$\times$ the steps of the oracle design.
+\item \textbf{Larger chains ($N=16$--$32$, $\varepsilon=10^{-2}$).} """ + num(bg_n[0]) + "--" + num(bg_n[1]) + r""" steps, """ + sci(bg_cx[0], 1) + "--" + sci(bg_cx[1], 1) + r""" RZZ with block re-synthesis (""" + sci(bg_cxd[0], 1) + "--" + sci(bg_cxd[1], 1) + r""" RZZ with direct compilation) and """ + sci(bg_rz[0], 1) + "--" + sci(bg_rz[1], 1) + r""" non-Clifford rotations (direct compilation; """ + sci(bg_nc3[0], 1) + "--" + sci(bg_nc3[1], 1) + r""" with re-synthesis), with physical evolution time """ + f"{bg_T[0]:.1f}--{bg_T[1]:.1f}" + r""" (units of $1/J_1$). Total RZZ grows like """ + fits_txt + r""".
 \item \textbf{The bandwidth does not change the cost.} """ + cmp_txt + r"""
 \item \textbf{Limit.} For $N=28,32$ at $J_2=0$ and $0.2411$ the shallow trial circuit has too little ground-state weight, and no certified filter with at most 8 pulses reaches $\varepsilon=10^{-2}$ (Fig.~\ref{fig:gamma}).
 \end{itemize}
@@ -510,23 +522,23 @@ Table~\ref{tab:gd} gives the design (pulses, steps, times) and the proven and me
 """ + T["gd"] + T["gc"] + figure("bound_vs_measured.png", "Measured infidelity $1-F$ of the guaranteed designs ($N\\leq14$, simulated against the exact ground state) compared with the proven bound (dashed), which equals the target $\\varepsilon=10^{-2}$. The measured values lie well below the bound: it is never violated.", "fig:bound", "0.55\\linewidth") + r"""
 
 \section{Guaranteed versus empirical designs}\label{sec:emp}
-The empirical design is the smallest $n$ whose \emph{measured} infidelity meets $\varepsilon$; it needs the exact ground state and a simulation, so it shows what an ideal user could save. Table~\ref{tab:ge} and Fig.~\ref{fig:steps} compare. The proven design needs a large multiple of the empirical step count (and of the CX count, which is proportional to $n$) because its Trotter error bound is pessimistic.
+The empirical design is the smallest $n$ whose \emph{measured} infidelity meets $\varepsilon$; it needs the exact ground state and a simulation, so it shows what an ideal user could save. Table~\ref{tab:ge} and Fig.~\ref{fig:steps} compare. The proven design needs a large multiple of the empirical step count (and of the RZZ count, which is proportional to $n$) because its Trotter error bound is pessimistic.
 """ + T["ge"] + figure("steps_vs_N.png", "Trotter steps $n$ against $N$ for the guaranteed (solid) and empirical (dashed, $N\\leq14$) designs, $\\varepsilon=10^{-2}$.", "fig:steps") + r"""
 
 \section{Cost of one Trotter step}\label{sec:step}
-All circuit costs are $n\times$ (cost of one step) plus the trial circuit. One step applies every term of $H$ once, controlled by the ancilla (Table~\ref{tab:ps}, Fig.~\ref{fig:step}). CX per step grows linearly in $N$ (one block per bond); $J_2\neq0$ roughly doubles it because the number of bonds doubles.
-""" + T["ps"] + figure("cx_per_step.png", "CX per Trotter step against $N$, all-to-all connectivity (solid) and line connectivity (dotted).", "fig:step", "0.7\\linewidth") + r"""
+All circuit costs are $n\times$ (cost of one step) plus the trial circuit. One step applies every term of $H$ once, controlled by the ancilla (Table~\ref{tab:ps}, Fig.~\ref{fig:step}). RZZ per step grows linearly in $N$ (one block per bond); $J_2\neq0$ roughly doubles it because the number of bonds doubles.
+""" + T["ps"] + T["cxrzz"] + figure("rzz_per_step.png", "RZZ per Trotter step against $N$, all-to-all connectivity (solid) and line connectivity (dotted).", "fig:step", "0.7\\linewidth") + r"""
 
 \section{Larger chains, $N$ up to """ + str(max(N for (N, _, _) in R)) + r"""}\label{sec:large}
-Above $N=14$ nothing is simulated as a state vector: DMRG gives the energies and MPS, the trial circuit is simulated as an MPS to obtain $\gamma$, the filter is designed from $(\gamma,\Delta,\alpha)$, and circuits are counted. Tables~\ref{tab:large} and~\ref{tab:large1} give the guaranteed designs at $\varepsilon=10^{-2}$ and $10^{-1}$; Fig.~\ref{fig:cost} shows how the total CX and non-Clifford $R_z$ counts grow (fits: """ + fits_txt + r"""). For $N=28,32$ at $J_2=0$ and $0.2411$ the trial circuit has $\gamma=0.31$--$0.51$ and the required suppression ($\eta_{\rm target}\approx0.07$--$0.10$) cannot be certified with at most 8 pulses; the looser target $\varepsilon=10^{-1}$ is feasible. This is a limit of the one-layer trial circuit, not of the filter.
-""" + T["large"] + T["large1"] + figure("cost_vs_N.png", "(a) Total CX and (b) total non-Clifford $R_z$ of the guaranteed designs ($\\varepsilon=10^{-2}$), log--log, with power-law fits (lines).", "fig:cost") + r"""
+Above $N=14$ nothing is simulated as a state vector: DMRG gives the energies and MPS, the trial circuit is simulated as an MPS to obtain $\gamma$, the filter is designed from $(\gamma,\Delta,\alpha)$, and circuits are counted. Tables~\ref{tab:large} and~\ref{tab:large1} give the guaranteed designs at $\varepsilon=10^{-2}$ and $10^{-1}$; Fig.~\ref{fig:cost} shows how the total RZZ and non-Clifford rotation counts grow (fits: """ + fits_txt + r"""). For $N=28,32$ at $J_2=0$ and $0.2411$ the trial circuit has $\gamma=0.31$--$0.51$ and the required suppression ($\eta_{\rm target}\approx0.07$--$0.10$) cannot be certified with at most 8 pulses; the looser target $\varepsilon=10^{-1}$ is feasible. This is a limit of the one-layer trial circuit, not of the filter.
+""" + T["large"] + T["large1"] + figure("cost_vs_N.png", "(a) Total RZZ and (b) total non-Clifford rotations of the guaranteed designs ($\\varepsilon=10^{-2}$), log--log, with power-law fits (lines).", "fig:cost") + r"""
 
 \section{Dependence on the target $\varepsilon$}\label{sec:eps}
 Tightening $\varepsilon$ needs both a stronger filter (smaller $\eta$) and fewer Trotter errors (more steps). Table~\ref{tab:eps} and Fig.~\ref{fig:eps} show three small cases.
 """ + T["eps"] + figure("eps_scan.png", "Trotter steps against target $\\varepsilon$ for guaranteed (solid) and empirical (dashed) designs.", "fig:eps") + r"""
 
 \section{Checks and classical compute cost}\label{sec:checks}
-\textbf{Gate-count method.} The per-step transpile times $n$ was compared with a full transpile of the real circuit at $n=48$ for """ + str(len(vals)) + r""" cases: the CX count differed by at most """ + f"{max(cxe):.1f}" + r"""\% and the depth by at most """ + f"{max(dpe):.1f}" + r"""\% (level 3). For the direct compilation, per-step $\times\,n$ against a full 48-step transpile (""" + str(len(vdir)) + r""" cases, $N\leq12$) differed by at most """ + f"{max(abs(v['est_cx'] - v['full_cx']) for v in vdir):.0f}" + r""" CX and """ + f"{max(abs(v['est_nc'] - v['full_nc']) for v in vdir):.0f}" + r""" non-Clifford $R_z$; for level 3 the per-step non-Clifford estimate is up to about 4\% too high. \textbf{Bound violations:} """ + str(nviol) + r""" among the simulated designs. \textbf{Classical cost:} Table~\ref{tab:time}.
+\textbf{Gate-count method.} The per-step transpile times $n$ was compared with a full transpile of the real circuit in the RZZ basis at $n=48$ (4 pulses of 12 steps, all-to-all) for """ + str(len(vals)) + r""" cases: the RZZ count differed by at most """ + f"{vz3:.0f}" + r""" (level 3) and """ + f"{vzd:.0f}" + r""" (direct), the direct non-Clifford count by at most """ + f"{vnd:.0f}" + r""", and the level-3 non-Clifford estimate was at most """ + f"{vo3:.1f}" + r"""\% above the full transpile; the level-3 depth estimate differed by at most """ + f"{max(dpe):.1f}" + r"""\%. \textbf{Bound violations:} """ + str(nviol) + r""" among the simulated designs. \textbf{Classical cost:} Table~\ref{tab:time}.
 """ + T["time"] + (r"""
 \textbf{Points without a certified design:}
 """ + nat if na else "") + r"""
@@ -534,7 +546,7 @@ Tightening $\varepsilon$ needs both a stronger filter (smaller $\eta$) and fewer
 \section{Limits and assumptions}\label{sec:limits}
 \begin{itemize}
 \item \textbf{Conditional certificates.} The proven bounds assume the DMRG shift $E_0$, the gap and the weight $\gamma$ are exact. Interlacing shows the DMRG gap can overestimate the true gap only by the solver's own optimisation error, and DMRG's $E_0$ errs on the safe side, but these errors are not computable from DMRG; validated accuracy is $\sim10^{-13}$ (Section~\ref{sec:dmrg}). The derivation, including how the bound changes for given error bounds, is in \texttt{CERTIFICATION.tex}.
-\item \textbf{Costs are ideal gate counts.} Ancilla measurement and reset time, classical feed-forward, native controlled-Pauli-rotation implementation on real hardware, and error-correction or mitigation overhead are not included; CX counts come from a heuristic compiler and are not minimal; the expected-repetition figure $1/p_g$ assumes independent attempts. No $T$-count is reported (it depends on synthesis constants); the metric is the number of non-Clifford $R_z$, quoted for the direct compilation because block re-synthesis (level 3) trades fewer CX for about three times more non-Clifford rotations.
+\item \textbf{Costs are ideal gate counts.} Ancilla measurement and reset time, classical feed-forward, native controlled-Pauli-rotation implementation on real hardware, and error-correction or mitigation overhead are not included; RZZ counts come from a heuristic compiler and are not minimal; the expected-repetition figure $1/p_g$ assumes independent attempts. No $T$-count is reported (it depends on synthesis constants); the metric is the number of non-Clifford rotations ($R_z$ and RZZ($\\theta$) with angle not a multiple of $\\pi/2$).
 \item \textbf{Numerical certificate.} The bound on $\eta$ is computed in double precision without interval arithmetic (rounding $\lesssim10^{-14}$, far below the pruning tolerance).
 \item \textbf{Scope.} One model family, three values of $J_2$; a non-degenerate singlet ground state; first-order Trotter formula.
 \end{itemize}

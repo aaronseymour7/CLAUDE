@@ -7,7 +7,7 @@ CERTIFICATION.tex (no call into the pipeline's bound code):
   leakage l = (1-g)eta^2/(g+(1-g)eta^2);  p_g = gamma F(0)^2;  eps_T = sum alpha t_i^2/(2 k_i);  d_T = min(1, eps_T/sqrt(p_g));
   bound = min(1, (sqrt(l) + d_T)^2)  (must equal the stored bound and be <= eps for guaranteed designs);
   sum k_i = n, t_i = k_i dt, T = sum t_i, T_phys = T/W;
-  gate counts = n x (per-step transpile) + trial circuit (+ per-pulse terms);
+  gate counts (RZZ basis; legacy CX basis too) = n x (per-step transpile) + trial circuit (+ per-pulse terms);
   alpha re-evaluated from the Pauli Hamiltonian (exact local commutator sum, both orders);
   every simulated design: measured 1-F <= bound, p_succ >= p_g, trace distance to the exact filter <= eps_T/sqrt(p_exact).
 
@@ -102,6 +102,19 @@ for f in files:
         check(f"{t} direct CX = n x step", abs(cd["cx"] - d["n"] * sd["cx"]) < 1e-6)
         check(f"{t} direct ncRz = n x step + pulses", abs(cd["rz_nonclifford"] - (d["n"] * sd["rz_nonclifford"] + len(k))) < 1e-6)
         check(f"{t} direct CX <= level-3 CX x 2 and ncRz < level-3 ncRz", cd["cx"] > c["cx"] and cd["rz_nonclifford"] < c["rz_nonclifford"])
+        # ---- RZZ basis (the reported gate basis): level-3 and direct
+        sz = r["per_step"]["rzz"]; z3s, zds = sz["a2a"]["one"], sz["direct"]
+        z3 = d["counts_rzz_a2a"]["filter"]; zd = d["counts_rzz_direct"]["filter"]
+        check(f"{t} RZZ = n x step (level 3)", abs(z3["rzz"] - d["n"] * z3s["rzz"]) < 1e-6)
+        check(f"{t} nc rot = n x step + pulses (level 3)", abs(z3["nc_total"] - (d["n"] * z3s["nc_total"] + len(k))) < 1e-6)
+        check(f"{t} RZZ direct/step = 4 x terms", zds["rzz"] == 4 * nt, f"{zds['rzz']} vs {4 * nt}")
+        check(f"{t} nc rot direct/step = terms+1", zds["nc_total"] == nt + 1 and zds["rzz_nonclifford"] == 0, f"{zds['nc_total']} vs {nt + 1}")
+        check(f"{t} RZZ direct = n x step", abs(zd["rzz"] - d["n"] * zds["rzz"]) < 1e-6 and abs(zd["nc_total"] - (d["n"] * zds["nc_total"] + len(k))) < 1e-6)
+        check(f"{t} level-3 RZZ/step = 2 x terms, non-Clifford RZZ = terms", z3s["rzz"] == 2 * nt and z3s["rzz_nonclifford"] == nt, f"{z3s['rzz']}, {z3s['rzz_nonclifford']} vs {nt}")
+        check(f"{t} direct RZZ = CX (one-to-one)", abs(zd["rzz"] - cd["cx"]) < 1e-6)
+        tcz = i["trial_cost_rzz"]; tz = d["counts_rzz_a2a"]["total"]
+        check(f"{t} RZZ total = filter + trial", abs(tz["rzz"] - (z3["rzz"] + tcz["rzz"])) < 1e-6 and abs(tz["nc_total"] - (z3["nc_total"] + tcz["nc_total"])) < 1e-6)
+        check(f"{t} nc_total = rz_nc + rzz_nc", abs(z3s["nc_total"] - z3s["rz_nonclifford"] - z3s["rzz_nonclifford"]) < 1e-9)
         # ---- simulated designs
         if d.get("simulated"):
             check(f"{t} measured<=bound(guaranteed)", which != "guaranteed" or d["eps_actual"] <= d["eps_bound"] + 1e-12, f"{d['eps_actual']} > {d['eps_bound']}")
@@ -110,6 +123,11 @@ for f in files:
             check(f"{t} F_ed+eps=1", abs(d["F_ed"] + d["eps_actual"] - 1) < 1e-9 if np.isfinite(d["F_ed"]) else True)
             if d.get("circ_dev") is not None:
                 check(f"{t} circuit==numpy sim", d["circ_dev"] < 1e-9, f"circ_dev {d['circ_dev']}")
+        vr = r.get("validation_rzz")
+        if vr and "l3" in vr:
+            check(f"{tag} RZZ per-step x n vs full transpile (level 3)", vr["l3"]["est_rzz"] == vr["l3"]["full_rzz"], str(vr["l3"]))
+            check(f"{tag} RZZ per-step x n vs full transpile (direct)", vr["direct"]["est_rzz"] == vr["direct"]["full_rzz"] and vr["direct"]["est_nc"] == vr["direct"]["full_nc"], str(vr["direct"]))
+            check(f"{tag} level-3 nc estimate within 8% above full", 0 <= (vr["l3"]["est_nc"] - vr["l3"]["full_nc"]) / vr["l3"]["full_nc"] < 0.08, str(vr["l3"]))
         vdr = r.get("validation_direct")
         if vdr:
             check(f"{tag} direct per-step x n vs full transpile", vdr["est_cx"] == vdr["full_cx"] and vdr["est_nc"] == vdr["full_nc"], str(vdr))

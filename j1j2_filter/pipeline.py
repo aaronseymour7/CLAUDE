@@ -25,7 +25,7 @@ from core.circuits import (
     verify_pulse_convention,
 )
 from core.filter_design import FilterBuilder, certify_filter, grid_filter, select_best
-from core.resources import resource_costs, rotation_synthesis_t_count
+from core.resources import resource_costs, rotation_synthesis_t_count, RZZ_BASIS
 from core.simulate import (
     overlaps,
     postselected_run,
@@ -189,6 +189,7 @@ def build_ctx(N, j1, j2):
         energies=spec["energies"], cmap=cmap, E0_dmrg=float(np.real(res["E0"])),
         step=per_step_costs(H_scaled, cmap),
         trial_cost=resource_costs(trial_qc, verbose=False, synth_eps=SYNTH_EPS),
+        trial_cost_rzz=resource_costs(trial_qc, verbose=False, synth_eps=SYNTH_EPS, basis=RZZ_BASIS),
         builder_design=None)
 
     section("CASE INPUTS")
@@ -358,7 +359,10 @@ def measured_cost(ctx, pt):
         trotter_steps=[int(x) for x in pt["k"]], order=ORDER)
     c = resource_costs(qc, flatten=True, verbose=False, coupling_map=ctx["cmap"],
                        synth_eps=SYNTH_EPS)
-    return dict(cx=c["cx"], depth=c["depth"])
+    z = resource_costs(qc, flatten=True, verbose=False, coupling_map=ctx["cmap"],
+                       synth_eps=SYNTH_EPS, basis=RZZ_BASIS)
+    return dict(cx=c["cx"], depth=c["depth"], rzz=z["rzz"], rzz_nonclifford=z["rzz_nonclifford"],
+                nc_total=z["nc_total"], depth_rzz=z["depth"])
 
 
 def point(ctx, des, n, simulate=True):

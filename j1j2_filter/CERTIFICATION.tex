@@ -129,7 +129,7 @@ Design $(T=x\pi/\Delta,\,m,\,t_i,\,\varphi_i)$ & maximize $F(0)^2$ s.t.\ $\eta\l
 Lie--Trotter, $k_i$ steps/pulse & $\norm{\tilde W_i-W_i}\le\alpha t_i^2/(2k_i)$ & \ref{sec:trotter}\\
 State error & $D\le\eps_T/\sqrt{\pg}$ & \ref{sec:state}\\
 Combine, choose $n$ & \eqref{eq:star}, $n=\lceil \alpha T^2/(2\sqrt{\pg}(\sqrt\eps-\sqrt\ell))\rceil$ & \ref{sec:combine}, \ref{sec:choose}\\
-Cost & CX, $R_z$, depth & \ref{sec:cost}\\
+Cost & RZZ, non-Clifford rotations, depth & \ref{sec:cost}\\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -419,17 +419,21 @@ The costs separate into three kinds with different standing.
 counts $k_i$, hence the number of controlled Pauli rotations $n\times\#\text{terms}$; and $P_{\rm succ}\ge\pg$, so that under independent attempts
 the expected number of repetitions is at most $1/\pg$.
 
-\paragraph{Compiled counts (estimates, not bounds).} One Trotter step of one pulse is transpiled once (basis $\{h,s,\mathrm{cx},r_z\}$, all-to-all or a line) and its counts multiplied by $n$, with one
-$R_z(2\varphi)$ per pulse added. Two compilations of the \emph{same} circuit are reported because they trade CX against non-Clifford rotations:
+\paragraph{Compiled counts (estimates, not bounds).} One Trotter step of one pulse is transpiled once (gate basis $\{\mathrm{rzz},r_z,\sqrt{x},x\}$, all-to-all or a line)
+and its counts multiplied by $n$, with one $R_z(2\varphi)$ per pulse added. The two-qubit gate is $\mathrm{RZZ}(\theta)=e^{-i\theta ZZ/2}$; CX is \emph{not} in the basis, and
+$\mathrm{RZZ}(\pi/2)$ is Clifford. A rotation is counted as non-Clifford if its angle is not a multiple of $\pi/2$ (this applies to $R_z$ and to $\mathrm{RZZ}(\theta)$);
+Clifford single-qubit gates are not tracked. Two compilations of the \emph{same} circuit are reported:
 \begin{itemize}[leftmargin=*]
-\item \textbf{direct} (qiskit optimisation level 1): every Pauli rotation $e^{-i\theta P\otimes Z}$ becomes a CX ladder around one $R_z$. For the Heisenberg chain this
- gives exactly $4\times(\#\text{Pauli terms})$ CX and $\#\text{terms}+1$ non-Clifford $R_z$ per step (the $+1$ is the ancilla rotation from the constant shift);
-\item \textbf{level 3}: two-qubit blocks are re-synthesised, giving about $1.7\times$ fewer CX but about $3\times$ more non-Clifford $R_z$ (e.g.\ $N=8$, $J_2=0$: $84$ CX and $22$ non-Clifford $R_z$ per step direct, $49$ CX and $65$ at level 3).
+\item \textbf{direct} (qiskit optimisation level 1): every Pauli rotation $e^{-i\theta P\otimes Z}$ becomes a ladder of four Clifford $\mathrm{RZZ}(\pi/2)$ around one $R_z$ (each CX of the
+ old ladder becomes one Clifford RZZ). For the Heisenberg chain this gives exactly $4\times(\#\text{Pauli terms})$ RZZ and $\#\text{terms}+1$ non-Clifford rotations per step (the $+1$ is the
+ ancilla rotation from the constant shift);
+\item \textbf{level 3}: blocks are re-synthesised so that each ancilla-controlled Pauli rotation costs two RZZ, one Clifford and one non-Clifford $\mathrm{RZZ}(\theta)$,
+ i.e.\ exactly $2\times(\#\text{terms})$ RZZ (half of the direct count) with $\#\text{terms}$ non-Clifford RZZ, plus extra non-Clifford single-qubit $R_z$ from the re-synthesis.
 \end{itemize}
 The number of non-Clifford rotations is the cost metric for fault-tolerant hardware (no $T$-count is reported: the cost of synthesizing a rotation depends on constants that are not verified here and on
-the downstream synthesis method), so it is quoted for the direct compilation, which is the smaller; CX is the metric for near-term hardware and is smaller at level 3. Per-step $\times\,n$ was checked against a full
-transpile of a 48-step circuit: CX exact for both compilations, non-Clifford $R_z$ exact for direct and up to about $4\%$ too high (conservative) for level 3; depth is overestimated by $1$--$2\%$. These are outputs of qiskit's
-heuristic compiler, not minimal counts.
+the downstream synthesis method); the RZZ count is the metric for near-term hardware with native RZZ and is smaller at level 3. Per-step $\times\,n$ was checked against a full
+transpile of a 48-step circuit in the RZZ basis: RZZ exact for both compilations, non-Clifford rotations exact for direct and slightly too high (conservative) for level 3. These are outputs of qiskit's
+heuristic compiler, not minimal counts. The earlier CX-basis counts are kept in the data files and compared in the results document (CX $\to$ RZZ table).
 
 \paragraph{Not included.} The expected-repetition figure is not the whole hardware cost: ancilla measurement and reset time, classical feed-forward
 for the early abort, the native implementation of the controlled Pauli rotations on a real connectivity, calibration and error mitigation or
@@ -497,7 +501,7 @@ $\eta$ certificate & never below a $2\times10^{6}$-point dense maximum, at most 
 Weyl bandwidth & equals DMRG $E_{\rm top}-E_s$ to $\le10^{-13}$ (all cases); $E_{\rm top}\le\sum\lambda_{\max}$ asserted for every stored point \\
 MPO (DMRG) $=$ Pauli Hamiltonian (circuits) & energies agree to $10^{-14}$ on random product states, $N=12,24,32$; DMRG vs.\ ED $\le4\times10^{-13}$, $N\le20$ \\
 Stored results & \code{audit\_results.py}: every bound, leakage, $p_g$, $\eps_T$, $T$, step count and gate count is re-derived from the stored inputs (over $2000$ checks) and measured infidelity $\le$ bound for every simulated design \\
-Gate counts & per-step $\times\,n$ vs.\ full transpile (CX exact; see Section~\ref{sec:cost}) \\
+Gate counts & per-step $\times\,n$ vs.\ full transpile (RZZ exact; see Section~\ref{sec:cost}) \\
 \bottomrule
 \end{tabular}
 \end{center}
