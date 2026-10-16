@@ -281,8 +281,9 @@ for J2 in J2_ORDER:
 A(md(hd, rows))
 csv_dump("cx_vs_rzz.csv", hd, rows)
 A("")
-A("*Table 4b.* The direct compilation maps each CX one-to-one onto a Clifford RZZ(π/2) (ratio 1.00): the saving comes only from the level-3 resynthesis, which implements each ancilla-controlled Pauli rotation with two RZZ "
-  "(one Clifford, one non-Clifford RZZ(θ)) instead of the four CX of the ladder. In the RZZ basis the non-Clifford count includes the RZZ(θ) rotations, so `Non-Cliff. rot.` is not directly comparable with the Rz-only count of the CX basis.")
+A("*Table 4b.* The direct compilation maps each CX one-to-one onto a Clifford RZZ(π/2) (ratio 1.00). At level 3 qiskit had already re-synthesised the CX circuit to about 2.3 CX per ancilla-controlled Pauli rotation; "
+  "in the RZZ basis each such rotation costs exactly two RZZ (one Clifford, one non-Clifford RZZ(θ)), so the RZZ count is about 0.86× the level-3 CX count (and half of the direct count). "
+  "In the RZZ basis the non-Clifford count includes the RZZ(θ) rotations, so `Non-Cliff. rot.` is not directly comparable with the Rz-only count of the CX basis.")
 A("")
 
 # ------------------------------------------------------------------ 5 certified bandwidth
@@ -528,9 +529,11 @@ if rows:
     if vr:
         dz3 = max(abs(v["l3"]["est_rzz"] - v["l3"]["full_rzz"]) for v in vr); dzd = max(abs(v["direct"]["est_rzz"] - v["direct"]["full_rzz"]) for v in vr)
         dnd = max(abs(v["direct"]["est_nc"] - v["direct"]["full_nc"]) for v in vr)
-        o3 = max((v["l3"]["est_nc"] - v["l3"]["full_nc"]) / v["l3"]["full_nc"] for v in vr)
+        o3 = [(v["l3"]["est_nc"] - v["l3"]["full_nc"]) / v["l3"]["full_nc"] for v in vr]
+        d3 = [(v["l3"]["est_depth"] - v["l3"]["full_depth"]) / v["l3"]["full_depth"] for v in vr]
         A(f"*Summary ({len(vr)} cases):* maximum |estimate − full transpile| = {dz3:.0f} RZZ (level 3) and {dzd:.0f} RZZ (direct); direct non-Clifford rotations differ by at most {dnd:.0f}; "
-          f"the level-3 non-Clifford-rotation estimate is at most {100 * o3:.1f}% above the full transpile (conservative). Per-step depth × n is within a few percent of the full-transpile depth.")
+          f"the level-3 non-Clifford-rotation estimate is off by {100 * min(o3):+.0f}% to {100 * max(o3):+.0f}% (not conservative: block re-synthesis in a full circuit differs from the single-step transpile, so treat level-3 non-Clifford counts as ±20% estimates; the direct counts are exact), "
+          f"and per-step depth × n is off by {100 * min(d3):+.0f}% to {100 * max(d3):+.0f}%.")
         A("")
 rows, hd = [], ["source", "N", "J2", "ε", "context build (DMRG+ED+trial+per-step) s", "filter design s", "guaranteed search s", "empirical search s"]
 for r in sorted(R, key=lambda r: (r["source"], r["N"], r["J2"], -r["eps"])):

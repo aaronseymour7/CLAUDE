@@ -432,7 +432,7 @@ Clifford single-qubit gates are not tracked. Two compilations of the \emph{same}
 \end{itemize}
 The number of non-Clifford rotations is the cost metric for fault-tolerant hardware (no $T$-count is reported: the cost of synthesizing a rotation depends on constants that are not verified here and on
 the downstream synthesis method); the RZZ count is the metric for near-term hardware with native RZZ and is smaller at level 3. Per-step $\times\,n$ was checked against a full
-transpile of a 48-step circuit in the RZZ basis: RZZ exact for both compilations, non-Clifford rotations exact for direct and slightly too high (conservative) for level 3. These are outputs of qiskit's
+transpile of a 48-step circuit in the RZZ basis: RZZ exact for both compilations, non-Clifford rotations exact for direct and within about $\pm20\%$ for level 3 (not conservative: re-synthesis in the full circuit differs from the single-step transpile). These are outputs of qiskit's
 heuristic compiler, not minimal counts. The earlier CX-basis counts are kept in the data files and compared in the results document (CX $\to$ RZZ table).
 
 \paragraph{Not included.} The expected-repetition figure is not the whole hardware cost: ancilla measurement and reset time, classical feed-forward

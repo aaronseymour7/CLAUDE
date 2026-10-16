@@ -329,7 +329,7 @@ for J2 in J2S:
         c3 = d["counts_a2a"]["total"]; z3 = d["counts_rzz_a2a"]["total"]; cd = d["counts_direct"]["filter"]; zd = d["counts_rzz_direct"]["filter"]
         rows.append([N, J2NAME[J2], num(c3["cx"]), num(z3["rzz"]), f"{z3['rzz'] / c3['cx']:.2f}", num(cd["cx"]), num(zd["rzz"]), f"{zd['rzz'] / cd['cx']:.2f}", num(c3["rz_nonclifford"]), num(z3["nc_total"])])
 T["cxrzz"] = tab(["$N$", "$J_2$", "CX (level 3)", "RZZ (level 3)", "ratio", "CX (direct)", "RZZ (direct)", "ratio", "non-Cliff.\\ $R_z$ (CX, level 3)", "non-Cliff.\\ rot. (RZZ, level 3)"], rows, "rrrrrrrrrr",
-                 "Previous CX basis versus the RZZ basis, guaranteed designs at $\\varepsilon=10^{-2}$. The direct compilation maps each CX onto one Clifford RZZ($\\pi/2$) (ratio 1.00); level 3 needs only two RZZ per ancilla-controlled Pauli rotation, one of them a non-Clifford RZZ($\\theta$).", "tab:cxrzz")
+                 "Previous CX basis versus the RZZ basis, guaranteed designs at $\\varepsilon=10^{-2}$. The direct compilation maps each CX onto one Clifford RZZ($\\pi/2$) (ratio 1.00). At level 3 the CX circuit had already been re-synthesised to about 2.3 CX per ancilla-controlled Pauli rotation; in the RZZ basis each costs exactly two RZZ (one Clifford, one non-Clifford RZZ($\\theta$)), about $0.86\\times$ the level-3 CX count and half the direct count.", "tab:cxrzz")
 
 # large N
 rows = []
@@ -384,8 +384,8 @@ T["bw"] = tab(["$N$", "$J_2$", "$W$ (Weyl)", "$|W-(E_{\\rm top}-E_0)_{\\rm DMRG}
 # validation + timing
 vals = [(k, r["validation_rzz"]) for k, r in R.items() if r.get("validation_rzz") and "l3" in r["validation_rzz"]]
 vz3 = max(abs(v["l3"]["est_rzz"] - v["l3"]["full_rzz"]) for _, v in vals); vzd = max(abs(v["direct"]["est_rzz"] - v["direct"]["full_rzz"]) for _, v in vals)
-vnd = max(abs(v["direct"]["est_nc"] - v["direct"]["full_nc"]) for _, v in vals); vo3 = 100 * max((v["l3"]["est_nc"] - v["l3"]["full_nc"]) / v["l3"]["full_nc"] for _, v in vals)
-dpe = [abs(v["l3"]["est_depth"] - v["l3"]["full_depth"]) / v["l3"]["full_depth"] * 100 for _, v in vals]
+vnd = max(abs(v["direct"]["est_nc"] - v["direct"]["full_nc"]) for _, v in vals); vo3 = [100 * (v["l3"]["est_nc"] - v["l3"]["full_nc"]) / v["l3"]["full_nc"] for _, v in vals]
+dpe = [100 * (v["l3"]["est_depth"] - v["l3"]["full_depth"]) / v["l3"]["full_depth"] for _, v in vals]
 timing = {}
 for (N, J2, e), r in R.items():
     timing.setdefault(N, []).append((r["inputs"]["build_s"], r["design"].get("design_s", 0.0), r["wall_s"]))
@@ -538,7 +538,7 @@ Tightening $\varepsilon$ needs both a stronger filter (smaller $\eta$) and fewer
 """ + T["eps"] + figure("eps_scan.png", "Trotter steps against target $\\varepsilon$ for guaranteed (solid) and empirical (dashed) designs.", "fig:eps") + r"""
 
 \section{Checks and classical compute cost}\label{sec:checks}
-\textbf{Gate-count method.} The per-step transpile times $n$ was compared with a full transpile of the real circuit in the RZZ basis at $n=48$ (4 pulses of 12 steps, all-to-all) for """ + str(len(vals)) + r""" cases: the RZZ count differed by at most """ + f"{vz3:.0f}" + r""" (level 3) and """ + f"{vzd:.0f}" + r""" (direct), the direct non-Clifford count by at most """ + f"{vnd:.0f}" + r""", and the level-3 non-Clifford estimate was at most """ + f"{vo3:.1f}" + r"""\% above the full transpile; the level-3 depth estimate differed by at most """ + f"{max(dpe):.1f}" + r"""\%. \textbf{Bound violations:} """ + str(nviol) + r""" among the simulated designs. \textbf{Classical cost:} Table~\ref{tab:time}.
+\textbf{Gate-count method.} The per-step transpile times $n$ was compared with a full transpile of the real circuit in the RZZ basis at $n=48$ (4 pulses of 12 steps, all-to-all) for """ + str(len(vals)) + r""" cases: the RZZ count differed by at most """ + f"{vz3:.0f}" + r""" (level 3) and """ + f"{vzd:.0f}" + r""" (direct), the direct non-Clifford count by at most """ + f"{vnd:.0f}" + r""", and the level-3 non-Clifford estimate differed from the full transpile by """ + f"{min(vo3):+.0f}" + r"""\% to """ + f"{max(vo3):+.0f}" + r"""\% (it is not conservative: re-synthesis in the full circuit differs from the single-step transpile, so level-3 non-Clifford counts are $\pm20\%$ estimates, whereas the direct counts are exact); the level-3 depth estimate differed by """ + f"{min(dpe):+.0f}" + r"""\% to """ + f"{max(dpe):+.0f}" + r"""\%. \textbf{Bound violations:} """ + str(nviol) + r""" among the simulated designs. \textbf{Classical cost:} Table~\ref{tab:time}.
 """ + T["time"] + (r"""
 \textbf{Points without a certified design:}
 """ + nat if na else "") + r"""
