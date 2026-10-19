@@ -1,0 +1,14 @@
+{
+ "N": 16,
+ "J2": 0.4,
+ "pbc": true,
+ "eps": 0.01,
+ "layers": 2,
+ "gamma_sym": 0.5349338487009789,
+ "gamma_baseline": 0.4343739308613273,
+ "gap_singlet": 0.005899971276975047,
+ "gap_triplet": 0.018813181785256636,
+ "A": null,
+ "B_s2_stage": null,
+ "SYM": null
+}
