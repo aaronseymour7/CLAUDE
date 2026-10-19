@@ -29,7 +29,7 @@ for N in (6, 8):
     H = s2_pauli_op(N); qc = QuantumCircuit(N + 1); apply_filter_pulse(qc, list(range(N)), N, H, 1.0, 0.0, 1, 1)
     c = resource_costs(qc, verbose=False, basis=RZZ_BASIS); print(f"  N={N}: terms {len(H)}, RZZ per step {c['rzz']:.0f} (model 2 x terms = {2 * len(H)}), non-Clifford rotations {c['nc_total']:.0f}")
 print("V3: end-to-end exact (no Trotter) on the L=1 trial state, open chain N=8, J2=0.2411")
-import pipeline as P; from pbc_ctx import build_ctx; from core.simulate import apply_pulse_exact; from study import candidates
+import pipeline as P; from pbc_ctx import build_ctx; from core.simulate import apply_pulse_exact; from s2_study import candidates
 ctx = build_ctx(8, 1.0, 0.2411, pbc=False); e = ctx["ed"]; W = ctx["W"]; N = 8
 gap_s = (e["E_singlet_true"] - e["E0"]) / W; S2 = s2_sparse(N); wJ = j_weights(ctx["trial_vec"], N); pS = wJ[0]; gamma = ctx["gamma"]
 

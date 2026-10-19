@@ -6,7 +6,7 @@ B (S^2 stage first): zero-phase S^2 pulses t = pi/4, pi/8, (pi/16)  remove every
 Both stages are Trotterised with the certificate  1 - F <= (sqrt(leak) + eps_T / sqrt(p_g))^2,  eps_T = sum over ALL pulses alpha t^2 /(2 k),  p_g = gamma F(0)^2
 (the S^2 pulses have F = 1 at J = 0, so they cost no success probability beyond p_S).  Optimal split of the eps_T allowance between the stages and
 RZZ per Trotter step = 2 x (number of Pauli terms) (qiskit level 3, validated by transpile).
-usage: python s2proj/study.py --bc obc pbc --N 8 10 12 --J2 0 0.2411 0.4 --eps 1e-2 [--worker i --of K]"""
+usage: python s2proj/s2_study.py --bc obc pbc --N 8 10 12 --J2 0 0.2411 0.4 --eps 1e-2 [--worker i --of K]"""
 import argparse, json, os, sys, time
 from pathlib import Path
 import numpy as np
@@ -37,6 +37,23 @@ def candidates(gamma_design, gap, alpha_E, p_true_factor, eps):
     return out
 
 
+_STEP_CACHE = HERE / "results" / "s2_step_rzz.json"
+
+
+def s2_rzz_per_step(N):
+    """RZZ per controlled S^2 Lie-Trotter step (block order, qiskit level 3, all-to-all), by transpile; cached."""
+    cache = json.load(open(_STEP_CACHE)) if _STEP_CACHE.exists() else {}
+    if str(N) not in cache:
+        from qiskit import QuantumCircuit
+        from core.circuits import apply_filter_pulse
+        from core.resources import resource_costs, RZZ_BASIS
+        from s2_ops import s2_pauli_op
+        H = s2_pauli_op(N); qc = QuantumCircuit(N + 1); apply_filter_pulse(qc, list(range(N)), N, H, 1.0, 0.0, 1, 1)
+        c = resource_costs(qc, verbose=False, basis=RZZ_BASIS); cache = json.load(open(_STEP_CACHE)) if _STEP_CACHE.exists() else {}
+        cache[str(N)] = dict(rzz=float(c["rzz"]), nc=float(c["nc_total"]), terms=len(H)); _STEP_CACHE.write_text(json.dumps(cache))
+    return cache[str(N)]["rzz"]
+
+
 def study_point(N, J2, pbc, eps):
     t0 = time.time(); ctx = build_ctx(N, 1.0, J2, pbc=pbc); e = ctx["ed"]; W = ctx["W"]
     gap_t = (e["E1_triplet"] - e["E0"]) / W; gap_s = (e["E_singlet_true"] - e["E0"]) / W
@@ -44,7 +61,7 @@ def study_point(N, J2, pbc, eps):
     wJ = j_weights(ctx["trial_vec"], N); pS = wJ[0]
     cE = 2.0 * n_terms                                                        # RZZ per energy Trotter step (level 3)
     tri, ex = alpha_blocks(N); aS = ex if ex is not None else tri
-    tS = zero_pulses(N); cS = 2.0 * 3 * N * (N - 1) / 2; aS_term = aS * float(tS.sum()) ** 2 / 2        # RZZ per S^2 step, a_S = alpha (sum t)^2 / 2
+    tS = zero_pulses(N); cS = s2_rzz_per_step(N); aS_term = aS * float(tS.sum()) ** 2 / 2        # measured RZZ per S^2 step, a_S = alpha (sum t)^2 / 2
     res = dict(N=N, J2=J2, pbc=pbc, eps=eps, gamma=gamma, p_S=pS, J_weights={str(k): v for k, v in wJ.items()}, gap_triplet=gap_t, gap_singlet=gap_s, W=W, alpha_E=alpha_E,
                alpha_S2=aS, alpha_S2_exact=ex, alpha_S2_triangle=tri, S2_times_over_pi=(tS / np.pi).tolist(), terms_E=n_terms, terms_S2=3 * N * (N - 1) // 2, rzz_per_step_E=cE, rzz_per_step_S2=cS)
     # A: no projection
