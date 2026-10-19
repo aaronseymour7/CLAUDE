@@ -39,13 +39,19 @@ def run_point(N, J2, eps, trotter_max, outdir):
     f = outdir / f"pbc_N{N}_J2{J2:g}_eps{eps:g}.json"
     if f.exists():
         return
-    t0 = time.time(); ctx = build_ctx(N, 1.0, J2); t_ctx = time.time() - t0
-    des, cands, n_inf = P.make_design(ctx, eps)
-    if des["source"] == "none":
-        raise RuntimeError("trial state already exact")
+    t0 = time.time(); ctx = build_ctx(N, 1.0, J2); ctx["builder_design"] = None; t_ctx = time.time() - t0
+    pick, cands, n_inf = P.choose_floor_design(ctx, eps)          # the pipeline's floor design (no builder fallback for periodic chains)
+    if pick is None:
+        f.write_text(json.dumps(dict(N=N, J2=J2, eps=eps, error="not purifiable: no certified floor design with the allowed pulses", gamma=ctx["gamma"],
+                                     gap_scaled=ctx["gap"], W=ctx["W"], C_exact=correlations(ctx["ed"]["psi"], N), E0=ctx["ed"]["E0"], E1=ctx["ed"]["E1"],
+                                     E1_singlet=ctx["ed"]["E1_singlet"], E1_triplet=ctx["ed"]["E1_triplet"]), indent=1))
+        print(f"N={N} J2={J2:g} eps={eps:g}: gamma={ctx['gamma']:.3f} Delta={ctx['gap']:.4f}  NOT PURIFIABLE ({time.time() - t0:.0f}s)", flush=True); return
+    r_ = pick["row"]
+    des = dict(source="floor", times=np.asarray(r_["times"], float), phases=np.asarray(r_["phases"], float), T=float(r_["T"]), eta_cert=float(r_["eta_cert"]),
+               eta_target=float(r_["eta_target"]), x=float(r_["x"]), leak_budget=float(r_["eps"]))
     pt = P.find_guaranteed(ctx, des, eps)
     if pt is None:
-        json.dump(dict(N=N, J2=J2, eps=eps, error="no certified design", gamma=ctx["gamma"], gap_scaled=ctx["gap"]), open(f, "w")); return
+        f.write_text(json.dumps(dict(N=N, J2=J2, eps=eps, error="no snapped design meets the bound", gamma=ctx["gamma"], gap_scaled=ctx["gap"]), indent=1)); return
     t1 = time.time(); p_ex, sv = postselected_run_exact(ctx["trial_qc"], pt["tg"], pt["ph"], ctx["Hs"]); t_filt = time.time() - t1
     psi = ctx["ed"]["psi"]; F = float(abs(np.vdot(psi, sv)) ** 2 / np.vdot(sv, sv).real)
     rec = dict(N=N, J2=J2, eps=eps, E0=ctx["ed"]["E0"], E1=ctx["ed"]["E1"], E1_singlet=ctx["ed"]["E1_singlet"], E1_triplet=ctx["ed"]["E1_triplet"],
@@ -73,8 +79,12 @@ def run_point(N, J2, eps, trotter_max, outdir):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(); ap.add_argument("--N", type=int, nargs="+", default=[8]); ap.add_argument("--J2", type=float, nargs="+", default=[0.24])
     ap.add_argument("--eps", type=float, nargs="+", default=[1e-3]); ap.add_argument("--trotter-max", type=int, default=0); ap.add_argument("--outdir", default="results")
+    ap.add_argument("--worker", type=int, default=0); ap.add_argument("--of", type=int, default=1)
     a = ap.parse_args(); out = HERE / a.outdir; out.mkdir(exist_ok=True)
-    for N in a.N:
-        for J2 in a.J2:
-            for eps in a.eps:
+    jobs = sorted([(N, J2, eps) for N in a.N for J2 in a.J2 for eps in a.eps], key=lambda j: (-j[0], j[1], j[2]))   # biggest first
+    for i, (N, J2, eps) in enumerate(jobs):
+        if i % a.of == a.worker:
+            try:
                 run_point(N, J2, eps, a.trotter_max, out)
+            except Exception as e:
+                import traceback; traceback.print_exc(); (out / f"pbc_N{N}_J2{J2:g}_eps{eps:g}.err").write_text(f"{type(e).__name__}: {e}")
