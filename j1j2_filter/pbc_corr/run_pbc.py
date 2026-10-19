@@ -14,7 +14,7 @@ import numpy as np
 HERE = Path(__file__).resolve().parent; ROOT = HERE.parent
 sys.path.insert(0, str(HERE)); sys.path.insert(0, str(ROOT)); sys.path.insert(0, str(ROOT.parent)); os.chdir(ROOT)
 import pipeline as P                                                   # noqa: E402
-from pbc_ctx import build_ctx, correlations                            # noqa: E402
+from pbc_ctx import build_ctx, correlations, entropies                            # noqa: E402
 from core.simulate import postselected_run_exact                        # noqa: E402
 from core.circuits import apply_filter_pulse                            # noqa: E402
 from core.resources import resource_costs, RZZ_BASIS                    # noqa: E402
@@ -60,7 +60,8 @@ def run_point(N, J2, eps, trotter_max, outdir):
                T_scaled=float(np.sum(pt["tg"])), T_phys=float(np.sum(pt["tg"]) / ctx["W"]), eta=float(pt["eta"]), eps_bound=float(pt["eps_bound"]),
                p_g_lb=float(pt["p_g_lb"]), p_succ_exact=float(p_ex), F_exact_filter=F, infidelity=1 - F,
                C_exact=correlations(psi, N), C_filter=correlations(sv, N), C_trial=correlations(ctx["trial_vec"], N),
-               E_filter=float(np.real(np.vdot(sv, ctx["H_qk"].to_matrix(sparse=True) @ sv)) / np.vdot(sv, sv).real) if N <= 14 else None,
+               E_filter=float(ctx["ed"]["E0"] + ctx["W"] * np.real(np.vdot(sv, ctx["Hs"] @ sv)) / np.vdot(sv, sv).real),
+               S_exact=entropies(psi, N), S_filter=entropies(sv, N), S_trial=entropies(ctx["trial_vec"], N),
                seconds=dict(ctx=t_ctx, filter=t_filt))
     sc = step_counts(ctx); n, nz = pt["n"], pt["n_nz"]
     rec["counts"] = dict(per_step=sc, rzz_l3=n * sc["l3"]["rzz"] + sc["trial"]["rzz"], nc_l3=n * sc["l3"]["nc_total"] + nz + sc["trial"]["nc_total"],

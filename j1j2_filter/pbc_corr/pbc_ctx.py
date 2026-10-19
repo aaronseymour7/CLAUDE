@@ -97,3 +97,12 @@ def build_ctx(N, j1, j2, chi=96, L=1, verbose=False):
     return dict(N=N, j1=j1, j2=j2, ed=ed, W=W, gap=gap, H_qk=H, H_scaled=Hsc, trial_qc=trial_qc, trial_vec=trial_vec, gamma=gamma,
                 alpha=trotter_alpha(Hsc), energies=np.array([0.0, gap, 1.0]), chi=int(max(mps.bond_sizes())),
                 Hs=full_sparse(N, j1, j2, shift=ed["E0"], scale=W))
+
+
+def entropies(vec, N):
+    """Von Neumann entanglement entropy of the block of sites 0..l-1 (qiskit ordering: site q = bit q), l = 1..N/2; periodic chain => any contiguous block."""
+    v = np.asarray(vec) / np.linalg.norm(vec); out = []
+    for l in range(1, N // 2 + 1):
+        s = np.linalg.svd(v.reshape(1 << (N - l), 1 << l), compute_uv=False) ** 2; s = s[s > 1e-16]
+        out.append(float(-(s * np.log(s)).sum()))
+    return out
