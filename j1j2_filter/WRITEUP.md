@@ -43,13 +43,13 @@ For H = Σ_{a=1}^Γ H_a, let S₂(t) = ∏_{a=Γ→1} e^{−iH_a t/2} ∏_{a=1�
 
 so k steps of t/k give error ≤ t³B₂/k². This is the second-order case of the commutator-scaling theory of Childs–Su–Tran–Wiebe–Zhu, PRX 11, 011020 (2021) [arXiv:1912.08854].
 
-*Verification status — read this.* I could not open the paper or arXiv text from this environment (network access to arxiv.org, ar5iv and par.nsf.gov failed; web search confirmed the paper and its claim to reproduce tight first- and second-order bounds but did not show the equation). So the exact form above is **not checked against the source**. What I did instead:
+*Verification status.* Checked against the paper (arXiv:1912.08854v3, supplied by the user): **Proposition 16, Eq. (152)** states exactly this bound, ‖S₂(t) − e^{−itH}‖ ≤ (t³/12) Σ_{γ₁}‖[Σ_{γ₃>γ₁}H_{γ₃}, [Σ_{γ₂>γ₁}H_{γ₂}, H_{γ₁}]]‖ + (t³/24) Σ_{γ₁}‖[H_{γ₁}, [H_{γ₁}, Σ_{γ₂>γ₁}H_{γ₂}]]‖, for S₂(t) = ∏_{γ=Γ}^{1} e^{−i(t/2)H_γ} ∏_{γ=1}^{Γ} e^{−i(t/2)H_γ}, derived (their Eqs. 146–151) by the same telescoping over γ₁ and the two-term bound (their Eq. 150). **Proposition 15, Eq. (145)**, ‖S₁(t) − e^{−itH}‖ ≤ (t²/2) Σ_{γ₁}‖[Σ_{γ₂>γ₁}H_{γ₂}, H_{γ₁}]‖, is the first-order α used throughout this note. The paper states the bound for the term ordering in its definition; the code takes the maximum over the forward and reversed order, which is a superset. The numerical checks below are therefore a check of my implementation, not of the formula:
 
-* **Self-contained derivation by telescoping.** Write S₂ for terms a..Γ as e^{−iH_a t/2} S₂^{(a+1..Γ)} e^{−iH_a t/2}. Unitarity of the outer factors gives ‖S₂ − e^{−itH}‖ ≤ ‖S₂^{(a+1..Γ)} − e^{−itB_a}‖ + ‖e^{−iH_a t/2}e^{−itB_a}e^{−iH_a t/2} − e^{−it(H_a+B_a)}‖. Iterating, the multi-term bound is the sum over a of the **two-term** Strang bound with A = H_a, B = B_a. The two-term bound ‖e^{−itA/2}e^{−itB}e^{−itA/2} − e^{−it(A+B)}‖ ≤ t³(‖[B,[B,A]]‖/12 + ‖[A,[A,B]]‖/24) is the classical Strang-splitting local-error form. I did not re-prove it here.
+* **Telescoping argument (as in the paper).** Write S₂ for terms a..Γ as e^{−iH_a t/2} S₂^{(a+1..Γ)} e^{−iH_a t/2}. Unitarity of the outer factors gives ‖S₂ − e^{−itH}‖ ≤ ‖S₂^{(a+1..Γ)} − e^{−itB_a}‖ + ‖e^{−iH_a t/2}e^{−itB_a}e^{−iH_a t/2} − e^{−it(H_a+B_a)}‖. Iterating, the multi-term bound is the sum over a of the **two-term** Strang bound with A = H_a, B = B_a. The two-term bound ‖e^{−itA/2}e^{−itB}e^{−itA/2} − e^{−it(A+B)}‖ ≤ t³(‖[B,[B,A]]‖/12 + ‖[A,[A,B]]‖/24) is the paper's Eq. (150).
 * **Numerical check of the two-term bound** (`trotter2/validate_two_term.py`): 1,800 random Hermitian pairs, t from 0.05 to 30. Maximum error/bound = **0.998**. The bound was never violated, and a ratio this close to 1 means the constants cannot be made smaller (smaller constants would be violated). This is evidence, not a proof.
 * **Numerical check of the multi-term bound on the actual Hamiltonians** (`trotter2/validate_alpha2.py`): J1–J2 chains with N = 4–8, open and periodic, t ∈ {3, 10}, k = 1–16; measured error ≤ 0.28 × bound in every case. Bound code: `trotter2/alpha2.py` (exact local evaluation of the nested commutators; maximum over forward and reversed term order).
 
-For a publication the constants should be quoted from the paper after reading it.
+The paper also notes that these two-term-based bounds are tight up to the triangle inequality, which is consistent with the 0.998 ratio above.
 
 ### 4.2 Effect on the certified step count
 
@@ -120,7 +120,7 @@ These are projections from fitted inputs. None of the 2D numbers has been run th
 
 ## 8. Limits and open items
 
-* Second-order constants not checked against the source text (§4.1); numerically supported (two-term bound ratio ≤ 0.998 over 1,800 random cases; multi-term bound ≤ 0.28 on chains; all 12 built-circuit simulations within the bound).
+* The second-order bound is Proposition 16, Eq. (152) of Childs et al. (checked against the paper, §4.1); my implementation of it is validated numerically (two-term bound ratio ≤ 0.998 over 1,800 random cases; multi-term bound ≤ 0.28 on chains; all 12 built-circuit simulations within the bound).
 * Second-order circuits are built and counted for N ≤ 12 only (12 cases); N > 12 is not computed.
 * For N > 14 the trial overlap γ is a DMRG-MPS overlap and is not certified; those rows are conditional.
 * Level-3 non-Clifford counts are accurate to about ±20%, not exact.

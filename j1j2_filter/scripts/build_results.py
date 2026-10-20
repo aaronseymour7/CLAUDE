@@ -559,6 +559,69 @@ if errs or ERR:
         A(f"* {e['source']} N={e['N']} J2={e['J2']:g} ε={e['eps']:g}: {e['error']}")
     A("")
 
+# ------------------------------------------------------------------ 10 first vs second order Trotter
+SO = {}
+for fpath in sorted(glob.glob(str(ROOT / "trotter2" / "circuit_N*_J2*.json"))):
+    c2 = json.load(open(fpath))
+    c1p = ROOT / "trotter2" / f"first_{c2['N']}_{c2['J2']:g}.json"
+    if c1p.exists():
+        SO[(c2["N"], round(c2["J2"], 4))] = (json.load(open(c1p)), c2)
+if SO:
+    A("## 10. First-order versus second-order (Strang) Trotter formula, ε = 10⁻²")
+    A("")
+    A("Same classical front end, same filter design (pulse times and phases of the *guaranteed* design in Sections 2–3), same trial state and the same certificate "
+      "structure (leakage and p_g unchanged); only the product formula and the matching Trotter-error bound change. Both bounds are from Childs–Su–Tran–Wiebe–Zhu, "
+      "arXiv:1912.08854v3: first order = Proposition 15, Eq. (145), error ≤ (t²/2)·Σ_γ‖[Σ_{γ'>γ}H_γ', H_γ]‖ = αt²/2 (the α used everywhere in this document); "
+      "second order = Proposition 16, Eq. (152), error ≤ t³·B₂ with B₂ = (1/12)Σ_γ‖[B_γ,[B_γ,H_γ]]‖ + (1/24)Σ_γ‖[H_γ,[H_γ,B_γ]]‖, B_γ = Σ_{γ'>γ}H_γ' "
+      "(exact local evaluation, maximum over the forward and reversed term order; `trotter2/alpha2.py`). With k steps per pulse the Trotter error of a pulse of length t is "
+      "αt²/(2k) (first order) or B₂t³/k² (second order). **Per step the second-order circuit is more expensive** (palindromic: every Pauli rotation twice, minus merging of adjacent "
+      "half-steps), **but it needs far fewer steps**; the tables give both and the net effect, with all counts from a full transpile of the actual circuit "
+      "(RZZ basis {rzz, rz, sx, x}, filter only, all-to-all, early-abort form, no trial circuit).")
+    A("")
+    rows, hd = [], ["N", "J2", "α (1st)", "B₂ (2nd)", "n 1st (certified)", "n 2nd (certified)", "n₁/n₂", "n 1st (oracle)", "n 2nd (oracle)",
+                    "certified/oracle 1st", "certified/oracle 2nd", "bound held (2nd, simulated)"]
+    for (N, J2), (c1, c2) in sorted(SO.items()):
+        rr = one("dmrg", N, J2, EPS_MAIN); a1 = rr["inputs"]["alpha"]
+        rows.append([N, jl(J2), f(a1, ".4f"), f(c2["B2"], ".5f"), f(c2["n1"], "int"), f(c2["n2"], "int"), f(c2["n1"] / c2["n2"], ".0f"),
+                     f(c2["empirical1"]["n"], "int"), f(c2["empirical2"]["n"], "int"), f(c2["n1"] / c2["empirical1"]["n"], ".0f") + "×",
+                     f(c2["n2"] / c2["empirical2"]["n"], ".0f") + "×", str(c2["bound_holds"])])
+    A("**Steps and certificate** (oracle = smallest uniform k-scaling whose *measured* 1−F ≤ ε, found by bisection against the exact ground state; "
+      "the first-order oracle is the one of Section 3)")
+    A("")
+    A(md(hd, rows)); csv_dump("first_vs_second_steps.csv", hd, rows); A("")
+    rows, hd = [], ["N", "J2", "RZZ/step 1st", "RZZ/step 2nd", "per-step ratio", "n 1st", "n 2nd", "total RZZ 1st (L3)", "total RZZ 2nd (L3)", "2nd/1st",
+                    "total RZZ 1st (direct)", "total RZZ 2nd (direct)", "2nd/1st (direct)", "non-Cliff. rot. 1st (L3)", "non-Cliff. rot. 2nd (L3)",
+                    "depth 1st (L3)", "depth 2nd (L3)", "depth 2nd/1st"]
+    for (N, J2), (c1, c2) in sorted(SO.items()):
+        s1, s2 = c1["l3"]["rzz"] / c1["n"], c2["second_l3"]["rzz"] / c2["n2"]
+        rows.append([N, jl(J2), f(s1, ".1f"), f(s2, ".1f"), f(s2 / s1, ".2f"), f(c1["n"], "int"), f(c2["n2"], "int"),
+                     f(c1["l3"]["rzz"], "int"), f(c2["second_l3"]["rzz"], "int"), f(c2["second_l3"]["rzz"] / c1["l3"]["rzz"], ".3f"),
+                     f(c1["direct"]["rzz"], "int"), f(c2["second_direct"]["rzz"], "int"), f(c2["second_direct"]["rzz"] / c1["direct"]["rzz"], ".3f"),
+                     f(c1["l3"]["nc_total"], "int"), f(c2["second_l3"]["nc_total"], "int"),
+                     f(c1["l3"]["depth"], "int"), f(c2["second_l3"]["depth"], "int"), f(c2["second_l3"]["depth"] / c1["l3"]["depth"], ".3f")])
+    A("**Gate counts, certified designs (full transpile of both circuits)**")
+    A("")
+    A(md(hd, rows)); csv_dump("first_vs_second_gates.csv", hd, rows); A("")
+    rr_ = [c2["second_l3"]["rzz"] / c1["l3"]["rzz"] for c1, c2 in SO.values()]; rd_ = [c2["second_direct"]["rzz"] / c1["direct"]["rzz"] for c1, c2 in SO.values()]
+    ps_ = [(c2["second_l3"]["rzz"] / c2["n2"]) / (c1["l3"]["rzz"] / c1["n"]) for c1, c2 in SO.values()]
+    dp_ = [c2["second_l3"]["depth"] / c1["l3"]["depth"] for c1, c2 in SO.values()]
+    nc_ = [c2["second_l3"]["nc_total"] / c1["l3"]["nc_total"] for c1, c2 in SO.values()]
+    A(f"*Summary ({len(SO)} cases, N = {min(k[0] for k in SO)}–{max(k[0] for k in SO)}):* a second-order step costs {f(min(ps_), '.2f')}–{f(max(ps_), '.2f')}× the RZZ of a first-order step, "
+      f"but the certified step count is {f(min(c2['n1'] / c2['n2'] for _, c2 in SO.values()), '.0f')}–{f(max(c2['n1'] / c2['n2'] for _, c2 in SO.values()), '.0f')}× smaller, so the certified circuit uses "
+      f"{f(min(rr_), '.3f')}–{f(max(rr_), '.3f')}× the first-order RZZ (level 3; median {f(float(np.median(rr_)), '.3f')}) and "
+      f"{f(min(rd_), '.3f')}–{f(max(rd_), '.3f')}× with direct compilation, {f(min(nc_), '.3f')}–{f(max(nc_), '.3f')}× the non-Clifford rotations and "
+      f"{f(min(dp_), '.3f')}–{f(max(dp_), '.3f')}× the depth. The second-order formula is *not* cheaper at fixed step count; it wins because the certificate's Trotter budget is so tight "
+      "(first-order error ∝ T²/n, second-order ∝ T³/n²) that the certified filter lives deep in the asymptotic regime. The advantage grows with N in this range "
+      "(longer T), and nothing was computed beyond N = 12. Against each order's own oracle the certified count is "
+      f"{f(min(c2['n1'] / c2['empirical1']['n'] for _, c2 in SO.values()), '.0f')}–{f(max(c2['n1'] / c2['empirical1']['n'] for _, c2 in SO.values()), '.0f')}× too large at first order and "
+      f"{f(min(c2['n2'] / c2['empirical2']['n'] for _, c2 in SO.values()), '.0f')}–{f(max(c2['n2'] / c2['empirical2']['n'] for _, c2 in SO.values()), '.0f')}× at second order.")
+    A("")
+    A("*Checks:* in every case the second-order circuit was simulated against ED (same trial state): measured 1−F and the state error are below their certified bounds "
+      f"(bound held: {all(c2['bound_holds'] for _, c2 in SO.values())}); for N ≤ 8 the qiskit `SuzukiTrotter(order=2)` circuit matches the independent simulation to ≤ "
+      f"{max(abs(c2.get('circ_vs_sim_dev', 0)) for _, c2 in SO.values()):.0e} in 1−|⟨ψ|φ⟩|²; first-order RZZ from the full transpile equals the per-step × n estimate of Section 4. "
+      "The pulse times and phases are the first-order designs (not re-optimised for second order); the second-order step counts use integer k_i = ⌈s·t_i⌉ with the smallest s meeting ε.")
+    A("")
+
 # ------------------------------------------------------------------ figures
 plt.rcParams.update({"font.size": 9, "axes.spines.top": False, "axes.spines.right": False})
 COL = {0.0: "#1f4e79", 0.2411: "#2e8b57", 0.4: "#c0392b"}
@@ -615,8 +678,26 @@ for (N, J2), mk in zip(((6, 0.0), (8, 0.0), (6, 0.4)), "osd"):
 ax.invert_xaxis(); ax.set_xlabel("target ε"); ax.set_ylabel("total RZZ"); ax.legend(fontsize=6, frameon=False)
 fig.tight_layout(); fig.savefig(FIG / "fig_eps_scan.png", dpi=170); plt.close(fig)
 
+if SO:
+    fig, ax = plt.subplots(1, 2, figsize=(9, 3.3))
+    for J2 in J2_ORDER:
+        pts = sorted((N, c1, c2) for (N, j), (c1, c2) in SO.items() if abs(j - J2) < 1e-9)
+        xs = [p[0] for p in pts]
+        ax[0].semilogy(xs, [p[1]["l3"]["rzz"] for p in pts], "-", marker="o", ms=4, color=COL[J2], label=f"J2={J2:g} first order")
+        ax[0].semilogy(xs, [p[2]["second_l3"]["rzz"] for p in pts], "--", marker="s", ms=4, color=COL[J2], label=f"J2={J2:g} second order")
+        ax[1].semilogy(xs, [p[1]["n"] for p in pts], "-", marker="o", ms=4, color=COL[J2])
+        ax[1].semilogy(xs, [p[2]["n2"] for p in pts], "--", marker="s", ms=4, color=COL[J2])
+    ax[0].set_title("certified filter, total RZZ (level 3)", fontsize=9); ax[1].set_title("certified Trotter steps n", fontsize=9)
+    for a in ax:
+        a.set_xlabel("N")
+    ax[0].legend(fontsize=5.5, frameon=False)
+    fig.tight_layout(); fig.savefig(FIG / "fig_first_vs_second_order.png", dpi=170); plt.close(fig)
+
 A("## Figures")
 A("")
+if SO:
+    A("![First vs second order](figures/fig_first_vs_second_order.png)")
+    A("")
 A("![Guaranteed designs vs N](figures/fig_scaling_guaranteed.png)")
 A("")
 A("![Guaranteed vs empirical](figures/fig_guaranteed_vs_empirical.png)")
@@ -672,6 +753,13 @@ for J2 in J2_ORDER:
 ratios = [r["inputs"]["W"] / r["inputs"]["W_exact_dmrg"] for r in R]
 S.append(f"* **Certified bandwidth:** the Weyl bound W = Σ_bonds λmax − E0 equals E_top − E0 (ratio {min(ratios):.3f}–{max(ratios):.3f}); W cancels in n and in T (phys), see Section 6.")
 S.append(f"* **Bound violations among simulated points:** {len(viol)}.")
+if SO:
+    _rr = [c2["second_l3"]["rzz"] / c1["l3"]["rzz"] for c1, c2 in SO.values()]
+    _ps = [(c2["second_l3"]["rzz"] / c2["n2"]) / (c1["l3"]["rzz"] / c1["n"]) for c1, c2 in SO.values()]
+    _dp = [c2["second_l3"]["depth"] / c1["l3"]["depth"] for c1, c2 in SO.values()]
+    S.append(f"* **First versus second order (Section 10, N = 6–12, ε = 10⁻², full transpiles of both circuits):** a second-order step costs {min(_ps):.2f}–{max(_ps):.2f}× a first-order step, "
+             f"but the certified step count is {min(c2['n1'] / c2['n2'] for _, c2 in SO.values()):.0f}–{max(c2['n1'] / c2['n2'] for _, c2 in SO.values()):.0f}× smaller: the certified second-order circuit uses "
+             f"{min(_rr):.3f}–{max(_rr):.3f}× the first-order RZZ (level 3) and {min(_dp):.3f}–{max(_dp):.3f}× the depth.")
 S.append("")
 i1 = next(i for i, l in enumerate(L) if l.startswith("## 1. Case inputs"))
 L[i1:i1] = S

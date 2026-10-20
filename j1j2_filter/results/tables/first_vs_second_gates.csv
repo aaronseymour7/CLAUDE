@@ -1,0 +1,3 @@
+N,J2,RZZ/step 1st,RZZ/step 2nd,per-step ratio,n 1st,n 2nd,total RZZ 1st (L3),total RZZ 2nd (L3),2nd/1st,total RZZ 1st (direct),total RZZ 2nd (direct),2nd/1st (direct),non-Cliff. rot. 1st (L3),non-Cliff. rot. 2nd (L3),depth 1st (L3),depth 2nd (L3),depth 2nd/1st
+6,0.4,54.0,91.2,1.69,394,20,"21,276","1,824",0.086,"42,552","4,320",0.102,"17,738","1,645","61,478","4,922",0.080
+10,0,54.0,86.3,1.60,"3,917",89,"211,518","7,679",0.036,"423,036","19,224",0.045,"176,277","7,423","564,085","21,089",0.037
