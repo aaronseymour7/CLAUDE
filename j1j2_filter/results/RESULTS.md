@@ -24,7 +24,7 @@ Data present: 66 (N, J2, ε) points, N from 4 to 32; 0 failed point(s).
 * **Scaling, J2 = 0.4:** guaranteed total RZZ ~ N^4.9 (R² 0.998), steps ~ N^3.7, RZZ per step ~ N^1.1 (fits over N = 6–32).
 * **Certified bandwidth:** the Weyl bound W = Σ_bonds λmax − E0 equals E_top − E0 (ratio 1.000–1.000); W cancels in n and in T (phys), see Section 6.
 * **Bound violations among simulated points:** 0.
-* **First versus second order (Section 10, N = 6–12, ε = 10⁻², full transpiles of both circuits):** a second-order step costs 1.60–1.69× a first-order step, but the certified step count is 20–44× smaller: the certified second-order circuit uses 0.036–0.086× the first-order RZZ (level 3) and 0.037–0.080× the depth.
+* **First versus second order (Section 10, 6 of 12 (N, J2) cases with full transpiles of both circuits so far, N = 6–10, ε = 10⁻²):** a second-order step costs 1.55–1.73× a first-order step, but the certified step count is 20–44× smaller: the certified second-order circuit uses 0.036–0.086× the first-order RZZ (level 3) and 0.037–0.080× the depth.
 
 ## 1. Case inputs (DMRG spectrum, certified bandwidth)
 
@@ -802,17 +802,25 @@ Same classical front end, same filter design (pulse times and phases of the *gua
 
 | N | J2 | α (1st) | B₂ (2nd) | n 1st (certified) | n 2nd (certified) | n₁/n₂ | n 1st (oracle) | n 2nd (oracle) | certified/oracle 1st | certified/oracle 2nd | bound held (2nd, simulated) |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 6 | 0 | 0.2141 | 0.00781 | 590 | 28 | 21 | 5 | 4 | 118× | 7× | True |
+| 6 | 0.2411 | 0.3295 | 0.01477 | 578 | 26 | 22 | 6 | 5 | 96× | 5× | True |
 | 6 | 0.4 | 0.3957 | 0.01890 | 394 | 20 | 20 | 6 | 4 | 66× | 5× | True |
+| 8 | 0 | 0.1713 | 0.00466 | 1,817 | 56 | 32 | 11 | 7 | 165× | 8× | True |
+| 8 | 0.4 | 0.3229 | 0.01169 | 1,059 | 36 | 29 | 11 | 5 | 96× | 7× | True |
 | 10 | 0 | 0.1417 | 0.00306 | 3,917 | 89 | 44 | 10 | 7 | 392× | 13× | True |
 
 **Gate counts, certified designs (full transpile of both circuits)**
 
 | N | J2 | RZZ/step 1st | RZZ/step 2nd | per-step ratio | n 1st | n 2nd | total RZZ 1st (L3) | total RZZ 2nd (L3) | 2nd/1st | total RZZ 1st (direct) | total RZZ 2nd (direct) | 2nd/1st (direct) | non-Cliff. rot. 1st (L3) | non-Cliff. rot. 2nd (L3) | depth 1st (L3) | depth 2nd (L3) | depth 2nd/1st |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 6 | 0 | 30.0 | 46.6 | 1.55 | 590 | 28 | 17,700 | 1,304 | 0.074 | 35,400 | 3,360 | 0.095 | 14,758 | 1,229 | 47,237 | 3,424 | 0.072 |
+| 6 | 0.2411 | 54.0 | 90.7 | 1.68 | 578 | 26 | 31,212 | 2,358 | 0.076 | 62,424 | 5,616 | 0.090 | 26,018 | 2,123 | 83,257 | 6,380 | 0.077 |
 | 6 | 0.4 | 54.0 | 91.2 | 1.69 | 394 | 20 | 21,276 | 1,824 | 0.086 | 42,552 | 4,320 | 0.102 | 17,738 | 1,645 | 61,478 | 4,922 | 0.080 |
+| 8 | 0 | 42.0 | 66.6 | 1.59 | 1,817 | 56 | 76,314 | 3,730 | 0.049 | 152,628 | 9,408 | 0.062 | 63,606 | 3,565 | 228,961 | 10,078 | 0.044 |
+| 8 | 0.4 | 78.0 | 134.7 | 1.73 | 1,059 | 36 | 82,602 | 4,848 | 0.059 | 165,204 | 11,232 | 0.068 | 68,843 | 4,381 | 267,932 | 13,405 | 0.050 |
 | 10 | 0 | 54.0 | 86.3 | 1.60 | 3,917 | 89 | 211,518 | 7,679 | 0.036 | 423,036 | 19,224 | 0.045 | 176,277 | 7,423 | 564,085 | 21,089 | 0.037 |
 
-*Summary (2 cases, N = 6–10):* a second-order step costs 1.60–1.69× the RZZ of a first-order step, but the certified step count is 20–44× smaller, so the certified circuit uses 0.036–0.086× the first-order RZZ (level 3; median 0.061) and 0.045–0.102× with direct compilation, 0.042–0.093× the non-Clifford rotations and 0.037–0.080× the depth. The second-order formula is *not* cheaper at fixed step count; it wins because the certificate's Trotter budget is so tight (first-order error ∝ T²/n, second-order ∝ T³/n²) that the certified filter lives deep in the asymptotic regime. The advantage grows with N in this range (longer T), and nothing was computed beyond N = 12. Against each order's own oracle the certified count is 66–392× too large at first order and 5–13× at second order.
+*Summary (6 cases, N = 6–10):* a second-order step costs 1.55–1.73× the RZZ of a first-order step, but the certified step count is 20–44× smaller, so the certified circuit uses 0.036–0.086× the first-order RZZ (level 3; median 0.066) and 0.045–0.102× with direct compilation, 0.042–0.093× the non-Clifford rotations and 0.037–0.080× the depth. The second-order formula is *not* cheaper at fixed step count; it wins because the certificate's Trotter budget is so tight (first-order error ∝ T²/n, second-order ∝ T³/n²) that the certified filter lives deep in the asymptotic regime. The advantage grows with N in this range (longer T), and nothing was computed beyond N = 12. Against each order's own oracle the certified count is 66–392× too large at first order and 5–13× at second order.
 
 *Checks:* in every case the second-order circuit was simulated against ED (same trial state): measured 1−F and the state error are below their certified bounds (bound held: True); for N ≤ 8 the qiskit `SuzukiTrotter(order=2)` circuit matches the independent simulation to ≤ 9e-16 in 1−|⟨ψ|φ⟩|²; first-order RZZ from the full transpile equals the per-step × n estimate of Section 4. The pulse times and phases are the first-order designs (not re-optimised for second order); the second-order step counts use integer k_i = ⌈s·t_i⌉ with the smallest s meeting ε.
 

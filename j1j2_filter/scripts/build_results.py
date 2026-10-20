@@ -757,7 +757,7 @@ if SO:
     _rr = [c2["second_l3"]["rzz"] / c1["l3"]["rzz"] for c1, c2 in SO.values()]
     _ps = [(c2["second_l3"]["rzz"] / c2["n2"]) / (c1["l3"]["rzz"] / c1["n"]) for c1, c2 in SO.values()]
     _dp = [c2["second_l3"]["depth"] / c1["l3"]["depth"] for c1, c2 in SO.values()]
-    S.append(f"* **First versus second order (Section 10, N = 6–12, ε = 10⁻², full transpiles of both circuits):** a second-order step costs {min(_ps):.2f}–{max(_ps):.2f}× a first-order step, "
+    S.append(f"* **First versus second order (Section 10, {len(SO)} of 12 (N, J2) cases with full transpiles of both circuits so far, N = {min(k[0] for k in SO)}–{max(k[0] for k in SO)}, ε = 10⁻²):** a second-order step costs {min(_ps):.2f}–{max(_ps):.2f}× a first-order step, "
              f"but the certified step count is {min(c2['n1'] / c2['n2'] for _, c2 in SO.values()):.0f}–{max(c2['n1'] / c2['n2'] for _, c2 in SO.values()):.0f}× smaller: the certified second-order circuit uses "
              f"{min(_rr):.3f}–{max(_rr):.3f}× the first-order RZZ (level 3) and {min(_dp):.3f}–{max(_dp):.3f}× the depth.")
 S.append("")
