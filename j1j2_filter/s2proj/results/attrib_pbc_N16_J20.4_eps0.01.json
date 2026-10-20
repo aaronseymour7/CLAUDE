@@ -1,0 +1,13 @@
+{
+ "N": 16,
+ "J2": 0.4,
+ "pbc": true,
+ "eps": 0.01,
+ "gamma_L1": 0.4343739308613273,
+ "gamma_L2_generic": 0.4940752241719291,
+ "gamma_sym": 0.5349338487009789,
+ "A": null,
+ "A2": null,
+ "SYMg": null,
+ "SYM": null
+}
