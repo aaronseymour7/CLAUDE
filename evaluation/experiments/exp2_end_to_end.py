@@ -21,7 +21,7 @@ def sharp_total(gamma, leak, eps_T, p_g):
 
 def n_sharp(ctx, des, eps):
     eb = total_error_bound(ctx["gamma"], ctx["gap"], ctx["alpha"], des["times"], des["phases"],
-                           np.ones(len(des["times"])), hi=1.0, e0_slack=ctx["e0_slack"], eta=des["eta_cert"])
+                           np.ones(len(des["times"])), hi=1.0, eta=des["eta_cert"])
     a = np.arcsin(np.sqrt(eps)) - np.arcsin(np.sqrt(eb["leak"]))
     if a <= 0: return None
     epsT = np.sqrt(eb["p_g_lb"]) * np.sin(a)

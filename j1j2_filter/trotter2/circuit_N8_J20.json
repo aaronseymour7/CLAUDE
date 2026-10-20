@@ -1,0 +1,82 @@
+{
+ "N": 8,
+ "J2": 0.0,
+ "eps": 0.01,
+ "B2": 0.00466037633278355,
+ "k1": [
+  15,
+  107,
+  167,
+  282,
+  464,
+  782
+ ],
+ "n1": 1817,
+ "k2": [
+  1,
+  4,
+  5,
+  9,
+  14,
+  23
+ ],
+ "n2": 56,
+ "bound2": 0.00990136864809015,
+ "first_order_rzz_level3": 76314.0,
+ "first_order_rzz_direct": 152628.0,
+ "second_l3": {
+  "rzz": 3730,
+  "rzz_nonclifford": 2190,
+  "rz_nonclifford": 1375,
+  "nc_total": 3565,
+  "depth": 10078
+ },
+ "second_direct": {
+  "rzz": 9408,
+  "rzz_nonclifford": 0,
+  "rz_nonclifford": 2414,
+  "nc_total": 2414,
+  "depth": 36890
+ },
+ "rzz_ratio_l3": 0.048877008150535944,
+ "rzz_ratio_direct": 0.061640066042927905,
+ "rzz_per_step_second_l3_vs_2x": 0.7929421768707483,
+ "sim_second": {
+  "eps_actual": 0.001281943754146142,
+  "p_succ": 0.6318327236820611,
+  "p_succ_exact": 0.6325976344906629,
+  "state_err": 0.00019304136833241597,
+  "state_err_bound": 0.055574310623422024
+ },
+ "bound_holds": true,
+ "circ_vs_sim_dev": -4.440892098500626e-16,
+ "empirical2": {
+  "k": [
+   1,
+   1,
+   1,
+   1,
+   1,
+   2
+  ],
+  "n": 7,
+  "eps_actual": 0.0026791185032435383,
+  "p_succ": 0.5217788282574033,
+  "p_succ_exact": 0.6325976344906629,
+  "state_err": 0.029496358796154806,
+  "state_err_bound": 7.036689073292258,
+  "rzz_l3": 545
+ },
+ "empirical1": {
+  "n": 11,
+  "k": [
+   1,
+   2,
+   3,
+   5
+  ],
+  "eps_actual": 0.0053522989670240495,
+  "rzz_l3": 462.0
+ },
+ "wall_s": 6.027594327926636
+}

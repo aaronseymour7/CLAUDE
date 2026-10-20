@@ -1,0 +1,27 @@
+{
+ "N": 8,
+ "J2": 0.0,
+ "n": 1817,
+ "k": [
+  15,
+  107,
+  167,
+  282,
+  464,
+  782
+ ],
+ "l3": {
+  "rzz": 76314,
+  "rzz_nonclifford": 38157,
+  "rz_nonclifford": 25449,
+  "nc_total": 63606,
+  "depth": 228961
+ },
+ "direct": {
+  "rzz": 152628,
+  "rzz_nonclifford": 0,
+  "rz_nonclifford": 39980,
+  "nc_total": 39980,
+  "depth": 597835
+ }
+}

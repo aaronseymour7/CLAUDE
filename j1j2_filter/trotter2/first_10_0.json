@@ -1,0 +1,27 @@
+{
+ "N": 10,
+ "J2": 0.0,
+ "n": 3917,
+ "k": [
+  135,
+  215,
+  366,
+  669,
+  1014,
+  1518
+ ],
+ "l3": {
+  "rzz": 211518,
+  "rzz_nonclifford": 105759,
+  "rz_nonclifford": 70518,
+  "nc_total": 176277,
+  "depth": 564085
+ },
+ "direct": {
+  "rzz": 423036,
+  "rzz_nonclifford": 0,
+  "rz_nonclifford": 109682,
+  "nc_total": 109682,
+  "depth": 1656933
+ }
+}

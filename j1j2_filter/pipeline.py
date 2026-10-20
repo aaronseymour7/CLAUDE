@@ -25,7 +25,7 @@ from core.circuits import (
     verify_pulse_convention,
 )
 from core.filter_design import FilterBuilder, certify_filter, grid_filter, select_best
-from core.resources import resource_costs, rotation_synthesis_t_count
+from core.resources import resource_costs, rotation_synthesis_t_count, RZZ_BASIS
 from core.simulate import (
     overlaps,
     postselected_run,
@@ -179,16 +179,17 @@ def build_ctx(N, j1, j2):
     gamma = min(g_ed if np.isfinite(g_ed) else g_dmrg, 1.0)
 
     cmap = CouplingMap.from_line(N + 1) if COST_TOPOLOGY == "line" else None
-    alpha = trotter_alpha(H_scaled, tight=dense)       # tight: sparse 2^N eigsh; else triangle bound (Pauli algebra only)
-    alpha_tri = max(alpha_comm(H_scaled, False, False), alpha_comm(H_scaled, False, True))   # Pauli algebra only
+    alpha = trotter_alpha(H_scaled)                    # exact sum_g ||[H_g, sum_{g'>g} H_g']||, local, any N
+    alpha_tri = max(alpha_comm(H_scaled, False, False), alpha_comm(H_scaled, False, True))   # triangle bound, diagnostic only
     ctx.update(alpha_tri=alpha_tri,
         spec=spec, H_qk=H_qk, H_scaled=H_scaled, Hs=Hs, trial_qc=trial_qc,
         trial_vec=trial_vec, psi0_dmrg=psi0_dmrg, psi0_ed=psi0_ed,
         gamma=gamma, gamma_src=gamma_src, g_dmrg=g_dmrg, g_ed=g_ed,
-        dmrg_ed=dmrg_ed, alpha=alpha, gap=spec["gap"], e0_slack=spec["e0_slack"],
+        dmrg_ed=dmrg_ed, alpha=alpha, gap=spec["gap"],
         energies=spec["energies"], cmap=cmap, E0_dmrg=float(np.real(res["E0"])),
         step=per_step_costs(H_scaled, cmap),
         trial_cost=resource_costs(trial_qc, verbose=False, synth_eps=SYNTH_EPS),
+        trial_cost_rzz=resource_costs(trial_qc, verbose=False, synth_eps=SYNTH_EPS, basis=RZZ_BASIS),
         builder_design=None)
 
     section("CASE INPUTS")
@@ -203,8 +204,8 @@ def build_ctx(N, j1, j2):
         ("trial F (ED)", fix(g_ed, 6)), ("trial F (DMRG)", fix(g_dmrg, 6)),
         ("1-gamma (trial)", sci(1 - gamma)),
         ("<DMRG|ED>^2", fix(dmrg_ed, 8)),
-        ("alpha (tight, max ord)", fix(alpha, 4)),
-        ("e0_slack (indicative)", sci(spec["e0_slack"])),
+        ("alpha (exact, max ord)", fix(alpha, 4)),
+        ("sqrt(var)/W (indicative)", sci(spec["e0_dev_indicative"])),
         ("trial layers L", str(SWEEP_L))])
     tc, st = ctx["trial_cost"], ctx["step"]
     kv([("trial CX / depth", f"{tc['cx']} / {tc['depth']}"),
@@ -221,7 +222,7 @@ def choose_floor_design(ctx, eps_total):
     eps_list = [f * eps_total for f in FLOOR_EPS_FRACS]
     rows, _ = floor_vs_precision(
         eps_list=eps_list, gamma=ctx["gamma"], delta=ctx["gap"],
-        e0_slack=ctx["e0_slack"], hi=1.0, m_list=FLOOR_M, n_jobs=FLOOR_JOBS,
+        hi=1.0, m_list=FLOOR_M, n_jobs=FLOOR_JOBS,
         verbose=False, **FLOOR_KW)
     cands, n_infeasible = [], 0
     for r in rows:
@@ -230,8 +231,8 @@ def choose_floor_design(ctx, eps_total):
             continue
         eb = total_error_bound(ctx["gamma"], ctx["gap"], ctx["alpha"], r["times"],
                                r["phases"], np.ones(len(r["times"])), hi=1.0,
-                               e0_slack=ctx["e0_slack"], eta=r["eta_cert"])
-        dT = np.sqrt(eps_total) - np.sqrt(2.0 * eb["leak"])
+                               eta=r["eta_cert"])
+        dT = np.sqrt(eps_total) - np.sqrt(eb["leak"])
         if dT <= 0 or eb["p_g_lb"] <= 0:
             n_infeasible += 1
             continue
@@ -265,8 +266,7 @@ def make_design(ctx, eps):
             print("  [warning] no feasible floor design; falling back to builder")
         if ctx["builder_design"] is None:
             b = FilterBuilder(total_time=ctx["spec"]["totaltime"],
-                              energies=ctx["energies"], seed=SEED,
-                              e0_slack=ctx["e0_slack"])
+                              energies=ctx["energies"], seed=SEED)
             best = select_best(b.build(verbose=False))
             T = float(np.sum(best["times"]))
             ctx["builder_design"] = dict(
@@ -282,7 +282,7 @@ def make_grid(ctx, des, n):
     scalar cos(phi) after post-selection, so eta and the state are unchanged)."""
     if des["source"] == "floor":
         g = grid_design(des["times"], des["phases"], des["T"], n, ctx["gap"],
-                        des["eta_target"], ctx["e0_slack"], 1.0)
+                        des["eta_target"], hi=1.0)
         k, dt, ph = g["k"], g["dt"], g["phases"]
         grid_ok, eta_bb = bool(g["feasible"]), g["cert"]["eta"]
     else:
@@ -294,7 +294,7 @@ def make_grid(ctx, des, n):
     nz = k > 0
     k, ph = k[nz], ph[nz]
     tg = k * dt
-    cert = certify_filter(tg, ph, ctx["energies"], e0_slack=ctx["e0_slack"])
+    cert = certify_filter(tg, ph, ctx["energies"])
     return dict(n=n, dt=dt, k=k, ph=ph, tg=tg, n_designed=n_designed,
                 grid_ok=grid_ok, eta=min(cert["eta"], eta_bb))
 
@@ -313,8 +313,8 @@ def simulate_point(ctx, g, eps_bound):
     p_ex, sv_ex = postselected_run_exact(ctx["trial_qc"], tg, ph, ctx["Hs"])
     sv, p = _trotter_run(ctx["H_scaled"], ctx["trial_vec"], tg, ph, k)
     _, Fd, Fe = state_metrics(sv, ctx["H_qk"], ctx["psi0_dmrg"], ctx["psi0_ed"])
-    theta = np.angle(np.vdot(sv_ex, sv))
-    state_err = float(np.linalg.norm(sv_ex - np.exp(-1j * theta) * sv))
+    ov = abs(np.vdot(sv_ex, sv)) / (np.linalg.norm(sv_ex) * np.linalg.norm(sv))
+    state_err = float(np.sqrt(max(0.0, 1.0 - ov ** 2)))        # trace distance of the two pure states
     bnd = trotter_bounds(ctx["alpha"], tg, k, p_ex)
     if state_err > bnd["bound_state"] + 1e-9:
         raise RuntimeError(
@@ -359,7 +359,10 @@ def measured_cost(ctx, pt):
         trotter_steps=[int(x) for x in pt["k"]], order=ORDER)
     c = resource_costs(qc, flatten=True, verbose=False, coupling_map=ctx["cmap"],
                        synth_eps=SYNTH_EPS)
-    return dict(cx=c["cx"], depth=c["depth"])
+    z = resource_costs(qc, flatten=True, verbose=False, coupling_map=ctx["cmap"],
+                       synth_eps=SYNTH_EPS, basis=RZZ_BASIS)
+    return dict(cx=c["cx"], depth=c["depth"], rzz=z["rzz"], rzz_nonclifford=z["rzz_nonclifford"],
+                nc_total=z["nc_total"], depth_rzz=z["depth"])
 
 
 def point(ctx, des, n, simulate=True):
@@ -368,8 +371,7 @@ def point(ctx, des, n, simulate=True):
     if len(g["k"]) == 0:
         raise ValueError(f"n={n}: all pulses snapped to k=0")
     eb = total_error_bound(ctx["gamma"], ctx["gap"], ctx["alpha"], g["tg"],
-                           g["ph"], g["k"], hi=1.0, e0_slack=ctx["e0_slack"],
-                           eta=g["eta"])
+                           g["ph"], g["k"], hi=1.0, eta=g["eta"])
     pt = dict(n=n, dt=g["dt"], k=g["k"], tg=g["tg"], ph=g["ph"],
               n_designed=g["n_designed"], n_nz=len(g["k"]), eta=g["eta"],
               grid_ok=g["grid_ok"], eps_bound=eb["eps_bound"], leak=eb["leak"],
@@ -385,8 +387,8 @@ def n_required(ctx, des, eps):
     """A-priori n from the ungridded design (starting guess for the guarantee)."""
     eb = total_error_bound(ctx["gamma"], ctx["gap"], ctx["alpha"], des["times"],
                            des["phases"], np.ones(len(des["times"])), hi=1.0,
-                           e0_slack=ctx["e0_slack"], eta=des["eta_cert"])
-    dT = np.sqrt(eps) - np.sqrt(2.0 * eb["leak"])
+                           eta=des["eta_cert"])
+    dT = np.sqrt(eps) - np.sqrt(eb["leak"])
     if dT <= 0 or eb["p_g_lb"] <= 0:
         return None
     return max(int(steps_needed(ctx["alpha"], des["T"], eb["p_g_lb"], dT)), 1)

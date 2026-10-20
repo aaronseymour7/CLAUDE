@@ -1,19 +1,25 @@
 quantity,J2,source,N range,p in y ~ N^p,R²,points
-n (steps),0,dmrg,6–20,4.39,0.963,8
-T (scaled),0,dmrg,6–20,2.08,0.993,8
-CX per step,0,dmrg,6–20,1.11,1.000,8
-CX total,0,dmrg,6–20,5.49,0.977,8
-RZ non-Cliff. total,0,dmrg,6–20,5.47,0.976,8
-depth total,0,dmrg,6–20,5.48,0.977,8
-n (steps),0.2411,dmrg,6–20,4.48,0.973,8
-T (scaled),0.2411,dmrg,6–20,2.11,0.977,8
-CX per step,0.2411,dmrg,6–20,1.17,0.999,8
-CX total,0.2411,dmrg,6–20,5.65,0.984,8
-RZ non-Cliff. total,0.2411,dmrg,6–20,5.64,0.984,8
-depth total,0.2411,dmrg,6–20,5.65,0.984,8
-n (steps),0.4,dmrg,6–20,4.25,0.999,8
-T (scaled),0.4,dmrg,6–20,2.41,0.990,8
-CX per step,0.4,dmrg,6–20,1.17,0.999,8
-CX total,0.4,dmrg,6–20,5.42,0.999,8
-RZ non-Cliff. total,0.4,dmrg,6–20,5.40,0.999,8
-depth total,0.4,dmrg,6–20,5.41,0.999,8
+n (steps),0,dmrg,6–24,3.99,0.997,9
+T (scaled),0,dmrg,6–24,2.17,0.994,9
+RZZ per step,0,dmrg,6–24,1.10,1.000,9
+RZZ total,0,dmrg,6–24,5.08,0.999,9
+RZZ (direct),0,dmrg,6–24,5.08,0.999,9
+Non-Cliff. rot. (level 3),0,dmrg,6–24,5.18,0.998,9
+Non-Cliff. rot. (direct),0,dmrg,6–24,5.05,0.998,9
+depth total,0,dmrg,6–24,5.07,0.999,9
+n (steps),0.2411,dmrg,6–28,4.04,0.998,10
+T (scaled),0.2411,dmrg,6–28,2.20,0.973,10
+RZZ per step,0.2411,dmrg,6–28,1.14,0.999,10
+RZZ total,0.2411,dmrg,6–28,5.18,0.998,10
+RZZ (direct),0.2411,dmrg,6–28,5.18,0.998,10
+Non-Cliff. rot. (level 3),0.2411,dmrg,6–28,5.15,0.998,10
+Non-Cliff. rot. (direct),0.2411,dmrg,6–28,5.16,0.998,10
+depth total,0.2411,dmrg,6–28,5.13,0.997,10
+n (steps),0.4,dmrg,6–32,3.72,0.997,11
+T (scaled),0.4,dmrg,6–32,2.30,0.992,11
+RZZ per step,0.4,dmrg,6–32,1.13,0.999,11
+RZZ total,0.4,dmrg,6–32,4.86,0.998,11
+RZZ (direct),0.4,dmrg,6–32,4.86,0.998,11
+Non-Cliff. rot. (level 3),0.4,dmrg,6–32,4.83,0.998,11
+Non-Cliff. rot. (direct),0.4,dmrg,6–32,4.84,0.998,11
+depth total,0.4,dmrg,6–32,4.86,0.998,11

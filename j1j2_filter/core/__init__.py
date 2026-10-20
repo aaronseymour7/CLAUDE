@@ -30,8 +30,9 @@ Rigorous results used (see docstrings of the functions that use them)
 (R1) certify_filter: |d/dE prod cos(E t_i + phi_i)| <= sum |t_i|, so a grid
      max plus (sum|t_i|) h/2 is a certified sup over a continuous interval.
 (R2) fidelity_lower_bound: gamma / (gamma + (1-gamma) eta^2).
-(R3) trotter_bounds: post-selected state distance <= 2 eps / sqrt(p_g) with
-     eps = sum_i alpha t_i^2 / (2 k_i)  (= alpha T^2/(2n) on the uniform grid).
+(R3) trotter_bounds: post-selected trace distance <= eps / sqrt(p_g) with
+     eps = sum_i alpha t_i^2 / (2 k_i)  (= alpha T^2/(2n) on the uniform grid);
+     total: 1 - F <= (sqrt(leak) + eps/sqrt(p_g))^2.  See CERTIFICATION.tex.
 The Lie-Trotter commutator bound itself is the standard one from Childs et al.
 (Theory of Trotter error, 2021); I'm quoting it from memory, so please
 double-check the exact statement/ordering convention in the paper.

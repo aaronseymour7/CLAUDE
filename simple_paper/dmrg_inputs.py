@@ -31,11 +31,18 @@ def dense(mps):
 
 
 def dmrg_reference(N, J2, j1=1.0):
-    """DMRG E0, E1 (penalty method), E_top and the reference ground-state MPS (bond dim up to 64)."""
+    """DMRG E0, E1 (orthogonality-penalty, lowest state of any symmetry), E_top (cross-check only) and the reference ground-state MPS."""
     H = MPO_ham_j1j2(N, j1, J2)
     r = _quiet(GE.get_energies, H, N=N, j1=j1, j2=J2, run_ed_check=False)
     return dict(E0=float(r["E0"]), E1=float(r["E1"]), Etop=float(r["E_top"]), psi0=r["psi0"], H=H,
                 chi_ref=max(max(t.shape) for t in r["psi0"].arrays))
+
+
+def weyl_top(N, J2, J1=1.0):
+    """Rigorous upper bound on E_top by Weyl's inequality: sum_bonds lambda_max(J S.S), lambda_max = J/4 (J >= 0) or 3|J|/4.
+    For J1, J2 >= 0 it equals E_top (the fully polarized state attains it); it needs no DMRG value of E_top."""
+    bm = lambda J: J / 4.0 if J >= 0 else 3.0 * abs(J) / 4.0
+    return (N - 1) * bm(J1) + (N - 2) * bm(J2)
 
 
 def circuit_state(qc):

@@ -22,7 +22,7 @@ dump = lambda name, obj: (OUT / f"{name}.json").write_text(json.dumps(obj, inden
 
 def setup(N, J2):
     ref = DI.dmrg_reference(N, J2)
-    Wd = ref["Etop"] - ref["E0"]
+    Wd = DI.weyl_top(N, J2) - ref["E0"]
     ch = wf.Chain(N, J2, E0_used=ref["E0"], W_used=Wd)
     rd = DI.dense(ref["psi0"]); rd = rd / np.linalg.norm(rd)
     return ref, ch, rd, Wd, (ref["E1"] - ref["E0"]) / Wd
