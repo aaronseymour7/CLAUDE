@@ -10,7 +10,7 @@ Findings:
 
 1. **Certificate and cost (N = 4–32, J2 ∈ {0, 0.2411, 0.4}, ε = 10⁻²).** With a first-order Trotter error constant α computed *exactly* from the Pauli commutators, the certified circuit needs 76–24,027 steps for N ≤ 14. Counted in an RZZ gate basis, certified RZZ count scales as ~N^5 and steps as ~N^4 (`results/RESULTS.md`, §Summary).
 2. **The certificate is loose.** The smallest step count that *empirically* meets ε (oracle, measured against the exact ground state) is 15–586× smaller than the certified count (median 190×).
-3. **A second-order (Strang) certificate closes most of that gap.** Replacing the first-order Trotter error αT²/(2n) by the commutator-scaling Strang bound T³B₂/n² reduces the certified step count by 20–59× at ε = 10⁻² for N = 6–12 (median 38×), and the ratio grows with N over that range. At N = 12, J2 = 0.4, the certified count goes from 5,318 to 107 steps against an empirical (first-order) 26. (`trotter2/`.)
+3. **A second-order (Strang) certificate closes most of that gap, and built circuits confirm it.** Replacing the first-order Trotter error αT²/(2n) by the commutator-scaling Strang bound T³B₂/n² reduces the certified step count by 20–59× at ε = 10⁻² for N = 6–12 (median 38×), growing with N over that range. I then built the second-order circuits, transpiled them to the RZZ basis and simulated them against ED for all 12 cases (N = 6–12, J2 ∈ {0, 0.2411, 0.4}): certified filter RZZ falls to 3.0–8.6% of the first-order count (median 4.4%, level-3 compilation) and 3.4–10.2% with direct compilation. The bound held in every simulation, and the qiskit circuit matches the simulation to 10⁻¹⁵ (N ≤ 8). Against a second-order oracle (smallest n whose measured 1−F ≤ ε) the certified count is 5–21× too large, versus 66–438× at first order. (`trotter2/`, §4.3.)
 4. **Negative results.** (a) Adding an exact total-spin (S²) projection stage to the filter is not cost-effective in 1D. (b) An SU(2)-symmetric trial state gains about ×1.4 from the ansatz and a median ×2.7 from the enlarged gap, but this is very likely known in the literature. (c) In 1D, MPS-to-circuit compilation is the stronger competitor.
 5. **Benchmark and outlook.** Filter-prepared periodic-chain states reproduce exact SzSz correlators, energies and entanglement entropy to within 0.1–3% at sizes the filter can reach. A 2D crossover estimate against MPS circuits is **[modelled]** and is not a result.
 
@@ -63,9 +63,34 @@ Only ε_T changes in the certificate; ℓ, p_g and the trace-distance form are u
 | 12 | 0.2411 | 10,960 | 186 | 59 |
 | 12 | 0.4 | 5,319 | 107 | 50 |
 
-Over all twelve (N, J2) cases n₁/n₂ = 20–59, median 38. Charging two sweeps per second-order step (no merging of adjacent half-steps) the certified RZZ count falls to about 3–10% of first order. Against the empirical first-order count at N = 12, J2 = 0.4 (26 steps), the certified-to-empirical ratio drops from ~200× to ~4× in steps.
+Over all twelve (N, J2) cases n₁/n₂ = 20–59, median 38. (§4.3 replaces the two-sweeps accounting estimate by built and transpiled circuits.)
 
-*Limits.* (i) Computed for N ≤ 12 only; the nested-commutator evaluation is slow in Python and was not run beyond that. (ii) The table is a recomputation of the *bound*; no second-order circuit was built, transpiled or simulated, so the RZZ ratio is an accounting estimate. (iii) The empirical oracle (26 steps) is for a first-order circuit; the oracle for a second-order circuit would also be smaller, so the true remaining gap is not known.
+### 4.3 Built second-order circuits: RZZ counts and simulation
+
+`trotter2/second_order_circuit.py` takes each stored guaranteed design (pulse times t_i, phases, ε = 10⁻²), keeps the leakage and p_g terms of the certificate, and chooses integer per-pulse step counts k_i = ⌈s t_i⌉ with the smallest s whose total bound (√ℓ + Σ B₂ t_i³/k_i² / √p_g)² ≤ ε. The B₂ of H⊗Z_anc equals that of H since Z² = 1. It then (i) builds the early-abort filter circuit with qiskit's second-order `SuzukiTrotter` (term order preserved), (ii) transpiles the full circuit to {rzz, rz, sx, x} at optimisation level 3 and level 1 ("direct"), (iii) simulates the post-selected second-order filter against ED using the stored design's trial state, and (iv) bisects for the smallest k-scaling whose measured 1 − F ≤ ε (second-order oracle). Counts are for the filter only (no trial circuit), as in the first-order tables. First-order RZZ is the stored per-step count × n (2 per Pauli term at level 3, 4 direct), which the pipeline had verified against full transpiles.
+
+Result (`trotter2/circuit_table.md`, `trotter2/circuit_N*_J2*.json`):
+
+| N | J2 | n₁ cert | n₂ cert | RZZ first (L3) | RZZ second (L3) | ratio | RZZ first (direct) | RZZ second (direct) | ratio | n₂ oracle | cert/oracle: 1st → 2nd order |
+|--|--|--|--|--|--|--|--|--|--|--|--|
+| 6 | 0 | 590 | 28 | 17,700 | 1,304 | 0.074 | 35,400 | 3,360 | 0.095 | 4 | 118× → 7× |
+| 6 | 0.2411 | 578 | 26 | 31,212 | 2,358 | 0.076 | 62,424 | 5,616 | 0.090 | 5 | 96× → 5× |
+| 6 | 0.4 | 394 | 20 | 21,276 | 1,824 | 0.086 | 42,552 | 4,320 | 0.102 | 4 | 66× → 5× |
+| 8 | 0 | 1,817 | 56 | 76,314 | 3,730 | 0.049 | 152,628 | 9,408 | 0.062 | 7 | 165× → 8× |
+| 8 | 0.2411 | 2,398 | 73 | 187,044 | 9,799 | 0.052 | 374,088 | 22,776 | 0.061 | 7 | 218× → 10× |
+| 8 | 0.4 | 1,059 | 36 | 82,602 | 4,848 | 0.059 | 165,204 | 11,232 | 0.068 | 5 | 96× → 7× |
+| 10 | 0 | 3,917 | 89 | 211,518 | 7,679 | 0.036 | 423,036 | 19,224 | 0.045 | 7 | 392× → 13× |
+| 10 | 0.2411 | 5,777 | 125 | 589,254 | 22,239 | 0.038 | 1,178,508 | 51,000 | 0.043 | 9 | 340× → 14× |
+| 10 | 0.4 | 2,890 | 66 | 294,780 | 11,758 | 0.040 | 589,560 | 26,928 | 0.046 | 5 | 181× → 13× |
+| 12 | 0 | 8,797 | 168 | 580,602 | 17,824 | 0.031 | 1,161,204 | 44,352 | 0.038 | 11 | 303× → 15× |
+| 12 | 0.2411 | 10,960 | 187 | 1,380,960 | 41,465 | 0.030 | 2,761,920 | 94,248 | 0.034 | 9 | 438× → 21× |
+| 12 | 0.4 | 5,318 | 107 | 670,068 | 23,785 | 0.035 | 1,340,136 | 53,928 | 0.040 | 10 | 205× → 11× |
+
+* **RZZ.** The built second-order circuits use 3.0–8.6% of the first-order certified RZZ at level 3 (median 4.4%) and 3.4–10.2% with direct compilation (median 5.3%). The transpiler merges the adjacent half-steps of consecutive steps, so second-order RZZ per step is 0.78–0.88 of the naive two sweeps; my earlier "two sweeps" accounting was mildly pessimistic.
+* **Bound and circuit.** In all 12 simulations the measured 1 − F (3×10⁻⁴ to 1.6×10⁻³, against ε = 10⁻²) and the state error were below their certified bounds. The measured state error is at most 1.0% of its bound, so the Trotter part of the second-order certificate is itself still about two orders of magnitude loose. The qiskit circuit and my independent simulation agree to ≤ 9×10⁻¹⁶ in 1 − |⟨·|·⟩|² (checked for N ≤ 8; at N ≥ 10 only the simulation was run).
+* **Remaining gap.** At equal order the certified n is 5–21× the oracle at second order versus 66–438× at first order; the ratio grows with N in both. In absolute RZZ at N = 12, J2 = 0.4: certified second order 23,785; second-order oracle 2,348; first-order oracle 3,276 (= 2 × 63 terms × 26 steps); certified first order 670,068.
+
+*Limits.* (i) N ≤ 12 only: the commutator evaluation is slow in Python. (ii) The pulse times and phases are the stored first-order designs; re-optimising the pulse design for a second-order Trotter budget was not attempted. (iii) The trial circuit is not included in these counts. (iv) The bound's constants are verified numerically only (§4.1).
 
 ## 5. What does not help
 
@@ -95,8 +120,8 @@ These are projections from fitted inputs. None of the 2D numbers has been run th
 
 ## 8. Limits and open items
 
-* Second-order constants not checked against the source text (§4.1); numerically supported.
-* Second-order circuit not built; RZZ ratio is an estimate; N > 12 not computed.
+* Second-order constants not checked against the source text (§4.1); numerically supported (two-term bound ratio ≤ 0.998 over 1,800 random cases; multi-term bound ≤ 0.28 on chains; all 12 built-circuit simulations within the bound).
+* Second-order circuits are built and counted for N ≤ 12 only (12 cases); N > 12 is not computed.
 * For N > 14 the trial overlap γ is a DMRG-MPS overlap and is not certified; those rows are conditional.
 * Level-3 non-Clifford counts are accurate to about ±20%, not exact.
 * `paper.tex` still reports CX counts; `results/RESULTS.*` is in the RZZ basis. Periodic and S² results are not yet in `results/RESULTS.*`.

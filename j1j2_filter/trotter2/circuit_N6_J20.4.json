@@ -1,0 +1,75 @@
+{
+ "N": 6,
+ "J2": 0.4,
+ "eps": 0.01,
+ "B2": 0.018902110583073558,
+ "k1": [
+  5,
+  56,
+  136,
+  197
+ ],
+ "n1": 394,
+ "k2": [
+  1,
+  3,
+  7,
+  9
+ ],
+ "n2": 20,
+ "bound2": 0.009949580468045562,
+ "first_order_rzz_level3": 21276.0,
+ "first_order_rzz_direct": 42552.0,
+ "second_l3": {
+  "rzz": 1824,
+  "rzz_nonclifford": 984,
+  "rz_nonclifford": 661,
+  "nc_total": 1645,
+  "depth": 4922
+ },
+ "second_direct": {
+  "rzz": 4320,
+  "rzz_nonclifford": 0,
+  "rz_nonclifford": 1104,
+  "nc_total": 1104,
+  "depth": 16948
+ },
+ "rzz_ratio_l3": 0.08573040045121263,
+ "rzz_ratio_direct": 0.10152284263959391,
+ "rzz_per_step_second_l3_vs_2x": 0.8444444444444444,
+ "sim_second": {
+  "eps_actual": 0.00041329841467374617,
+  "p_succ": 0.7383537283877315,
+  "p_succ_exact": 0.7394276584937562,
+  "state_err": 0.0005683104117848393,
+  "state_err_bound": 0.055900442126369555
+ },
+ "bound_holds": true,
+ "circ_vs_sim_dev": 8.881784197001252e-16,
+ "empirical2": {
+  "k": [
+   1,
+   1,
+   1,
+   1
+  ],
+  "n": 4,
+  "eps_actual": 0.003035298857805402,
+  "p_succ": 0.6581630151311787,
+  "p_succ_exact": 0.7394276584937562,
+  "state_err": 0.05440412720000031,
+  "state_err_bound": 3.494286259741792,
+  "rzz_l3": 400
+ },
+ "empirical1": {
+  "n": 6,
+  "k": [
+   1,
+   2,
+   3
+  ],
+  "eps_actual": 0.006005730585073588,
+  "rzz_l3": 324.0
+ },
+ "wall_s": 3.4986212253570557
+}
