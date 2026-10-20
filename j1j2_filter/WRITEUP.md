@@ -88,7 +88,24 @@ Result (`trotter2/circuit_table.md`, `trotter2/circuit_N*_J2*.json`):
 
 * **RZZ.** The built second-order circuits use 3.0–8.6% of the first-order certified RZZ at level 3 (median 4.4%) and 3.4–10.2% with direct compilation (median 5.3%). The transpiler merges the adjacent half-steps of consecutive steps, so second-order RZZ per step is 0.78–0.88 of the naive two sweeps; my earlier "two sweeps" accounting was mildly pessimistic.
 * **Bound and circuit.** In all 12 simulations the measured 1 − F (3×10⁻⁴ to 1.6×10⁻³, against ε = 10⁻²) and the state error were below their certified bounds. The measured state error is at most 1.0% of its bound, so the Trotter part of the second-order certificate is itself still about two orders of magnitude loose. The qiskit circuit and my independent simulation agree to ≤ 9×10⁻¹⁶ in 1 − |⟨·|·⟩|² (checked for N ≤ 8; at N ≥ 10 only the simulation was run).
-* **Remaining gap.** At equal order the certified n is 5–21× the oracle at second order versus 66–438× at first order; the ratio grows with N in both. In absolute RZZ at N = 12, J2 = 0.4: certified second order 23,785; second-order oracle 2,348; first-order oracle 3,276 (= 2 × 63 terms × 26 steps); certified first order 670,068.
+* **Remaining gap.** At equal order the certified n is 5–21× the oracle at second order versus 66–438× at first order; the ratio grows with N in both. Every number below is the **total RZZ gate count of the whole filter circuit** (all pulses, success path, filter only, level 3) at ε = 10⁻²; *certified* = step count guaranteed by the bound, *oracle* = smallest step count whose measured 1 − F against the exact ground state is ≤ ε (practical value from a bisection, not a guaranteed minimum; needs the exact ground state). First-order RZZ = 2 × (Pauli terms) × n; second-order RZZ is from a full transpile.
+
+| N | J2 | certified 1st | oracle 1st (n) | certified 2nd | oracle 2nd (n) | cert/oracle 1st | cert/oracle 2nd |
+|--|--|--|--|--|--|--|--|
+| 6 | 0 | 17,700 | 150 (5) | 1,304 | 224 (4) | 118× | 6× |
+| 6 | 0.2411 | 31,212 | 324 (6) | 2,358 | 489 (5) | 96× | 5× |
+| 6 | 0.4 | 21,276 | 324 (6) | 1,824 | 400 (4) | 66× | 5× |
+| 8 | 0 | 76,314 | 462 (11) | 3,730 | 545 (7) | 165× | 7× |
+| 8 | 0.2411 | 187,044 | 858 (11) | 9,799 | 1,021 (7) | 218× | 10× |
+| 8 | 0.4 | 82,602 | 858 (11) | 4,848 | 725 (5) | 96× | 7× |
+| 10 | 0 | 211,518 | 540 (10) | 7,679 | 709 (7) | 392× | 11× |
+| 10 | 0.2411 | 589,254 | 1,734 (17) | 22,239 | 1,707 (9) | 340× | 13× |
+| 10 | 0.4 | 294,780 | 1,632 (16) | 11,758 | 961 (5) | 181× | 12× |
+| 12 | 0 | 580,602 | 1,914 (29) | 17,824 | 1,339 (11) | 303× | 13× |
+| 12 | 0.2411 | 1,380,960 | 3,150 (25) | 41,465 | 2,127 (9) | 438× | 19× |
+| 12 | 0.4 | 670,068 | 3,276 (26) | 23,785 | 2,348 (10) | 205× | 10× |
+
+  At the oracle level the two orders cost comparable amounts (second-order oracle = 0.59–1.51× the first-order oracle: more at N = 6–8 where the oracle is only 4–11 steps and quantised, less at N = 12 at about 0.7×). The certified second-order circuit is still 5.6–14× the first-order oracle. The second-order bound tightens the guarantee; it does not beat what the circuit actually needs. The same table is in `results/RESULTS.md` Section 10 (`results/tables/certified_vs_oracle_both_orders.csv`).
 
 *Limits.* (i) N ≤ 12 only: the commutator evaluation is slow in Python. (ii) The pulse times and phases are the stored first-order designs; re-optimising the pulse design for a second-order Trotter budget was not attempted. (iii) The trial circuit is not included in these counts. (iv) The bound's constants are verified numerically only (§4.1).
 

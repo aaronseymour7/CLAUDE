@@ -824,6 +824,27 @@ Same classical front end, same filter design (pulse times and phases of the *gua
 
 *Checks:* in every case the second-order circuit was simulated against ED (same trial state): measured 1−F and the state error are below their certified bounds (bound held: True); for N ≤ 8 the qiskit `SuzukiTrotter(order=2)` circuit matches the independent simulation to ≤ 9e-16 in 1−|⟨ψ|φ⟩|²; first-order RZZ from the full transpile equals the per-step × n estimate of Section 4. The pulse times and phases are the first-order designs (not re-optimised for second order); the second-order step counts use integer k_i = ⌈s·t_i⌉ with the smallest s meeting ε.
 
+### Certified versus oracle, both orders, all cases with a second-order circuit (N = 6–12)
+
+Every entry is the **total number of RZZ gates of the filter circuit** (all pulses, success path, filter only, no trial circuit; all-to-all; level-3 compilation) at ε = 10⁻². *Certified* = the step count n for which the a-priori bound guarantees 1 − F ≤ ε (the guaranteed design of Section 2). *Oracle* = the smallest step count whose **measured** 1 − F against the exact ground state is ≤ ε (bisection over a uniform scaling of the per-pulse step counts of the design; needs the exact ground state, so only available where ED/statevector simulation is possible). First-order RZZ = 2 × (Pauli terms) × n, which equals the full transpile exactly wherever both were run (Sections 4 and 9); second-order RZZ is from a full transpile of the built circuit (`trotter2/circuit_N*_J2*.json`).
+
+| N | J2 | n certified 1st | n oracle 1st | RZZ certified 1st | RZZ oracle 1st | certified / oracle 1st | n certified 2nd | n oracle 2nd | RZZ certified 2nd | RZZ oracle 2nd | certified / oracle 2nd | RZZ certified 1st / oracle 2nd |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 6 | 0 | 590 | 5 | 17,700 | 150 | 118× | 28 | 4 | 1,304 | 224 | 6× | 79× |
+| 6 | 0.2411 | 578 | 6 | 31,212 | 324 | 96× | 26 | 5 | 2,358 | 489 | 5× | 64× |
+| 6 | 0.4 | 394 | 6 | 21,276 | 324 | 66× | 20 | 4 | 1,824 | 400 | 5× | 53× |
+| 8 | 0 | 1,817 | 11 | 76,314 | 462 | 165× | 56 | 7 | 3,730 | 545 | 7× | 140× |
+| 8 | 0.2411 | 2,398 | 11 | 187,044 | 858 | 218× | 73 | 7 | 9,799 | 1,021 | 10× | 183× |
+| 8 | 0.4 | 1,059 | 11 | 82,602 | 858 | 96× | 36 | 5 | 4,848 | 725 | 7× | 114× |
+| 10 | 0 | 3,917 | 10 | 211,518 | 540 | 392× | 89 | 7 | 7,679 | 709 | 11× | 298× |
+| 10 | 0.2411 | 5,777 | 17 | 589,254 | 1,734 | 340× | 125 | 9 | 22,239 | 1,707 | 13× | 345× |
+| 10 | 0.4 | 2,890 | 16 | 294,780 | 1,632 | 181× | 66 | 5 | 11,758 | 961 | 12× | 307× |
+| 12 | 0 | 8,797 | 29 | 580,602 | 1,914 | 303× | 168 | 11 | 17,824 | 1,339 | 13× | 434× |
+| 12 | 0.2411 | 10,960 | 25 | 1,380,960 | 3,150 | 438× | 187 | 9 | 41,465 | 2,127 | 19× | 649× |
+| 12 | 0.4 | 5,318 | 26 | 670,068 | 3,276 | 205× | 107 | 10 | 23,785 | 2,348 | 10× | 285× |
+
+*Summary (12 cases):* certified / oracle RZZ is 66–438× at first order and 5–19× at second order. At the oracle level the two orders cost comparable amounts: the second-order oracle uses 0.59–1.51× the RZZ of the first-order oracle (more at N = 6–8, where the oracle is only 4–11 steps and quantised, less at N = 12), while the certified second-order circuit is still 5.6–14.2× the first-order oracle. The second-order bound tightens the guarantee; what the circuit actually needs is the oracle. The oracle is a practical value (measured 1−F is not strictly monotone in n), not a guaranteed minimum.
+
 ## Figures
 
 ![First vs second order](figures/fig_first_vs_second_order.png)

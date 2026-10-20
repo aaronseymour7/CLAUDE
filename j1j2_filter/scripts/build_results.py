@@ -622,6 +622,37 @@ if SO:
       "The pulse times and phases are the first-order designs (not re-optimised for second order); the second-order step counts use integer k_i = ⌈s·t_i⌉ with the smallest s meeting ε.")
     A("")
 
+SO2 = {}
+for fpath in sorted(glob.glob(str(ROOT / "trotter2" / "circuit_N*_J2*.json"))):
+    c2 = json.load(open(fpath)); SO2[(c2["N"], round(c2["J2"], 4))] = c2
+if SO2:
+    A("### Certified versus oracle, both orders, all cases with a second-order circuit (N = 6–12)")
+    A("")
+    A("Every entry is the **total number of RZZ gates of the filter circuit** (all pulses, success path, filter only, no trial circuit; all-to-all; level-3 compilation) "
+      "at ε = 10⁻². *Certified* = the step count n for which the a-priori bound guarantees 1 − F ≤ ε (the guaranteed design of Section 2). *Oracle* = the smallest step count whose "
+      "**measured** 1 − F against the exact ground state is ≤ ε (bisection over a uniform scaling of the per-pulse step counts of the design; needs the exact ground state, so only available "
+      "where ED/statevector simulation is possible). First-order RZZ = 2 × (Pauli terms) × n, which equals the full transpile exactly wherever both were run (Sections 4 and 9); "
+      "second-order RZZ is from a full transpile of the built circuit (`trotter2/circuit_N*_J2*.json`).")
+    A("")
+    hd = ["N", "J2", "n certified 1st", "n oracle 1st", "RZZ certified 1st", "RZZ oracle 1st", "certified / oracle 1st",
+          "n certified 2nd", "n oracle 2nd", "RZZ certified 2nd", "RZZ oracle 2nd", "certified / oracle 2nd", "RZZ certified 1st / oracle 2nd"]
+    rows = []
+    for (N, J2), c2 in sorted(SO2.items()):
+        r1c, r1o = c2["first_order_rzz_level3"], c2["empirical1"]["rzz_l3"]
+        r2c, r2o = c2["second_l3"]["rzz"], c2["empirical2"]["rzz_l3"]
+        rows.append([N, jl(J2), f(c2["n1"], "int"), f(c2["empirical1"]["n"], "int"), f(r1c, "int"), f(r1o, "int"), f(r1c / r1o, ".0f") + "×",
+                     f(c2["n2"], "int"), f(c2["empirical2"]["n"], "int"), f(r2c, "int"), f(r2o, "int"), f(r2c / r2o, ".0f") + "×", f(r1c / r2o, ".0f") + "×"])
+    A(md(hd, rows)); csv_dump("certified_vs_oracle_both_orders.csv", hd, rows); A("")
+    rr1 = [c["first_order_rzz_level3"] / c["empirical1"]["rzz_l3"] for c in SO2.values()]
+    rr2 = [c["second_l3"]["rzz"] / c["empirical2"]["rzz_l3"] for c in SO2.values()]
+    r2o_over_r1o = [c["empirical2"]["rzz_l3"] / c["empirical1"]["rzz_l3"] for c in SO2.values()]
+    r2c_over_r1o = [c["second_l3"]["rzz"] / c["empirical1"]["rzz_l3"] for c in SO2.values()]
+    A(f"*Summary ({len(SO2)} cases):* certified / oracle RZZ is {min(rr1):.0f}–{max(rr1):.0f}× at first order and {min(rr2):.0f}–{max(rr2):.0f}× at second order. "
+      f"At the oracle level the two orders cost comparable amounts: the second-order oracle uses {min(r2o_over_r1o):.2f}–{max(r2o_over_r1o):.2f}× the RZZ of the first-order oracle "
+      f"(more at N = 6–8, where the oracle is only 4–11 steps and quantised, less at N = 12), while the certified second-order circuit is still {min(r2c_over_r1o):.1f}–{max(r2c_over_r1o):.1f}× the first-order oracle. "
+      "The second-order bound tightens the guarantee; what the circuit actually needs is the oracle. The oracle is a practical value (measured 1−F is not strictly monotone in n), not a guaranteed minimum.")
+    A("")
+
 # ------------------------------------------------------------------ figures
 plt.rcParams.update({"font.size": 9, "axes.spines.top": False, "axes.spines.right": False})
 COL = {0.0: "#1f4e79", 0.2411: "#2e8b57", 0.4: "#c0392b"}
