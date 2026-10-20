@@ -1,0 +1,18 @@
+{
+ "N": 6,
+ "J2": 0.0,
+ "predicted_trace_distance": 0.0005063802289413784,
+ "measured_trace_distance": 0.0005065996440572368,
+ "ratio": 0.9995668865573982,
+ "max_abs_diag_X1": 3.2973746784167125e-18,
+ "n_source_levels_90pct": 2,
+ "n_source_states_for_99pct": 11,
+ "per_pulse_share": [
+  0.0007073450710275033,
+  0.03149071632722618,
+  0.13606463107271677,
+  0.8317373075290295
+ ],
+ "alpha": 0.2140659945426836,
+ "bound_trace_distance": null
+}
