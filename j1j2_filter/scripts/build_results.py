@@ -610,9 +610,8 @@ if SO:
       f"but the certified step count is {f(min(c2['n1'] / c2['n2'] for _, c2 in SO.values()), '.0f')}–{f(max(c2['n1'] / c2['n2'] for _, c2 in SO.values()), '.0f')}× smaller, so the certified circuit uses "
       f"{f(min(rr_), '.3f')}–{f(max(rr_), '.3f')}× the first-order RZZ (level 3; median {f(float(np.median(rr_)), '.3f')}) and "
       f"{f(min(rd_), '.3f')}–{f(max(rd_), '.3f')}× with direct compilation, {f(min(nc_), '.3f')}–{f(max(nc_), '.3f')}× the non-Clifford rotations and "
-      f"{f(min(dp_), '.3f')}–{f(max(dp_), '.3f')}× the depth. The second-order formula is *not* cheaper at fixed step count; it wins because the certificate's Trotter budget is so tight "
-      "(first-order error ∝ T²/n, second-order ∝ T³/n²) that the certified filter lives deep in the asymptotic regime. The advantage grows with N in this range "
-      "(longer T), and nothing was computed beyond N = 12. Against each order's own oracle the certified count is "
+      f"{f(min(dp_), '.3f')}–{f(max(dp_), '.3f')}× the depth. The second-order formula is not cheaper at fixed step count; the certified count is smaller because the bound scales as T²/n at first order and T³/n² at second order. "
+      "The step-count ratio n₁/n₂ increases with N for each J2 in this range, and nothing was computed beyond N = 12. Against each order's own oracle the certified count is "
       f"{f(min(c2['n1'] / c2['empirical1']['n'] for _, c2 in SO.values()), '.0f')}–{f(max(c2['n1'] / c2['empirical1']['n'] for _, c2 in SO.values()), '.0f')}× too large at first order and "
       f"{f(min(c2['n2'] / c2['empirical2']['n'] for _, c2 in SO.values()), '.0f')}–{f(max(c2['n2'] / c2['empirical2']['n'] for _, c2 in SO.values()), '.0f')}× at second order.")
     A("")
@@ -649,7 +648,7 @@ if SO2:
     r2c_over_r1o = [c["second_l3"]["rzz"] / c["empirical1"]["rzz_l3"] for c in SO2.values()]
     A(f"*Summary ({len(SO2)} cases):* certified / oracle RZZ is {min(rr1):.0f}–{max(rr1):.0f}× at first order and {min(rr2):.0f}–{max(rr2):.0f}× at second order. "
       f"At the oracle level the two orders cost comparable amounts: the second-order oracle uses {min(r2o_over_r1o):.2f}–{max(r2o_over_r1o):.2f}× the RZZ of the first-order oracle "
-      f"(more at N = 6–8, where the oracle is only 4–11 steps and quantised, less at N = 12), while the certified second-order circuit is still {min(r2c_over_r1o):.1f}–{max(r2c_over_r1o):.1f}× the first-order oracle. "
+      f"(above 1 in 6 of the 12 cases; the oracle is only 4–29 steps and so coarsely quantised), while the certified second-order circuit is still {min(r2c_over_r1o):.1f}–{max(r2c_over_r1o):.1f}× the first-order oracle. "
       "The second-order bound tightens the guarantee; what the circuit actually needs is the oracle. The oracle is a practical value (measured 1−F is not strictly monotone in n), not a guaranteed minimum.")
     A("")
 

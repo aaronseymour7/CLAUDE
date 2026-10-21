@@ -1,12 +1,15 @@
 # Explainer: level crossings, movers, towers, and what the filter evolves
 
+> **Status of this note.** Background explanations written for discussing the project, **not a results document and not part of the paper**. The numerical statements marked (ours) come from the scripts named in `WRITEUP.md` §7; the field-theory statements (SU(2)₁, movers, towers, marginal operator, the gap ratio of 2) are standard background that this repository does **not** derive or test, and they should not be cited as results from this work.
+
+
 Written for talking through the J1–J2 chain results. Numbers marked (ours) are from this repository; the field-theory statements are standard SU(2)₁ results, not new.
 
 ## 1. Why periodic chains cross and open chains do not
 
-**Terminology.** In open boundary conditions (OBC) there is no avoided crossing: the levels never cross. The first excitation is a triplet (S = 1) and the competing level is a singlet (S = 0). Total spin is conserved, so the two sectors cannot hybridize, and a crossing between them would be a true crossing. The claim is: periodic chains (PBC) have a true singlet–triplet crossing near J2 ≈ 0.2411, and open chains do not.
+**Terminology.** The first excitation is a triplet (S = 1) and the competing level is a singlet (S = 0). Total spin is conserved, so the two sectors cannot hybridize: a meeting of these levels would be a true crossing, never an avoided one. What the data below show: periodic chains have a singlet–triplet crossing near J2 ≈ 0.2411 (N = 8–20), and open chains N = 8–20 have none on the J2 grid computed, in the neighbourhood of J2c by a wide margin (the difference at J2 = 0.2411 is 0.17–0.40).
 
-**Evidence (ours).** First excitation is a triplet for open chains N ≤ 16 and J2 ∈ [0, 1] (`scripts/check_first_excitation.py`, `results/low_levels*.json`). The PBC crossing converges toward 0.2411 with N (`results/low_levels_ed_pbc.json`, `pbc_corr/true_singlet_gap.py`).
+**Evidence (ours; `python scripts/summarize_low_levels.py`).** Open chains N = 8, 12, 16, 20: on a 74-point J2 grid in [0, 1] the lowest excitation is a triplet at every grid point, but the closest approach of the first excited singlet to the lowest triplet shrinks with N (0.0112, 0.0059, 0.0020, 0.0009 at J2 = 0.925, 0.625, 0.595, 0.575), so "no crossing" is established only on that grid for N ≤ 20, and the data do not show it for larger N. At J2 = 0.2411 the open-chain difference is 0.398, 0.277, 0.212, 0.172. Periodic chains: the first excited singlet and lowest triplet cross at J2 = 0.2463, 0.2435, 0.2425, 0.2420 for N = 8, 12, 16, 20 (interpolated on a 0.025 grid), approaching 0.2411 from above.
 
 **Short version.** At the critical point J2c ≈ 0.2411 the chain is described by an SU(2)₁ conformal field theory. On a ring, left- and right-moving sectors both carry spin, so the lowest triplet and lowest singlet come from the same multiplet and are degenerate in the thermodynamic limit. A marginal operator, coupling J_L·J_R, splits them, and its coupling changes sign at J2c, so the levels cross on a ring. An open chain has a boundary that ties left- and right-movers into one chiral sector. There is only one tower of states, with the triplet at level 1 and the singlet at level 2, so the singlet/triplet ratio tends to 2, not 1. There is nothing degenerate to cross.
 

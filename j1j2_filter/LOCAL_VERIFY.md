@@ -30,6 +30,11 @@ All commands below are run from `CLAUDE/j1j2_filter`. The stored results are in 
 | 5 | `python trotter2/dephasing.py 6 0.4` then `python trotter2/mixing_theory.py 6 0.4` | ~3–4 min | `mixing_theory.py` prints `predicts trace distance 9.683e-04, measured 9.720e-04 (ratio 0.996)` and `max|diag X1| ~ 4e-18`. The first-order perturbation theory of the Trotter error against the measured error. |
 | 6 | `python trotter2/scaling_check.py 6 0.4` | ~1–2 min | First-order error exponent −1.00 in n; second-order −2.3 over the whole range (−2.0 asymptotically; the table printed shows factors of 4 per doubling at n = 20, 40, 80). |
 | 7 | `python trotter2/compare.py` needs `NONLY=<N>`; e.g. `NONLY=6 python trotter2/compare.py` | ~1 min | Certified step counts first vs second order from the stored designs. |
+| 8 | `python scripts/summarize_low_levels.py` | ~1 s | Open chains N = 8, 12, 16, 20: triplet is the lowest excitation at every grid point, smallest singlet–triplet difference 0.0112, 0.0059, 0.0020, 0.0009; periodic chains: crossing at J2 = 0.2463, 0.2435, 0.2425, 0.2420. (`WRITEUP.md` §7) |
+| 9 | `python pbc_corr/summarize_filter_states.py` | ~1 s | 19 periodic cases, ideal filter: max relative correlator error 0.044, entropy 0.057, energy 1.9e-4; 9 cases without a feasible design. (`WRITEUP.md` §7) |
+| 10 | `python s2proj/analyze.py` | ~1 s | Certified filter RZZ without projection (A), with an S² stage (B) and with a symmetric trial (SYM): `B/A over 29 feasible cases: min 1.30, median 3.82, max 10.07`; `SYM/A ... min 0.05, median 0.24, max 0.99`. (`WRITEUP.md` §6) |
+| 11 | `python s2proj/check_trotter_spin.py` | ~10 s | Weight outside J = 0 after Trotterised pulses of both orders: magnitude ≤ 7e-17 (N = 6, 8). |
+| 12 | `python trotter2/check_x1_symmetry.py` | ~10 s | The first-order Trotter correction X₁ commutes with S² and S^z: 6e-17 / 3e-16 and 0 (N = 6, 8). |
 
 Cases are `N J2` with N ∈ {6, 8, 10, 12} and J2 ∈ {0, 0.2411, 0.4}. Stay at N ≤ 10 on a laptop: N = 12 needs several GB of memory (dense 4096 × 4096 matrices) and hours for the first-order full transpile. The Mac Air has no fan, so long runs will throttle.
 
@@ -59,6 +64,6 @@ python trotter2/analyze_dephasing.py     # trotter2/dephasing_table.md and depha
 
 ## Known limits of the verification
 
-* Items marked [modelled] in `WRITEUP.md` (2D crossover) are projections from fitted inputs, not pipeline runs.
+* `WRITEUP.md` §8 lists what is not shown (no hardware or noisy simulation; second-order and mixing results only for N ≤ 12 / ≤ 10; the oracle only where the exact ground state is available). The 2D crossover code in `crossover2d/` is a cost model, is not used in `WRITEUP.md`, and should not be cited as a result.
 * N > 14 results use a DMRG-based trial overlap that is not certified, and are counted, not simulated.
-* The first-order full-transpile runs for 5 of the 12 cases are still missing (`trotter2/first_*.json`); the second-order circuits and oracle values exist for all 12.
+* The first-order full-transpile runs exist for 7 of the 12 cases (`trotter2/first_*.json`); the second-order circuits and oracle values exist for all 12, and the first-order RZZ totals do not depend on the missing transpiles (per-step × n matched the full transpile in all 7).

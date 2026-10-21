@@ -433,7 +433,7 @@ cmp_txt = (f"Switching from the earlier Pauli-$\\ell_1$ bandwidth to the Weyl ba
 # ------------------------------------------------------------------------------------------------ document
 GLOSS = [
     ("$N$", "number of spin-$\\tfrac12$ sites in the open chain."),
-    ("$J_1,J_2$", "nearest- and next-nearest-neighbour exchange couplings; $J_1=1$ sets the energy unit. $J_2=0.2411$ is the point where the chain's ground state changes from critical to dimerised."),
+    ("$J_1,J_2$", "nearest- and next-nearest-neighbour exchange couplings; $J_1=1$ sets the energy unit. $J_2=0.2411$ is one of the three values studied (the reference value of $J_{2,c}$ from the literature)."),
     ("$H$", "Hamiltonian $H=J_1\\sum_i\\mathbf S_i\\!\\cdot\\!\\mathbf S_{i+1}+J_2\\sum_i\\mathbf S_i\\!\\cdot\\!\\mathbf S_{i+2}$, written as a sum of Pauli strings (``Pauli terms'')."),
     ("$E_0,\\,E_1,\\,E_{\\rm top}$", "lowest, second-lowest (first excited state of any symmetry) and highest energy of $H$. $g=E_1-E_0$ is the energy gap."),
     ("DMRG", "density-matrix renormalisation group: a classical algorithm that finds low-energy states of 1D systems as matrix-product states (MPS). ``max bond'' is the largest MPS bond dimension reached."),
@@ -458,6 +458,47 @@ GLOSS = [
 gl_rows = [[a, b] for a, b in GLOSS]
 glossary = ("\\begin{longtable}{p{0.2\\linewidth}p{0.74\\linewidth}}\n\\toprule\nTerm & Meaning \\\\\n\\midrule\n\\endhead\n" +
             "\n".join(f"{a} & {b} \\\\" for a, b in gl_rows) + "\n\\bottomrule\n\\end{longtable}\n")
+
+
+# ------------------------------------------------------------------------------------------------ first vs second order (section 10 of RESULTS.md)
+import glob as _glob
+_CIR = sorted([json.load(open(f)) for f in _glob.glob(str(ROOT / "trotter2" / "circuit_N*_J2*.json"))], key=lambda c: (c["N"], c["J2"]))
+_FIR = {}
+for _f in _glob.glob(str(ROOT / "trotter2" / "first_*.json")):
+    _a = json.load(open(_f)); _FIR[(_a["N"], round(_a["J2"], 4))] = _a
+SOTEX = ""
+if _CIR:
+    _rows = []
+    for c in _CIR:
+        r1c, r1o = c["first_order_rzz_level3"], c["empirical1"]["rzz_l3"]; r2c, r2o = c["second_l3"]["rzz"], c["empirical2"]["rzz_l3"]
+        _rows.append([c["N"], J2NAME[round(c["J2"], 4)], num(c["n1"]), num(c["empirical1"]["n"]), num(r1c), num(r1o), f"{r1c / r1o:.0f}$\\times$",
+                      num(c["n2"]), num(c["empirical2"]["n"]), num(r2c), num(r2o), f"{r2c / r2o:.0f}$\\times$"])
+    _hd = ["$N$", "$J_2$", "$n$ cert. 1st", "$n$ oracle 1st", "RZZ cert. 1st", "RZZ oracle 1st", "cert./oracle 1st", "$n$ cert. 2nd", "$n$ oracle 2nd", "RZZ cert. 2nd", "RZZ oracle 2nd", "cert./oracle 2nd"]
+    _t1 = tab(_hd, _rows, "rr" + "r" * 10, "Certified and oracle Trotter steps $n$ and total RZZ gates (whole filter circuit, level 3, success path, filter only, all-to-all), first and second order, $\\varepsilon=10^{-2}$. First-order RZZ $=2\\times$ Pauli terms $\\times n$ (equal to the full transpile wherever both were run); second-order RZZ from a full transpile of the built circuit.", "tab:so1")
+    _rr1 = [c["first_order_rzz_level3"] / c["empirical1"]["rzz_l3"] for c in _CIR]; _rr2 = [c["second_l3"]["rzz"] / c["empirical2"]["rzz_l3"] for c in _CIR]
+    _o = [c["empirical2"]["rzz_l3"] / c["empirical1"]["rzz_l3"] for c in _CIR]; _rat = [c["second_l3"]["rzz"] / c["first_order_rzz_level3"] for c in _CIR]
+    _ratd = [c["second_direct"]["rzz"] / c["first_order_rzz_direct"] for c in _CIR]; _nr = [c["n1"] / c["n2"] for c in _CIR]
+    _rows2 = []
+    for c in _CIR:
+        a = _FIR.get((c["N"], round(c["J2"], 4)))
+        if not a:
+            continue
+        s1, s2 = a["l3"]["rzz"] / a["n"], c["second_l3"]["rzz"] / c["n2"]
+        _rows2.append([c["N"], J2NAME[round(c["J2"], 4)], f"{s1:.1f}", f"{s2:.1f}", f"{s2 / s1:.2f}", num(a["l3"]["rzz"]), num(c["second_l3"]["rzz"]), f"{c['second_l3']['rzz'] / a['l3']['rzz']:.3f}",
+                       num(a["direct"]["rzz"]), num(c["second_direct"]["rzz"]), num(a["l3"]["nc_total"]), num(c["second_l3"]["nc_total"]), num(a["l3"]["depth"]), num(c["second_l3"]["depth"])])
+    _t2 = ""
+    _stxt = ""
+    if _rows2:
+        _hd2 = ["$N$", "$J_2$", "RZZ/step 1st", "RZZ/step 2nd", "ratio", "RZZ 1st (L3)", "RZZ 2nd (L3)", "2nd/1st", "RZZ 1st (direct)", "RZZ 2nd (direct)", "non-Cl. 1st (L3)", "non-Cl. 2nd (L3)", "depth 1st (L3)", "depth 2nd (L3)"]
+        _t2 = tab(_hd2, _rows2, "rr" + "r" * 12, "Certified circuits, first versus second order, from full transpiles of both circuits (only the cases whose first-order circuit has been transpiled in full).", "tab:so2")
+        _ps = [float(r[4]) for r in _rows2]
+        _stxt = f" A second-order step costs {min(_ps):.2f}--{max(_ps):.2f}$\\times$ a first-order step in the {len(_rows2)} cases with both circuits transpiled in full."
+    SOTEX = (r"""
+\section{First- versus second-order Trotter formula}\label{sec:second}
+The same filter designs (pulse times and phases of the guaranteed designs) with the second-order (Strang) formula and its commutator bound (Childs, Su, Tran, Wiebe and Zhu, arXiv:1912.08854, Proposition~16, Eq.~(152)): the Trotter error of a pulse of length $t$ in $k$ steps is at most $B_2t^3/k^2$ instead of $\alpha t^2/(2k)$, with $B_2=\tfrac1{12}\sum_g\|[B_g,[B_g,H_g]]\|+\tfrac1{24}\sum_g\|[H_g,[H_g,B_g]]\|$, $B_g=\sum_{g'>g}H_{g'}$ (exact, maximum over the forward and reversed term order). Step counts per pulse are $k_i=\lceil s\,t_i\rceil$ with the smallest $s$ whose bound is $\leq\varepsilon$; the circuits are built with qiskit's second-order Suzuki formula, transpiled fully, and simulated against exact diagonalisation. \emph{Oracle} = smallest scaling of the step counts whose \emph{measured} infidelity is $\leq\varepsilon$ (bisection, a practical value and not a guaranteed minimum; it needs the exact ground state).
+""" + _t1 + f"""
+Certified steps: $n_1/n_2={min(_nr):.0f}$--${max(_nr):.0f}$ (it increases with $N$ for each $J_2$). Certified RZZ: second order uses {100 * min(_rat):.1f}--{100 * max(_rat):.1f}\\% of first order at level 3 and {100 * min(_ratd):.1f}--{100 * max(_ratd):.1f}\\% with direct compilation. Certified over oracle: ${min(_rr1):.0f}$--${max(_rr1):.0f}\\times$ at first order and ${min(_rr2):.0f}$--${max(_rr2):.0f}\\times$ at second order. The second-order oracle uses {min(_o):.2f}--{max(_o):.2f}$\\times$ the RZZ of the first-order oracle (above 1 in {sum(1 for x in _o if x > 1)} of {len(_o)} cases; oracle step counts are 4--29, so they are coarsely quantised); the second-order bound tightens the guarantee, it does not lower the oracle. In all {len(_CIR)} simulations the measured infidelity and state error were below their certified bounds.{_stxt}
+""" + _t2)
 
 doc = r"""\documentclass[11pt]{article}
 \usepackage[margin=1in]{geometry}
@@ -492,7 +533,7 @@ A shallow circuit built from a DMRG state leaves some excited-state weight. A \e
 \section{How the numbers are produced}\label{sec:method}
 For each chain $(N,J_2)$ the pipeline does the following; all steps use only DMRG and circuits (no ground-state knowledge) except where marked.
 \begin{enumerate}
-\item \textbf{DMRG} finds $E_0$ and the ground-state MPS; a second DMRG run finds $E_1$ as the lowest state orthogonal to it, whatever its symmetry (the symmetry of the first excitation is not assumed: exact diagonalization finds a triplet for every $J_2\in[0,1]$ on the grid, open chains $N=8$--$16$).
+\item \textbf{DMRG} finds $E_0$ and the ground-state MPS; a second DMRG run finds $E_1$ as the lowest state orthogonal to it, whatever its symmetry (the symmetry of the first excitation is not assumed: exact diagonalization finds a triplet for every $J_2\in[0,1]$ on the grid, open chains $N=8$, 12, 16, 20; closest approach of the first excited singlet to the triplet shrinks with $N$, see \texttt{WRITEUP.md} Section~7).
 \item \textbf{Scale} $H\to H_s=(H-E_0)/W$ so that the spectrum lies in $\{0\}\cup[\Delta,1]$ (Section~\ref{sec:bandwidth}).
 \item \textbf{Trial circuit}: the MPS is compiled to a shallow brickwork circuit ($L=1$ layer); $\gamma$ is its overlap with the DMRG ground state (computed from an MPS simulation of the circuit for $N>14$).
 \item \textbf{Design the filter}: choose $m\leq8$ pulses, times $t_i$ and phases $\phi_i$ that maximise $F(0)^2$ subject to a \emph{certified} bound $\eta\leq\eta_{\rm target}(\varepsilon,\gamma)$.
@@ -543,12 +584,13 @@ Tightening $\varepsilon$ needs both a stronger filter (smaller $\eta$) and fewer
 \textbf{Points without a certified design:}
 """ + nat if na else "") + r"""
 
+""" + SOTEX + r"""
 \section{Limits and assumptions}\label{sec:limits}
 \begin{itemize}
 \item \textbf{Conditional certificates.} The proven bounds assume the DMRG shift $E_0$, the gap and the weight $\gamma$ are exact. Interlacing shows the DMRG gap can overestimate the true gap only by the solver's own optimisation error, and DMRG's $E_0$ errs on the safe side, but these errors are not computable from DMRG; validated accuracy is $\sim10^{-13}$ (Section~\ref{sec:dmrg}). The derivation, including how the bound changes for given error bounds, is in \texttt{CERTIFICATION.tex}.
 \item \textbf{Costs are ideal gate counts.} Ancilla measurement and reset time, classical feed-forward, native controlled-Pauli-rotation implementation on real hardware, and error-correction or mitigation overhead are not included; RZZ counts come from a heuristic compiler and are not minimal; the expected-repetition figure $1/p_g$ assumes independent attempts. No $T$-count is reported (it depends on synthesis constants); the metric is the number of non-Clifford rotations ($R_z$ and RZZ($\\theta$) with angle not a multiple of $\\pi/2$).
 \item \textbf{Numerical certificate.} The bound on $\eta$ is computed in double precision without interval arithmetic (rounding $\lesssim10^{-14}$, far below the pruning tolerance).
-\item \textbf{Scope.} One model family, three values of $J_2$; a non-degenerate singlet ground state; first-order Trotter formula.
+\item \textbf{Scope.} One model family, three values of $J_2$; a non-degenerate singlet ground state; first-order Trotter formula except in Section~\ref{sec:second}. The second-order circuits and the oracle are computed for $N\leq12$ only.
 \end{itemize}
 
 \section{Reproducing}

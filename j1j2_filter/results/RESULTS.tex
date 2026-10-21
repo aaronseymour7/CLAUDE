@@ -32,7 +32,7 @@ Term & Meaning \\
 \midrule
 \endhead
 $N$ & number of spin-$\tfrac12$ sites in the open chain. \\
-$J_1,J_2$ & nearest- and next-nearest-neighbour exchange couplings; $J_1=1$ sets the energy unit. $J_2=0.2411$ is the point where the chain's ground state changes from critical to dimerised. \\
+$J_1,J_2$ & nearest- and next-nearest-neighbour exchange couplings; $J_1=1$ sets the energy unit. $J_2=0.2411$ is one of the three values studied (the reference value of $J_{2,c}$ from the literature). \\
 $H$ & Hamiltonian $H=J_1\sum_i\mathbf S_i\!\cdot\!\mathbf S_{i+1}+J_2\sum_i\mathbf S_i\!\cdot\!\mathbf S_{i+2}$, written as a sum of Pauli strings (``Pauli terms''). \\
 $E_0,\,E_1,\,E_{\rm top}$ & lowest, second-lowest (first excited state of any symmetry) and highest energy of $H$. $g=E_1-E_0$ is the energy gap. \\
 DMRG & density-matrix renormalisation group: a classical algorithm that finds low-energy states of 1D systems as matrix-product states (MPS). ``max bond'' is the largest MPS bond dimension reached. \\
@@ -60,7 +60,7 @@ conditional certificate & the proven bound holds if the DMRG inputs ($E_0$, $E_1
 \section{How the numbers are produced}\label{sec:method}
 For each chain $(N,J_2)$ the pipeline does the following; all steps use only DMRG and circuits (no ground-state knowledge) except where marked.
 \begin{enumerate}
-\item \textbf{DMRG} finds $E_0$ and the ground-state MPS; a second DMRG run finds $E_1$ as the lowest state orthogonal to it, whatever its symmetry (the symmetry of the first excitation is not assumed: exact diagonalization finds a triplet for every $J_2\in[0,1]$ on the grid, open chains $N=8$--$16$).
+\item \textbf{DMRG} finds $E_0$ and the ground-state MPS; a second DMRG run finds $E_1$ as the lowest state orthogonal to it, whatever its symmetry (the symmetry of the first excitation is not assumed: exact diagonalization finds a triplet for every $J_2\in[0,1]$ on the grid, open chains $N=8$, 12, 16, 20; closest approach of the first excited singlet to the triplet shrinks with $N$, see \texttt{WRITEUP.md} Section~7).
 \item \textbf{Scale} $H\to H_s=(H-E_0)/W$ so that the spectrum lies in $\{0\}\cup[\Delta,1]$ (Section~\ref{sec:bandwidth}).
 \item \textbf{Trial circuit}: the MPS is compiled to a shallow brickwork circuit ($L=1$ layer); $\gamma$ is its overlap with the DMRG ground state (computed from an MPS simulation of the circuit for $N>14$).
 \item \textbf{Design the filter}: choose $m\leq8$ pulses, times $t_i$ and phases $\phi_i$ that maximise $F(0)^2$ subject to a \emph{certified} bound $\eta\leq\eta_{\rm target}(\varepsilon,\gamma)$.
@@ -646,12 +646,67 @@ $N$ & points & context build (median s) & filter design (median s) & total per p
 \end{itemize}
 
 
+
+\section{First- versus second-order Trotter formula}\label{sec:second}
+The same filter designs (pulse times and phases of the guaranteed designs) with the second-order (Strang) formula and its commutator bound (Childs, Su, Tran, Wiebe and Zhu, arXiv:1912.08854, Proposition~16, Eq.~(152)): the Trotter error of a pulse of length $t$ in $k$ steps is at most $B_2t^3/k^2$ instead of $\alpha t^2/(2k)$, with $B_2=\tfrac1{12}\sum_g\|[B_g,[B_g,H_g]]\|+\tfrac1{24}\sum_g\|[H_g,[H_g,B_g]]\|$, $B_g=\sum_{g'>g}H_{g'}$ (exact, maximum over the forward and reversed term order). Step counts per pulse are $k_i=\lceil s\,t_i\rceil$ with the smallest $s$ whose bound is $\leq\varepsilon$; the circuits are built with qiskit's second-order Suzuki formula, transpiled fully, and simulated against exact diagonalisation. \emph{Oracle} = smallest scaling of the step counts whose \emph{measured} infidelity is $\leq\varepsilon$ (bisection, a practical value and not a guaranteed minimum; it needs the exact ground state).
+{\small
+\begin{longtable}{rrrrrrrrrrrr}
+\caption{Certified and oracle Trotter steps $n$ and total RZZ gates (whole filter circuit, level 3, success path, filter only, all-to-all), first and second order, $\varepsilon=10^{-2}$. First-order RZZ $=2\times$ Pauli terms $\times n$ (equal to the full transpile wherever both were run); second-order RZZ from a full transpile of the built circuit.}\label{tab:so1}\\
+\toprule
+$N$ & $J_2$ & $n$ cert. 1st & $n$ oracle 1st & RZZ cert. 1st & RZZ oracle 1st & cert./oracle 1st & $n$ cert. 2nd & $n$ oracle 2nd & RZZ cert. 2nd & RZZ oracle 2nd & cert./oracle 2nd \\
+\midrule
+\endfirsthead
+\toprule
+$N$ & $J_2$ & $n$ cert. 1st & $n$ oracle 1st & RZZ cert. 1st & RZZ oracle 1st & cert./oracle 1st & $n$ cert. 2nd & $n$ oracle 2nd & RZZ cert. 2nd & RZZ oracle 2nd & cert./oracle 2nd \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+6 & 0 & 590 & 5 & 17\,700 & 150 & 118$\times$ & 28 & 4 & 1\,304 & 224 & 6$\times$ \\
+6 & 0.2411 & 578 & 6 & 31\,212 & 324 & 96$\times$ & 26 & 5 & 2\,358 & 489 & 5$\times$ \\
+6 & 0.4 & 394 & 6 & 21\,276 & 324 & 66$\times$ & 20 & 4 & 1\,824 & 400 & 5$\times$ \\
+8 & 0 & 1\,817 & 11 & 76\,314 & 462 & 165$\times$ & 56 & 7 & 3\,730 & 545 & 7$\times$ \\
+8 & 0.2411 & 2\,398 & 11 & 187\,044 & 858 & 218$\times$ & 73 & 7 & 9\,799 & 1\,021 & 10$\times$ \\
+8 & 0.4 & 1\,059 & 11 & 82\,602 & 858 & 96$\times$ & 36 & 5 & 4\,848 & 725 & 7$\times$ \\
+10 & 0 & 3\,917 & 10 & 211\,518 & 540 & 392$\times$ & 89 & 7 & 7\,679 & 709 & 11$\times$ \\
+10 & 0.2411 & 5\,777 & 17 & 589\,254 & 1\,734 & 340$\times$ & 125 & 9 & 22\,239 & 1\,707 & 13$\times$ \\
+10 & 0.4 & 2\,890 & 16 & 294\,780 & 1\,632 & 181$\times$ & 66 & 5 & 11\,758 & 961 & 12$\times$ \\
+12 & 0 & 8\,797 & 29 & 580\,602 & 1\,914 & 303$\times$ & 168 & 11 & 17\,824 & 1\,339 & 13$\times$ \\
+12 & 0.2411 & 10\,960 & 25 & 1\,380\,960 & 3\,150 & 438$\times$ & 187 & 9 & 41\,465 & 2\,127 & 19$\times$ \\
+12 & 0.4 & 5\,318 & 26 & 670\,068 & 3\,276 & 205$\times$ & 107 & 10 & 23\,785 & 2\,348 & 10$\times$ \\
+\end{longtable}
+}
+
+Certified steps: $n_1/n_2=20$--$59$ (it increases with $N$ for each $J_2$). Certified RZZ: second order uses 3.0--8.6\% of first order at level 3 and 3.4--10.2\% with direct compilation. Certified over oracle: $66$--$438\times$ at first order and $5$--$19\times$ at second order. The second-order oracle uses 0.59--1.51$\times$ the RZZ of the first-order oracle (above 1 in 6 of 12 cases; oracle step counts are 4--29, so they are coarsely quantised); the second-order bound tightens the guarantee, it does not lower the oracle. In all 12 simulations the measured infidelity and state error were below their certified bounds. A second-order step costs 1.55--1.73$\times$ a first-order step in the 7 cases with both circuits transpiled in full.
+{\small
+\begin{longtable}{rrrrrrrrrrrrrr}
+\caption{Certified circuits, first versus second order, from full transpiles of both circuits (only the cases whose first-order circuit has been transpiled in full).}\label{tab:so2}\\
+\toprule
+$N$ & $J_2$ & RZZ/step 1st & RZZ/step 2nd & ratio & RZZ 1st (L3) & RZZ 2nd (L3) & 2nd/1st & RZZ 1st (direct) & RZZ 2nd (direct) & non-Cl. 1st (L3) & non-Cl. 2nd (L3) & depth 1st (L3) & depth 2nd (L3) \\
+\midrule
+\endfirsthead
+\toprule
+$N$ & $J_2$ & RZZ/step 1st & RZZ/step 2nd & ratio & RZZ 1st (L3) & RZZ 2nd (L3) & 2nd/1st & RZZ 1st (direct) & RZZ 2nd (direct) & non-Cl. 1st (L3) & non-Cl. 2nd (L3) & depth 1st (L3) & depth 2nd (L3) \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+6 & 0 & 30.0 & 46.6 & 1.55 & 17\,700 & 1\,304 & 0.074 & 35\,400 & 3\,360 & 14\,758 & 1\,229 & 47\,237 & 3\,424 \\
+6 & 0.2411 & 54.0 & 90.7 & 1.68 & 31\,212 & 2\,358 & 0.076 & 62\,424 & 5\,616 & 26\,018 & 2\,123 & 83\,257 & 6\,380 \\
+6 & 0.4 & 54.0 & 91.2 & 1.69 & 21\,276 & 1\,824 & 0.086 & 42\,552 & 4\,320 & 17\,738 & 1\,645 & 61\,478 & 4\,922 \\
+8 & 0 & 42.0 & 66.6 & 1.59 & 76\,314 & 3\,730 & 0.049 & 152\,628 & 9\,408 & 63\,606 & 3\,565 & 228\,961 & 10\,078 \\
+8 & 0.2411 & 78.0 & 134.2 & 1.72 & 187\,044 & 9\,799 & 0.052 & 374\,088 & 22\,776 & 179\,846 & 8\,870 & 575\,544 & 26\,482 \\
+8 & 0.4 & 78.0 & 134.7 & 1.73 & 82\,602 & 4\,848 & 0.059 & 165\,204 & 11\,232 & 68\,843 & 4\,381 & 267\,932 & 13\,405 \\
+10 & 0 & 54.0 & 86.3 & 1.60 & 211\,518 & 7\,679 & 0.036 & 423\,036 & 19\,224 & 176\,277 & 7\,423 & 564\,085 & 21\,089 \\
+\end{longtable}
+}
+
 \section{Limits and assumptions}\label{sec:limits}
 \begin{itemize}
 \item \textbf{Conditional certificates.} The proven bounds assume the DMRG shift $E_0$, the gap and the weight $\gamma$ are exact. Interlacing shows the DMRG gap can overestimate the true gap only by the solver's own optimisation error, and DMRG's $E_0$ errs on the safe side, but these errors are not computable from DMRG; validated accuracy is $\sim10^{-13}$ (Section~\ref{sec:dmrg}). The derivation, including how the bound changes for given error bounds, is in \texttt{CERTIFICATION.tex}.
 \item \textbf{Costs are ideal gate counts.} Ancilla measurement and reset time, classical feed-forward, native controlled-Pauli-rotation implementation on real hardware, and error-correction or mitigation overhead are not included; RZZ counts come from a heuristic compiler and are not minimal; the expected-repetition figure $1/p_g$ assumes independent attempts. No $T$-count is reported (it depends on synthesis constants); the metric is the number of non-Clifford rotations ($R_z$ and RZZ($\\theta$) with angle not a multiple of $\\pi/2$).
 \item \textbf{Numerical certificate.} The bound on $\eta$ is computed in double precision without interval arithmetic (rounding $\lesssim10^{-14}$, far below the pruning tolerance).
-\item \textbf{Scope.} One model family, three values of $J_2$; a non-degenerate singlet ground state; first-order Trotter formula.
+\item \textbf{Scope.} One model family, three values of $J_2$; a non-degenerate singlet ground state; first-order Trotter formula except in Section~\ref{sec:second}. The second-order circuits and the oracle are computed for $N\leq12$ only.
 \end{itemize}
 
 \section{Reproducing}

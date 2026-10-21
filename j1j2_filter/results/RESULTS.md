@@ -24,7 +24,7 @@ Data present: 66 (N, J2, ε) points, N from 4 to 32; 0 failed point(s).
 * **Scaling, J2 = 0.4:** guaranteed total RZZ ~ N^4.9 (R² 0.998), steps ~ N^3.7, RZZ per step ~ N^1.1 (fits over N = 6–32).
 * **Certified bandwidth:** the Weyl bound W = Σ_bonds λmax − E0 equals E_top − E0 (ratio 1.000–1.000); W cancels in n and in T (phys), see Section 6.
 * **Bound violations among simulated points:** 0.
-* **First versus second order (Section 10, 6 of 12 (N, J2) cases with full transpiles of both circuits so far, N = 6–10, ε = 10⁻²):** a second-order step costs 1.55–1.73× a first-order step, but the certified step count is 20–44× smaller: the certified second-order circuit uses 0.036–0.086× the first-order RZZ (level 3) and 0.037–0.080× the depth.
+* **First versus second order (Section 10, 7 of 12 (N, J2) cases with full transpiles of both circuits so far, N = 6–10, ε = 10⁻²):** a second-order step costs 1.55–1.73× a first-order step, but the certified step count is 20–44× smaller: the certified second-order circuit uses 0.036–0.086× the first-order RZZ (level 3) and 0.037–0.080× the depth.
 
 ## 1. Case inputs (DMRG spectrum, certified bandwidth)
 
@@ -806,6 +806,7 @@ Same classical front end, same filter design (pulse times and phases of the *gua
 | 6 | 0.2411 | 0.3295 | 0.01477 | 578 | 26 | 22 | 6 | 5 | 96× | 5× | True |
 | 6 | 0.4 | 0.3957 | 0.01890 | 394 | 20 | 20 | 6 | 4 | 66× | 5× | True |
 | 8 | 0 | 0.1713 | 0.00466 | 1,817 | 56 | 32 | 11 | 7 | 165× | 8× | True |
+| 8 | 0.2411 | 0.2672 | 0.00903 | 2,398 | 73 | 33 | 11 | 7 | 218× | 10× | True |
 | 8 | 0.4 | 0.3229 | 0.01169 | 1,059 | 36 | 29 | 11 | 5 | 96× | 7× | True |
 | 10 | 0 | 0.1417 | 0.00306 | 3,917 | 89 | 44 | 10 | 7 | 392× | 13× | True |
 
@@ -817,10 +818,11 @@ Same classical front end, same filter design (pulse times and phases of the *gua
 | 6 | 0.2411 | 54.0 | 90.7 | 1.68 | 578 | 26 | 31,212 | 2,358 | 0.076 | 62,424 | 5,616 | 0.090 | 26,018 | 2,123 | 83,257 | 6,380 | 0.077 |
 | 6 | 0.4 | 54.0 | 91.2 | 1.69 | 394 | 20 | 21,276 | 1,824 | 0.086 | 42,552 | 4,320 | 0.102 | 17,738 | 1,645 | 61,478 | 4,922 | 0.080 |
 | 8 | 0 | 42.0 | 66.6 | 1.59 | 1,817 | 56 | 76,314 | 3,730 | 0.049 | 152,628 | 9,408 | 0.062 | 63,606 | 3,565 | 228,961 | 10,078 | 0.044 |
+| 8 | 0.2411 | 78.0 | 134.2 | 1.72 | 2,398 | 73 | 187,044 | 9,799 | 0.052 | 374,088 | 22,776 | 0.061 | 179,846 | 8,870 | 575,544 | 26,482 | 0.046 |
 | 8 | 0.4 | 78.0 | 134.7 | 1.73 | 1,059 | 36 | 82,602 | 4,848 | 0.059 | 165,204 | 11,232 | 0.068 | 68,843 | 4,381 | 267,932 | 13,405 | 0.050 |
 | 10 | 0 | 54.0 | 86.3 | 1.60 | 3,917 | 89 | 211,518 | 7,679 | 0.036 | 423,036 | 19,224 | 0.045 | 176,277 | 7,423 | 564,085 | 21,089 | 0.037 |
 
-*Summary (6 cases, N = 6–10):* a second-order step costs 1.55–1.73× the RZZ of a first-order step, but the certified step count is 20–44× smaller, so the certified circuit uses 0.036–0.086× the first-order RZZ (level 3; median 0.066) and 0.045–0.102× with direct compilation, 0.042–0.093× the non-Clifford rotations and 0.037–0.080× the depth. The second-order formula is *not* cheaper at fixed step count; it wins because the certificate's Trotter budget is so tight (first-order error ∝ T²/n, second-order ∝ T³/n²) that the certified filter lives deep in the asymptotic regime. The advantage grows with N in this range (longer T), and nothing was computed beyond N = 12. Against each order's own oracle the certified count is 66–392× too large at first order and 5–13× at second order.
+*Summary (7 cases, N = 6–10):* a second-order step costs 1.55–1.73× the RZZ of a first-order step, but the certified step count is 20–44× smaller, so the certified circuit uses 0.036–0.086× the first-order RZZ (level 3; median 0.059) and 0.045–0.102× with direct compilation, 0.042–0.093× the non-Clifford rotations and 0.037–0.080× the depth. The second-order formula is not cheaper at fixed step count; the certified count is smaller because the bound scales as T²/n at first order and T³/n² at second order. The step-count ratio n₁/n₂ increases with N for each J2 in this range, and nothing was computed beyond N = 12. Against each order's own oracle the certified count is 66–392× too large at first order and 5–13× at second order.
 
 *Checks:* in every case the second-order circuit was simulated against ED (same trial state): measured 1−F and the state error are below their certified bounds (bound held: True); for N ≤ 8 the qiskit `SuzukiTrotter(order=2)` circuit matches the independent simulation to ≤ 9e-16 in 1−|⟨ψ|φ⟩|²; first-order RZZ from the full transpile equals the per-step × n estimate of Section 4. The pulse times and phases are the first-order designs (not re-optimised for second order); the second-order step counts use integer k_i = ⌈s·t_i⌉ with the smallest s meeting ε.
 
@@ -843,7 +845,7 @@ Every entry is the **total number of RZZ gates of the filter circuit** (all puls
 | 12 | 0.2411 | 10,960 | 25 | 1,380,960 | 3,150 | 438× | 187 | 9 | 41,465 | 2,127 | 19× | 649× |
 | 12 | 0.4 | 5,318 | 26 | 670,068 | 3,276 | 205× | 107 | 10 | 23,785 | 2,348 | 10× | 285× |
 
-*Summary (12 cases):* certified / oracle RZZ is 66–438× at first order and 5–19× at second order. At the oracle level the two orders cost comparable amounts: the second-order oracle uses 0.59–1.51× the RZZ of the first-order oracle (more at N = 6–8, where the oracle is only 4–11 steps and quantised, less at N = 12), while the certified second-order circuit is still 5.6–14.2× the first-order oracle. The second-order bound tightens the guarantee; what the circuit actually needs is the oracle. The oracle is a practical value (measured 1−F is not strictly monotone in n), not a guaranteed minimum.
+*Summary (12 cases):* certified / oracle RZZ is 66–438× at first order and 5–19× at second order. At the oracle level the two orders cost comparable amounts: the second-order oracle uses 0.59–1.51× the RZZ of the first-order oracle (above 1 in 6 of the 12 cases; the oracle is only 4–29 steps and so coarsely quantised), while the certified second-order circuit is still 5.6–14.2× the first-order oracle. The second-order bound tightens the guarantee; what the circuit actually needs is the oracle. The oracle is a practical value (measured 1−F is not strictly monotone in n), not a guaranteed minimum.
 
 ## Figures
 

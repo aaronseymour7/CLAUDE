@@ -10,6 +10,8 @@ evaluated exactly for the Pauli sum (`alpha2.py`), max over the two term orders.
 * `compare.py` -> `compare_N*.json`, `table.md`: certified step counts first vs second order from the stored designs.
 * `second_order_circuit.py` (`run_all_circuits.sh`) -> `circuit_N*_J2*.json`, `circuit_table.md`: builds the second-order circuit (qiskit SuzukiTrotter order 2), full transpile to the RZZ basis, simulation against ED, second-order oracle.
 * `first_order_full.py` (`run_first_all.sh`) -> `first_N_J2.json`: full transpile of the first-order certified circuit, same builder and basis, so both orders are measured the same way.
+* `dephasing.py`, `mixing_theory.py`, `scaling_check.py`, `analyze_dephasing.py`, `check_x1_symmetry.py` -> `DEPHASING.md`: eigenlevel weights of the trial state, first-order perturbation theory of the Trotter error, scaling checks.
+* Run scripts: set `PYTHON=/path/to/venv/bin/python` before `run_*_all.sh` (they default to `python` on PATH).
 * Results: `results/RESULTS.md` Section 10 (built by `scripts/build_results.py`) and `WRITEUP.md` Section 4.
 
 Caveats: alpha2 is O(N^3+) in python, so only N<=12 is computed; pulse designs are the stored first-order designs (not re-optimised); counts are filter only (no trial circuit).
