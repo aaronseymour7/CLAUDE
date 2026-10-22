@@ -127,7 +127,42 @@ $2.4\times10^{6}$--$1.0\times10^{8}$ level-3 RZZ ($4.8\times10^{6}$--$2.0\times1
 The empirical design uses $15$--$586\times$ fewer steps (median $190\times$) and $14$--$582\times$ fewer RZZ than the
 guaranteed design, almost entirely because the worst-case Trotter term $\epsilon_T$ is loose; the leakage term is
 within $\sim1$--$3\times$ of the measured value. The certified numbers above are therefore an upper bound on a
-\emph{guaranteed} workflow, not an estimate of the cost a practitioner who simulates would need.
+\emph{guaranteed} workflow, not an estimate of the cost a practitioner who simulates would need. Table~\ref{tab:empirical} gives the first-order empirical designs; the ratio grows with $N$ at every $J_2$.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{rr rrr rr r}
+\toprule
+ & & \multicolumn{3}{c}{steps $n$} & \multicolumn{2}{c}{filter RZZ (level 3)} & \\
+\cmidrule(lr){3-5}\cmidrule(lr){6-7}
+$N$ & $J_2$ & certified & empirical & ratio & certified & empirical & empirical $1-F$ \\
+\midrule
+ 4 & 0      & 85 & 2 & 42$\times$ & 1,530 & 36 & 6.8e-03 \\
+ 6 & 0      & 590 & 5 & 118$\times$ & 17,700 & 150 & 6.5e-03 \\
+ 8 & 0      & 1,817 & 11 & 165$\times$ & 76,314 & 462 & 5.3e-03 \\
+10 & 0      & 3,917 & 10 & 392$\times$ & 211,518 & 540 & 7.9e-03 \\
+12 & 0      & 8,797 & 29 & 303$\times$ & 580,602 & 1,914 & 5.7e-03 \\
+14 & 0      & 17,822 & 39 & 457$\times$ & 1,390,116 & 3,042 & 3.4e-03 \\
+\midrule
+ 4 & 0.2411 & 94 & 3 & 31$\times$ & 2,820 & 90 & 5.8e-03 \\
+ 6 & 0.2411 & 578 & 6 & 96$\times$ & 31,212 & 324 & 9.5e-03 \\
+ 8 & 0.2411 & 2,398 & 11 & 218$\times$ & 187,044 & 858 & 7.7e-03 \\
+10 & 0.2411 & 5,777 & 17 & 340$\times$ & 589,254 & 1,734 & 7.0e-03 \\
+12 & 0.2411 & 10,960 & 25 & 438$\times$ & 1,380,960 & 3,150 & 7.8e-03 \\
+14 & 0.2411 & 24,027 & 41 & 586$\times$ & 3,604,050 & 6,150 & 7.8e-03 \\
+\midrule
+ 4 & 0.4    & 76 & 5 & 15$\times$ & 2,280 & 150 & 3.5e-03 \\
+ 6 & 0.4    & 394 & 6 & 66$\times$ & 21,276 & 324 & 6.0e-03 \\
+ 8 & 0.4    & 1,059 & 11 & 96$\times$ & 82,602 & 858 & 8.7e-03 \\
+10 & 0.4    & 2,890 & 16 & 181$\times$ & 294,780 & 1,632 & 9.5e-03 \\
+12 & 0.4    & 5,318 & 26 & 205$\times$ & 670,068 & 3,276 & 9.4e-03 \\
+14 & 0.4    & 10,575 & 38 & 278$\times$ & 1,586,250 & 5,700 & 9.7e-03 \\
+\bottomrule
+\end{tabular}
+\caption{First-order certified versus empirical (oracle) designs at $\eps=10^{-2}$ for $N\le14$ (\texttt{results/tables/dmrg\_\{guaranteed,empirical\}\_eps0.01\_*.csv}).
+The empirical design is the smallest $n$ whose measured $1-F$ against the exact ground state is $\le\eps$. RZZ are filter-only.}
+\label{tab:empirical}
+\end{table}
 
 \section{Second-order and empirical designs}
 
