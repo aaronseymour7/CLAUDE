@@ -1,3 +1,35 @@
 [14:34:22] dmrg N=10 J2=0 eps=0.01 ['guaranteed', 'empirical']
 /home/user/CLAUDE/j1j2_filter/get_energies.py:68: ComplexWarning: Casting complex values to real discards the imaginary part
   self._pen = float(penalty)
+   done 137s  n_guar=3905 n_emp=10
+[14:36:39] dmrg N=10 J2=0.3 eps=0.01 ['guaranteed', 'empirical']
+/home/user/CLAUDE/j1j2_filter/get_energies.py:68: ComplexWarning: Casting complex values to real discards the imaginary part
+  self._pen = float(penalty)
+   done 116s  n_guar=4581 n_emp=20
+[14:38:34] dmrg N=10 J2=0.7 eps=0.01 ['guaranteed', 'empirical']
+/home/user/CLAUDE/j1j2_filter/get_energies.py:68: ComplexWarning: Casting complex values to real discards the imaginary part
+  self._pen = float(penalty)
+   done 114s  n_guar=3032 n_emp=21
+[14:40:28] dmrg N=8 J2=0 eps=0.01 ['guaranteed', 'empirical']
+/home/user/CLAUDE/j1j2_filter/get_energies.py:68: ComplexWarning: Casting complex values to real discards the imaginary part
+  self._pen = float(penalty)
+   done 105s  n_guar=1821 n_emp=11
+[14:42:13] dmrg N=8 J2=0 eps=0.1 ['guaranteed', 'empirical']
+   done 56s  n_guar=179 n_emp=3
+[14:43:09] dmrg N=8 J2=0 eps=0.03 ['guaranteed', 'empirical']
+   done 79s  n_guar=539 n_emp=6
+[14:44:29] dmrg N=8 J2=0 eps=0.003 ['guaranteed', 'empirical']
+   done 128s  n_guar=5056 n_emp=15
+[14:46:36] dmrg N=8 J2=0 eps=0.001 ['guaranteed', 'empirical']
+   done 132s  n_guar=12084 n_emp=24
+[14:48:49] dmrg N=8 J2=0.3 eps=0.01 ['guaranteed', 'empirical']
+/home/user/CLAUDE/j1j2_filter/get_energies.py:68: ComplexWarning: Casting complex values to real discards the imaginary part
+  self._pen = float(penalty)
+   done 80s  n_guar=1656 n_emp=12
+[14:50:08] dmrg N=8 J2=0.7 eps=0.01 ['guaranteed', 'empirical']
+/home/user/CLAUDE/j1j2_filter/get_energies.py:68: ComplexWarning: Casting complex values to real discards the imaginary part
+  self._pen = float(penalty)
+   done 81s  n_guar=1375 n_emp=14
+[14:51:29] dmrg N=6 J2=0 eps=0.01 ['guaranteed', 'empirical']
+/home/user/CLAUDE/j1j2_filter/get_energies.py:68: ComplexWarning: Casting complex values to real discards the imaginary part
+  self._pen = float(penalty)

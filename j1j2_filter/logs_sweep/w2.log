@@ -1,3 +1,48 @@
 [14:34:22] dmrg N=10 J2=0.2 eps=0.01 ['guaranteed', 'empirical']
 /home/user/CLAUDE/j1j2_filter/get_energies.py:68: ComplexWarning: Casting complex values to real discards the imaginary part
   self._pen = float(penalty)
+   done 124s  n_guar=5613 n_emp=17
+[14:36:27] dmrg N=10 J2=0.5 eps=0.01 ['guaranteed', 'empirical']
+/home/user/CLAUDE/j1j2_filter/get_energies.py:68: ComplexWarning: Casting complex values to real discards the imaginary part
+  self._pen = float(penalty)
+   done 6s  n_guar=None n_emp=None
+[14:36:33] dmrg N=10 J2=0.9 eps=0.01 ['guaranteed', 'empirical']
+/home/user/CLAUDE/j1j2_filter/get_energies.py:68: ComplexWarning: Casting complex values to real discards the imaginary part
+  self._pen = float(penalty)
+   done 160s  n_guar=6444 n_emp=25
+[14:39:13] dmrg N=8 J2=0.2 eps=0.01 ['guaranteed', 'empirical']
+/home/user/CLAUDE/j1j2_filter/get_energies.py:68: ComplexWarning: Casting complex values to real discards the imaginary part
+  self._pen = float(penalty)
+   done 98s  n_guar=2315 n_emp=12
+[14:40:51] dmrg N=8 J2=0.5 eps=0.01 ['guaranteed', 'empirical']
+/home/user/CLAUDE/j1j2_filter/get_energies.py:68: ComplexWarning: Casting complex values to real discards the imaginary part
+  self._pen = float(penalty)
+   done 1s  n_guar=None n_emp=None
+[14:40:52] dmrg N=8 J2=0.9 eps=0.01 ['guaranteed', 'empirical']
+/home/user/CLAUDE/j1j2_filter/get_energies.py:68: ComplexWarning: Casting complex values to real discards the imaginary part
+  self._pen = float(penalty)
+   done 104s  n_guar=2949 n_emp=20
+[14:42:36] dmrg N=6 J2=0.1 eps=0.01 ['guaranteed', 'empirical']
+/home/user/CLAUDE/j1j2_filter/get_energies.py:68: ComplexWarning: Casting complex values to real discards the imaginary part
+  self._pen = float(penalty)
+   done 63s  n_guar=617 n_emp=4
+[14:43:40] dmrg N=6 J2=0.5 eps=0.01 ['guaranteed', 'empirical']
+/home/user/CLAUDE/j1j2_filter/get_energies.py:68: ComplexWarning: Casting complex values to real discards the imaginary part
+  self._pen = float(penalty)
+   done 1s  n_guar=None n_emp=None
+[14:43:40] dmrg N=6 J2=0.9 eps=0.01 ['guaranteed', 'empirical']
+/home/user/CLAUDE/j1j2_filter/get_energies.py:68: ComplexWarning: Casting complex values to real discards the imaginary part
+  self._pen = float(penalty)
+   done 82s  n_guar=1243 n_emp=10
+[14:45:02] dmrg N=4 J2=0.2 eps=0.01 ['guaranteed', 'empirical']
+/home/user/CLAUDE/j1j2_filter/get_energies.py:68: ComplexWarning: Casting complex values to real discards the imaginary part
+  self._pen = float(penalty)
+   done 31s  n_guar=92 n_emp=3
+[14:45:33] dmrg N=4 J2=0.5 eps=0.01 ['guaranteed', 'empirical']
+/home/user/CLAUDE/j1j2_filter/get_energies.py:68: ComplexWarning: Casting complex values to real discards the imaginary part
+  self._pen = float(penalty)
+   done 0s  n_guar=None n_emp=None
+[14:45:34] dmrg N=4 J2=0.9 eps=0.01 ['guaranteed', 'empirical']
+/home/user/CLAUDE/j1j2_filter/get_energies.py:68: ComplexWarning: Casting complex values to real discards the imaginary part
+  self._pen = float(penalty)
+   done 45s  n_guar=219 n_emp=12

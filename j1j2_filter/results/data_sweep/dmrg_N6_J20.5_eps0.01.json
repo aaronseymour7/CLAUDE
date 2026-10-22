@@ -1,0 +1,214 @@
+{
+ "source": "dmrg",
+ "N": 6,
+ "J2": 0.5,
+ "eps": 0.01,
+ "order": 1,
+ "bandwidth": "certified",
+ "sweep_L": 1,
+ "seed": 1234,
+ "inputs": {
+  "E0": -2.2500000000000013,
+  "E1": -1.7208705231175687,
+  "Etop": 1.7500000000000036,
+  "W": 4.000000000000005,
+  "W_cert": 4.000000000000002,
+  "gap_scaled": 0.132282369220608,
+  "gap_raw": 0.5291294768824326,
+  "gamma": 1.0,
+  "gamma_src": "ED",
+  "trial_F_ed": 1.0000000000000004,
+  "trial_F_dmrg": 1.0000000000000018,
+  "dmrg_ed_overlap": 0.9999999999999998,
+  "alpha": 0.4294503387302187,
+  "alpha_tri": 0.5390624999999996,
+  "e0_dev_indicative": 0.0,
+  "W_exact_dmrg": 4.000000000000005,
+  "dense": true,
+  "mpo_err": 2.1116594422964528e-15,
+  "n_pauli_terms": 27,
+  "trial_layers": 1,
+  "trial_cost": {
+   "cx": 9.0,
+   "h": 54.0,
+   "s": 0.0,
+   "rz": 68.0,
+   "rz_nonclifford": 63.0,
+   "total": 131.0,
+   "depth": 27.0,
+   "t_count_est": 1301.6210714237682
+  },
+  "trial_cost_rzz": {
+   "rzz": 9.0,
+   "rzz_nonclifford": 9.0,
+   "rz": 42.0,
+   "rz_nonclifford": 36.0,
+   "nc_total": 45.0,
+   "sx": 36.0,
+   "x": 0.0,
+   "total": 87.0,
+   "depth": 16.0
+  },
+  "build_s": 0.5026936531066895,
+  "dmrg_runs": [
+   {
+    "role": "ground",
+    "converged": true,
+    "energy": -2.2500000000000013,
+    "max_bond": 2,
+    "sweeps": 2,
+    "local_eig_tol": 1e-10
+   },
+   {
+    "role": "top",
+    "converged": true,
+    "energy": -1.7500000000000036,
+    "max_bond": 4,
+    "sweeps": 2,
+    "local_eig_tol": 1e-10
+   },
+   {
+    "role": "excited",
+    "converged": true,
+    "energy": -1.7208705231175636,
+    "max_bond": 8,
+    "sweeps": 2,
+    "local_eig_tol": 1e-10
+   }
+  ],
+  "e1_method": "local",
+  "dmrg_vs_ed": {
+   "E0_diff": 2.2644195468014703e-15,
+   "E1_diff": 0.0,
+   "E_top_diff": 2.6646798154688044e-15
+  },
+  "dmrg_converged": true
+ },
+ "per_step": {
+  "a2a": {
+   "one": {
+    "cx": 63.0,
+    "h": 195.0,
+    "s": 0.0,
+    "rz": 195.0,
+    "rz_nonclifford": 83.0,
+    "total": 453.0,
+    "depth": 263.0
+   },
+   "avg3": {
+    "cx": 63.0,
+    "h": 191.0,
+    "s": 0.0,
+    "rz": 197.0,
+    "rz_nonclifford": 82.0,
+    "total": 451.0,
+    "depth": 261.6666666666667
+   }
+  },
+  "line": {
+   "one": {
+    "cx": 122.0,
+    "h": 195.0,
+    "s": 0.0,
+    "rz": 201.0,
+    "rz_nonclifford": 95.0,
+    "total": 518.0,
+    "depth": 291.0
+   },
+   "avg3": {
+    "cx": 117.33333333333333,
+    "h": 191.0,
+    "s": 0.0,
+    "rz": 205.0,
+    "rz_nonclifford": 97.66666666666667,
+    "total": 513.3333333333334,
+    "depth": 295.0
+   }
+  },
+  "direct": {
+   "cx": 108.0,
+   "h": 74.0,
+   "s": 36.0,
+   "rz": 65.0,
+   "rz_nonclifford": 28.0,
+   "depth": 202.0
+  },
+  "rzz": {
+   "a2a": {
+    "one": {
+     "rzz": 54.0,
+     "rzz_nonclifford": 27.0,
+     "rz": 103.0,
+     "rz_nonclifford": 21.0,
+     "nc_total": 48.0,
+     "sx": 62.0,
+     "x": 30.0,
+     "total": 249.0,
+     "depth": 158.0
+    },
+    "avg3": {
+     "rzz": 54.0,
+     "rzz_nonclifford": 27.0,
+     "rz": 95.66666666666667,
+     "rz_nonclifford": 19.0,
+     "nc_total": 46.0,
+     "sx": 60.666666666666664,
+     "x": 25.0,
+     "total": 235.33333333333334,
+     "depth": 156.0
+    }
+   },
+   "line": {
+    "one": {
+     "rzz": 111.0,
+     "rzz_nonclifford": 27.0,
+     "rz": 263.0,
+     "rz_nonclifford": 46.0,
+     "nc_total": 73.0,
+     "sx": 193.0,
+     "x": 14.0,
+     "total": 581.0,
+     "depth": 263.0
+    },
+    "avg3": {
+     "rzz": 105.0,
+     "rzz_nonclifford": 27.0,
+     "rz": 255.0,
+     "rz_nonclifford": 52.333333333333336,
+     "nc_total": 79.33333333333333,
+     "sx": 187.0,
+     "x": 12.0,
+     "total": 559.0,
+     "depth": 271.6666666666667
+    }
+   },
+   "direct": {
+    "rzz": 108.0,
+    "rzz_nonclifford": 0.0,
+    "rz": 318.0,
+    "rz_nonclifford": 28.0,
+    "nc_total": 28.0,
+    "sx": 146.0,
+    "x": 0.0,
+    "depth": 428.0
+   }
+  }
+ },
+ "designs": {},
+ "design": {
+  "source": "none",
+  "m": 0,
+  "x": 0.0,
+  "T_scaled": 0.0,
+  "T_phys": 0.0,
+  "eta_cert": 0.0,
+  "eta_target": null,
+  "leak_budget": null,
+  "times": [],
+  "phases": [],
+  "candidates": [],
+  "design_s": 3.4809112548828125e-05
+ },
+ "note": "gamma = 1: trial state already exact, no filter",
+ "wall_s": 0.5028064250946045
+}
