@@ -127,42 +127,7 @@ $2.4\times10^{6}$--$1.0\times10^{8}$ level-3 RZZ ($4.8\times10^{6}$--$2.0\times1
 The empirical design uses $15$--$586\times$ fewer steps (median $190\times$) and $14$--$582\times$ fewer RZZ than the
 guaranteed design, almost entirely because the worst-case Trotter term $\epsilon_T$ is loose; the leakage term is
 within $\sim1$--$3\times$ of the measured value. The certified numbers above are therefore an upper bound on a
-\emph{guaranteed} workflow, not an estimate of the cost a practitioner who simulates would need. Table~\ref{tab:empirical} gives the first-order empirical designs; the ratio grows with $N$ at every $J_2$.
-
-\begin{table}[h]
-\centering
-\begin{tabular}{rr rrr rr r}
-\toprule
- & & \multicolumn{3}{c}{steps $n$} & \multicolumn{2}{c}{filter RZZ (level 3)} & \\
-\cmidrule(lr){3-5}\cmidrule(lr){6-7}
-$N$ & $J_2$ & certified & empirical & ratio & certified & empirical & empirical $1-F$ \\
-\midrule
- 4 & 0      & 85 & 2 & 42$\times$ & 1,530 & 36 & 6.8e-03 \\
- 6 & 0      & 590 & 5 & 118$\times$ & 17,700 & 150 & 6.5e-03 \\
- 8 & 0      & 1,817 & 11 & 165$\times$ & 76,314 & 462 & 5.3e-03 \\
-10 & 0      & 3,917 & 10 & 392$\times$ & 211,518 & 540 & 7.9e-03 \\
-12 & 0      & 8,797 & 29 & 303$\times$ & 580,602 & 1,914 & 5.7e-03 \\
-14 & 0      & 17,822 & 39 & 457$\times$ & 1,390,116 & 3,042 & 3.4e-03 \\
-\midrule
- 4 & 0.2411 & 94 & 3 & 31$\times$ & 2,820 & 90 & 5.8e-03 \\
- 6 & 0.2411 & 578 & 6 & 96$\times$ & 31,212 & 324 & 9.5e-03 \\
- 8 & 0.2411 & 2,398 & 11 & 218$\times$ & 187,044 & 858 & 7.7e-03 \\
-10 & 0.2411 & 5,777 & 17 & 340$\times$ & 589,254 & 1,734 & 7.0e-03 \\
-12 & 0.2411 & 10,960 & 25 & 438$\times$ & 1,380,960 & 3,150 & 7.8e-03 \\
-14 & 0.2411 & 24,027 & 41 & 586$\times$ & 3,604,050 & 6,150 & 7.8e-03 \\
-\midrule
- 4 & 0.4    & 76 & 5 & 15$\times$ & 2,280 & 150 & 3.5e-03 \\
- 6 & 0.4    & 394 & 6 & 66$\times$ & 21,276 & 324 & 6.0e-03 \\
- 8 & 0.4    & 1,059 & 11 & 96$\times$ & 82,602 & 858 & 8.7e-03 \\
-10 & 0.4    & 2,890 & 16 & 181$\times$ & 294,780 & 1,632 & 9.5e-03 \\
-12 & 0.4    & 5,318 & 26 & 205$\times$ & 670,068 & 3,276 & 9.4e-03 \\
-14 & 0.4    & 10,575 & 38 & 278$\times$ & 1,586,250 & 5,700 & 9.7e-03 \\
-\bottomrule
-\end{tabular}
-\caption{First-order certified versus empirical (oracle) designs at $\eps=10^{-2}$ for $N\le14$ (\texttt{results/tables/dmrg\_\{guaranteed,empirical\}\_eps0.01\_*.csv}).
-The empirical design is the smallest $n$ whose measured $1-F$ against the exact ground state is $\le\eps$. RZZ are filter-only.}
-\label{tab:empirical}
-\end{table}
+\emph{guaranteed} workflow, not an estimate of the cost a practitioner who simulates would need. Table~\ref{tab:second} (Section~3) gives the first-order empirical designs next to the certified ones; the ratio grows with $N$ at every $J_2$.
 
 \section{Second-order and empirical designs}
 
@@ -178,29 +143,40 @@ order it is available for $N\le14$; for second order, $N\le12$.
 
 \begin{table}[h]
 \centering
-\begin{tabular}{rr rrr rrr}
+\small
+\begin{tabular}{rr rrrr rrrr}
 \toprule
- & & \multicolumn{3}{c}{steps $n$} & \multicolumn{3}{c}{filter RZZ (level 3)} \\
-\cmidrule(lr){3-5}\cmidrule(lr){6-8}
-$N$ & $J_2$ & cert.\ 1st & cert.\ 2nd & oracle 2nd & cert.\ 1st & cert.\ 2nd & oracle 2nd \\
+ & & \multicolumn{4}{c}{steps $n$} & \multicolumn{4}{c}{filter RZZ (level 3)} \\
+\cmidrule(lr){3-6}\cmidrule(lr){7-10}
+$N$ & $J_2$ & cert.\ 1st & cert.\ 2nd & oracle 1st & oracle 2nd & cert.\ 1st & cert.\ 2nd & oracle 1st & oracle 2nd \\
 \midrule
- 6 & 0      &    590 &  28 &  4 & 17,700    &  1,304 &   224 \\
-  8 & 0      &  1,817 &  56 &  7 & 76,314    &  3,730 &   545 \\
-10 & 0      &  3,917 &  89 &  7 & 211,518   &  7,679 &   709 \\
-12 & 0      &  8,797 & 168 & 11 & 580,602   & 17,824 & 1,339 \\
- 6 & 0.2411 &    578 &  26 &  5 & 31,212    &  2,358 &   489 \\
-  8 & 0.2411 &  2,398 &  73 &  7 & 187,044   &  9,799 & 1,021 \\
-10 & 0.2411 &  5,777 & 125 &  9 & 589,254   & 22,239 & 1,707 \\
-12 & 0.2411 & 10,960 & 187 &  9 & 1,380,960 & 41,465 & 2,127 \\
- 6 & 0.4    &    394 &  20 &  4 & 21,276    &  1,824 &   400 \\
-  8 & 0.4    &  1,059 &  36 &  5 & 82,602    &  4,848 &   725 \\
-10 & 0.4    &  2,890 &  66 &  5 & 294,780   & 11,758 &   961 \\
-12 & 0.4    &  5,318 & 107 & 10 & 670,068   & 23,785 & 2,348 \\
+ 4 & 0      & 85 & -- & 2 & -- & 1,530 & -- & 36 & -- \\
+ 6 & 0      & 590 & 28 & 5 & 4 & 17,700 & 1,304 & 150 & 224 \\
+ 8 & 0      & 1,817 & 56 & 11 & 7 & 76,314 & 3,730 & 462 & 545 \\
+10 & 0      & 3,917 & 89 & 10 & 7 & 211,518 & 7,679 & 540 & 709 \\
+12 & 0      & 8,797 & 168 & 29 & 11 & 580,602 & 17,824 & 1,914 & 1,339 \\
+14 & 0      & 17,822 & -- & 39 & -- & 1,390,116 & -- & 3,042 & -- \\
+\midrule
+ 4 & 0.2411 & 94 & -- & 3 & -- & 2,820 & -- & 90 & -- \\
+ 6 & 0.2411 & 578 & 26 & 6 & 5 & 31,212 & 2,358 & 324 & 489 \\
+ 8 & 0.2411 & 2,398 & 73 & 11 & 7 & 187,044 & 9,799 & 858 & 1,021 \\
+10 & 0.2411 & 5,777 & 125 & 17 & 9 & 589,254 & 22,239 & 1,734 & 1,707 \\
+12 & 0.2411 & 10,960 & 187 & 25 & 9 & 1,380,960 & 41,465 & 3,150 & 2,127 \\
+14 & 0.2411 & 24,027 & -- & 41 & -- & 3,604,050 & -- & 6,150 & -- \\
+\midrule
+ 4 & 0.4    & 76 & -- & 5 & -- & 2,280 & -- & 150 & -- \\
+ 6 & 0.4    & 394 & 20 & 6 & 4 & 21,276 & 1,824 & 324 & 400 \\
+ 8 & 0.4    & 1,059 & 36 & 11 & 5 & 82,602 & 4,848 & 858 & 725 \\
+10 & 0.4    & 2,890 & 66 & 16 & 5 & 294,780 & 11,758 & 1,632 & 961 \\
+12 & 0.4    & 5,318 & 107 & 26 & 10 & 670,068 & 23,785 & 3,276 & 2,348 \\
+14 & 0.4    & 10,575 & -- & 38 & -- & 1,586,250 & -- & 5,700 & -- \\
 \bottomrule
 \end{tabular}
-\caption{Second-order versus first-order certified cost, with the second-order oracle ($\eps=10^{-2}$; all 12 cases, $N=6,8,10,12$,
-from \texttt{trotter2/circuit\_table.md}). RZZ are filter-only, so first-order
-entries differ from Table~\ref{tab:cost}, which includes the trial circuit.}
+\caption{Certified and oracle (empirical) designs at first and second order, $\eps=10^{-2}$. First order:
+$N=4$--$14$ (\texttt{results/tables/dmrg\_\{guaranteed,empirical\}\_eps0.01\_*.csv}); second order: $N=6$--$12$
+(\texttt{trotter2/circuit\_table.md}), ``--'' where not computed. The oracle is the smallest $n$ whose measured $1-F$
+against the exact ground state is $\le\eps$. RZZ are filter-only, so the first-order certified entries differ from
+Table~\ref{tab:cost}, which includes the trial circuit.}
 \label{tab:second}
 \end{table}
 
@@ -232,6 +208,11 @@ entries differ from Table~\ref{tab:cost}, which includes the trial circuit.}
 \item Second-order results cover $N\le12$ only, with first-order pulse designs and without the trial circuit. The
  second-order constants are verified numerically (and against the cited proposition), not proved here. The
  $S^2$-projection, symmetric-trial, 2D and field-theory studies are deliberately left out.
+\item Gate basis. Native RZZ is cheaper than CNOT here, but the advantage depends on compilation. With direct
+ compilation each CNOT maps one-to-one to a Clifford RZZ($\pi/2$), so counts are identical. With level-3
+ re-synthesis the RZZ count is $0.86\times$ the CNOT count for the guaranteed designs, since qiskit needs about 2.3 CNOT
+ but exactly 2 RZZ per ancilla-controlled Pauli rotation (\texttt{results/tables/cx\_vs\_rzz.csv}). The RZZ basis also
+ counts the non-Clifford RZZ($\theta$) rotations in the non-Clifford total.
 \item Oracle designs use the exact ground state and are not achievable without it.
 \item Open chains only; no hardware connectivity beyond all-to-all (a \emph{line} variant is in \texttt{RESULTS.md}).
 \end{itemize}
