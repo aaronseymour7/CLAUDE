@@ -53,3 +53,4 @@
 [14:51:11] dmrg N=4 J2=0.8 eps=0.01 ['guaranteed', 'empirical']
 /home/user/CLAUDE/j1j2_filter/get_energies.py:68: ComplexWarning: Casting complex values to real discards the imaginary part
   self._pen = float(penalty)
+   done 108s  n_guar=195 n_emp=9

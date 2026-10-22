@@ -57,9 +57,10 @@ def panel(ax, base, ylabel, log=True):
 for base, ylabel, name in (("n", "Trotter steps $n$", "steps_vs_J2"),
                            ("rzz_filter", "filter RZZ (level 3)", "rzz_vs_J2"),
                            ("T_phys", "evolution time $T$ ($1/J_1$)", "T_vs_J2")):
-    fig, ax = plt.subplots(figsize=(6.2, 4.2))
+    fig, ax = plt.subplots(figsize=(8.2, 4.2))
     panel(ax, base, ylabel, log=base != "T_phys")
-    ax.legend(fontsize=7, ncol=2)
+    ax.axvline(0.5, color="gray", lw=0.8, ls=":")
+    ax.legend(fontsize=7, loc="center left", bbox_to_anchor=(1.01, 0.5))
     ax.set_title(r"First-order filter, $\varepsilon=10^{-2}$ ($J_2=0.5$: trial exact, no filter)", fontsize=9)
     fig.tight_layout()
     fig.savefig(OUT / f"{name}.png", dpi=200)
