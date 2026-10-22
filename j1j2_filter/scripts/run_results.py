@@ -46,7 +46,7 @@ OUT = Path(os.environ["RESULTS_DATA"]) if "RESULTS_DATA" in os.environ else ROOT
 OUT.mkdir(parents=True, exist_ok=True)
 
 SMALL_N = (4, 6, 8, 10, 12, 14)       # statevector-simulated (measured 1-F, P_succ); ED cross-check available
-J2_ALL = (0.0, 0.2411, 0.4)
+J2_ALL = tuple(float(x) for x in os.environ["SWEEP_J2"].split(",")) if os.environ.get("SWEEP_J2") else (0.0, 0.2411, 0.4)
 EPS_MAIN = 1e-2
 EPS_SCAN = (1e-1, 3e-2, 3e-3, 1e-3)
 SCAN_CASES = ((6, 0.0), (8, 0.0), (6, 0.4))
