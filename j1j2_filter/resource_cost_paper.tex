@@ -150,18 +150,21 @@ order it is available for $N\le14$; for second order, $N\le12$.
 $N$ & $J_2$ & cert.\ 1st & cert.\ 2nd & oracle 2nd & cert.\ 1st & cert.\ 2nd & oracle 2nd \\
 \midrule
  6 & 0      &    590 &  28 &  4 & 17,700    &  1,304 &   224 \\
+  8 & 0      &  1,817 &  56 &  7 & 76,314    &  3,730 &   545 \\
 10 & 0      &  3,917 &  89 &  7 & 211,518   &  7,679 &   709 \\
 12 & 0      &  8,797 & 168 & 11 & 580,602   & 17,824 & 1,339 \\
  6 & 0.2411 &    578 &  26 &  5 & 31,212    &  2,358 &   489 \\
+  8 & 0.2411 &  2,398 &  73 &  7 & 187,044   &  9,799 & 1,021 \\
 10 & 0.2411 &  5,777 & 125 &  9 & 589,254   & 22,239 & 1,707 \\
 12 & 0.2411 & 10,960 & 187 &  9 & 1,380,960 & 41,465 & 2,127 \\
  6 & 0.4    &    394 &  20 &  4 & 21,276    &  1,824 &   400 \\
+  8 & 0.4    &  1,059 &  36 &  5 & 82,602    &  4,848 &   725 \\
 10 & 0.4    &  2,890 &  66 &  5 & 294,780   & 11,758 &   961 \\
 12 & 0.4    &  5,318 & 107 & 10 & 670,068   & 23,785 & 2,348 \\
 \bottomrule
 \end{tabular}
-\caption{Second-order versus first-order certified cost, with the second-order oracle ($\eps=10^{-2}$; selected rows of
-\texttt{trotter2/circuit\_table.md}; all 12 cases $N=6,8,10,12$ are in that file). RZZ are filter-only, so first-order
+\caption{Second-order versus first-order certified cost, with the second-order oracle ($\eps=10^{-2}$; all 12 cases, $N=6,8,10,12$,
+from \texttt{trotter2/circuit\_table.md}). RZZ are filter-only, so first-order
 entries differ from Table~\ref{tab:cost}, which includes the trial circuit.}
 \label{tab:second}
 \end{table}
