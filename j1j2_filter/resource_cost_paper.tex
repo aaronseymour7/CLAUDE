@@ -18,12 +18,13 @@ for the $J_1$--$J_2$ Heisenberg Chain}
 \begin{abstract}
 We report the gate cost of the Stetcu--Baroni--Carlson (SBC) cosine filter as implemented in the
 \texttt{j1j2\_filter} pipeline: DMRG front end, low-depth MPS trial circuit, certified filter design,
-first-order Trotterisation, and gate counting in an $\{\mathrm{RZZ},R_z,\sqrt{X},X\}$ basis. For the open
+first- and second-order Trotterisation, and gate counting in an $\{\mathrm{RZZ},R_z,\sqrt{X},X\}$ basis. For the open
 spin-$\tfrac12$ $J_1$--$J_2$ chain with $N=4$--$32$, $J_2\in\{0,\,0.2411,\,0.4\}$ and target infidelity
 $\eps=10^{-2}$, the certified circuit needs $76$--$24{,}027$ Trotter steps and $1.5\times10^{3}$--$3.6\times10^{6}$
 RZZ gates for $N\le 14$, and up to $\sim10^{8}$ RZZ at $N=32$. Certified RZZ count grows as $\sim N^{5}$, steps as
 $\sim N^{4}$. The certificate is conservative: the smallest step count that empirically meets $\eps$ is a median
-$190\times$ smaller.
+$190\times$ smaller. A second-order (Strang) certificate cuts the certified RZZ count to 3--9\% of the first-order
+value for $N=6$--$12$, and an empirical (oracle) design needs only $10^{2}$--$6\times10^{3}$ RZZ for $N\le14$.
 \end{abstract}
 
 \section{Pipeline}
@@ -43,9 +44,12 @@ chain, and $H_{\mathrm s}$ denotes $H$ shifted and scaled so its spectrum lies i
  times $t_i$ and phases $\phi_i$, designed so $\eta=\sup_{[\Delta,1]}|F|/|F(0)|$ is small. Success probability is
  $\pg=\gamma F(0)^2$, and the leakage of excited weight is
  $\ell=(1-\gamma)\eta^2/(\gamma+(1-\gamma)\eta^2)$.
-\item \textbf{First-order Trotterisation.} Each pulse $i$ is implemented with $k_i$ Lie--Trotter steps. The error
+\item \textbf{Trotterisation.} Each pulse $i$ is implemented with $k_i$ steps. At first order the error
  constant $\alpha=\sum_g\|[H_g,\sum_{g'>g}H_{g'}]\|$ is computed exactly from the local Pauli commutators, so the
- filter's operator-norm error is $\epsilon_T=\alpha T^2/(2n)$ with $T=\sum_i t_i$ and $n=\sum_i k_i$.
+ filter's operator-norm error is $\epsilon_T=\alpha T^2/(2n)$ with $T=\sum_i t_i$ and $n=\sum_i k_i$. At second
+ order (Strang) the per-pulse error is $B_2t_i^3/k_i^2$, with
+ $B_2=\tfrac1{12}\sum_a\|[B_a,[B_a,H_a]]\|+\tfrac1{24}\sum_a\|[H_a,[H_a,B_a]]\|$ and $B_a=\sum_{b>a}H_b$
+ (Childs et al., PRX 11, 011020, Prop.~16), also evaluated exactly on local supports.
 \item \textbf{Count gates.} One Trotter step of one pulse is transpiled once and multiplied by $n$, with one
  $R_z(2\phi_i)$ per pulse. Two compilations are reported: \emph{level 3} (block re-synthesis, 2 RZZ per Pauli term
  per step) and \emph{direct} (4 RZZ per Pauli term, a Clifford ladder around one non-Clifford $R_z$).
@@ -125,6 +129,61 @@ guaranteed design, almost entirely because the worst-case Trotter term $\epsilon
 within $\sim1$--$3\times$ of the measured value. The certified numbers above are therefore an upper bound on a
 \emph{guaranteed} workflow, not an estimate of the cost a practitioner who simulates would need.
 
+\section{Second-order and empirical designs}
+
+\paragraph{Second order.} Keeping the stored pulse times and phases, the second-order design chooses integer
+$k_i=\lceil s\,t_i\rceil$ with the smallest $s$ such that $(\sqrt\ell+\sum_i B_2t_i^3/k_i^2/\sqrt{\pg})^2\le\eps$.
+The circuits were built with Qiskit's second-order Suzuki--Trotter, transpiled to the RZZ basis and simulated against
+ED (\texttt{trotter2/}). This was done for $N=6$--$12$ only, since the commutator evaluation is slow in Python.
+Pulse designs were not re-optimised for second order, and the counts are for the filter only (no trial circuit).
+
+\paragraph{Empirical (oracle).} The smallest step count whose \emph{measured} $1-F\le\eps$ against the exact ground
+state. It needs the exact state and a simulation, so it is a lower envelope, not something known in advance. For first
+order it is available for $N\le14$; for second order, $N\le12$.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{rr rrr rrr}
+\toprule
+ & & \multicolumn{3}{c}{steps $n$} & \multicolumn{3}{c}{filter RZZ (level 3)} \\
+\cmidrule(lr){3-5}\cmidrule(lr){6-8}
+$N$ & $J_2$ & cert.\ 1st & cert.\ 2nd & oracle 2nd & cert.\ 1st & cert.\ 2nd & oracle 2nd \\
+\midrule
+ 6 & 0      &    590 &  28 &  4 & 17,700    &  1,304 &   224 \\
+10 & 0      &  3,917 &  89 &  7 & 211,518   &  7,679 &   709 \\
+12 & 0      &  8,797 & 168 & 11 & 580,602   & 17,824 & 1,339 \\
+ 6 & 0.2411 &    578 &  26 &  5 & 31,212    &  2,358 &   489 \\
+10 & 0.2411 &  5,777 & 125 &  9 & 589,254   & 22,239 & 1,707 \\
+12 & 0.2411 & 10,960 & 187 &  9 & 1,380,960 & 41,465 & 2,127 \\
+ 6 & 0.4    &    394 &  20 &  4 & 21,276    &  1,824 &   400 \\
+10 & 0.4    &  2,890 &  66 &  5 & 294,780   & 11,758 &   961 \\
+12 & 0.4    &  5,318 & 107 & 10 & 670,068   & 23,785 & 2,348 \\
+\bottomrule
+\end{tabular}
+\caption{Second-order versus first-order certified cost, with the second-order oracle ($\eps=10^{-2}$; selected rows of
+\texttt{trotter2/circuit\_table.md}; all 12 cases $N=6,8,10,12$ are in that file). RZZ are filter-only, so first-order
+entries differ from Table~\ref{tab:cost}, which includes the trial circuit.}
+\label{tab:second}
+\end{table}
+
+\begin{itemize}
+\item \textbf{Second-order gain.} Over all 12 cases the certified second-order step count is $20$--$59\times$ smaller
+ (median $38\times$), growing with $N$. A second-order step costs $1.6$--$1.7\times$ a first-order step, so
+ certified RZZ falls to $3.0$--$8.6\%$ of first order (median $4.4\%$; $3.4$--$10.2\%$ with direct compilation).
+ The bound held in all 12 simulations, and the Qiskit circuit agrees with the independent simulation to
+ $\le10^{-15}$ for $N\le8$.
+\item \textbf{Empirical first order} ($N\le14$, $\eps=10^{-2}$): $2$--$41$ steps, $36$--$6{,}150$ filter RZZ, with
+ measured $1-F$ between $3\times10^{-3}$ and $10^{-2}$ (\texttt{results/tables/dmrg\_empirical\_eps0.01\_*.csv}).
+ This is $15$--$586\times$ below the certified first-order step count.
+\item \textbf{Remaining gap.} At second order the certificate is still $5$--$21\times$ the oracle step count
+ (first order: $66$--$438\times$ on the same cases), and the gap grows with $N$. The measured second-order state
+ error is at most $1\%$ of its bound.
+\item \textbf{Oracle caveat.} At small $N$ the second-order oracle is not always cheaper in RZZ than the first-order
+ oracle (e.g.\ $N=6$, $J_2=0$: $224$ versus $150$ RZZ), because a second-order step costs more and the first-order
+ error can be accidentally small at very few steps. The second-order advantage in the oracle comparison appears at
+ larger $N$ (e.g.\ $N=12$, $J_2=0.4$: $2{,}348$ versus $3{,}276$).
+\end{itemize}
+
 \section{Caveats}
 
 \begin{itemize}
@@ -132,13 +191,14 @@ within $\sim1$--$3\times$ of the measured value. The certified numbers above are
 \item $N=16$--$32$ rely on uncertified DMRG overlaps and are not simulated; no ED check exists there.
 \item Level-3 compilation exchanges fewer RZZ for more non-Clifford single-qubit rotations; the per-step non-Clifford
  estimate is accurate to about $\pm20\%$ (\texttt{scripts/audit\_results.py}).
-\item First-order Trotter only. A second-order certificate shrinks these counts substantially (see \texttt{WRITEUP.md}
- \S4.3) but is deliberately left out of this note, as are the $S^2$-projection, symmetric-trial, 2D and
- field-theory studies.
+\item Second-order results cover $N\le12$ only, with first-order pulse designs and without the trial circuit. The
+ second-order constants are verified numerically (and against the cited proposition), not proved here. The
+ $S^2$-projection, symmetric-trial, 2D and field-theory studies are deliberately left out.
+\item Oracle designs use the exact ground state and are not achievable without it.
 \item Open chains only; no hardware connectivity beyond all-to-all (a \emph{line} variant is in \texttt{RESULTS.md}).
 \end{itemize}
 
 \paragraph{Reproduction.} \texttt{scripts/run\_results.py} followed by \texttt{scripts/build\_results.py} regenerates
-every number from \texttt{pipeline.py}; settings (first order, $\eps$, trial layers $=1$) are at the top of that module.
+every number from \texttt{pipeline.py}; settings (order, $\eps$, trial layers $=1$) are at the top of that module; the second-order data come from \texttt{trotter2/second\_order\_circuit.py}.
 
 \end{document}
