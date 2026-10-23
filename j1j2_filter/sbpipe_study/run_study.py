@@ -35,9 +35,43 @@ CACHE = os.path.join(RES, "cache")
 os.makedirs(CACHE, exist_ok=True)
 JOBS = int(os.environ.get("JOBS", "4"))
 
+
+def _install_design_cache():
+    """Filter designs depend only on (schedule, delta, w0, eps_leak, gamma); the optimised ones take
+    minutes at N = 48, and both Trotter orders and several studies reuse them. Cache them on disk."""
+    import hashlib
+    import pickle
+
+    import sbpipe.design as SD
+    if getattr(SD.design_filter, "_cached", False):
+        return
+    orig = SD.design_filter
+    d = os.path.join(CACHE, "designs")
+    os.makedirs(d, exist_ok=True)
+
+    def cached(schedule, delta, w0, eps_leak, gamma, **kw):
+        key = repr((schedule, float(delta), float(w0), float(eps_leak), float(gamma), sorted(kw.items())))
+        p = os.path.join(d, hashlib.sha1(key.encode()).hexdigest() + ".pkl")
+        if os.path.exists(p):
+            with open(p, "rb") as fh:
+                return pickle.load(fh)
+        out = orig(schedule, delta, w0, eps_leak, gamma, **kw)
+        tmp = f"{p}.{os.getpid()}.tmp"
+        with open(tmp, "wb") as fh:
+            pickle.dump(out, fh)
+        os.replace(tmp, p)
+        return out
+
+    cached._cached = True
+    SD.design_filter = cached
+
+
+_install_design_cache()
+
 J2S = [0.0, 0.2411, 0.4]
 N_VAL = [8, 10, 12, 14]
-N_SCALE = [8, 12, 16, 20, 24, 32, 40, 48]
+N_SCALE = [8, 12, 16, 24, 32, 48]
+N_INPUTS = [8, 10, 12, 14, 16, 20, 24, 32, 40, 48]      # DMRG inputs computed (and tabulated)
 CHIS = [1, 2, 4, 8]
 ED_MAX_N = 14
 
@@ -116,14 +150,14 @@ def get_inputs(N, J2, chi=2):
 
 
 def run_inputs():
-    todo = [(N, J2) for J2 in J2S for N in sorted(set(N_VAL + N_SCALE), reverse=True)]
+    todo = [(N, J2) for J2 in J2S for N in sorted(N_INPUTS, reverse=True)]
     todo = [t for t in todo if not os.path.exists(os.path.join(CACHE, _key(*t) + ".json"))]
     with ProcessPoolExecutor(JOBS) as ex:
         for k, dt in ex.map(compute_inputs, todo):
             print(f"[inputs] {k} {dt:.0f}s", flush=True)
     rows = []
     for J2 in J2S:
-        for N in sorted(set(N_VAL + N_SCALE)):
+        for N in sorted(N_INPUTS):
             rec, est, ans, _ = get_inputs(N, J2)
             r = dict(N=N, J2=J2, E0=est.E0, E1=est.E1, gap=est.gap, E0_err=est.E0_err,
                      E1_err=est.E1_err, dmrg_time=rec["dmrg_time"],
@@ -185,7 +219,7 @@ def _scale_case(args):
 
 def run_scaling():
     cases = [(N, J2, eps, s, o, chi) for N in N_SCALE for J2 in J2S for eps in (1e-2, 1e-3)
-             for s in ("dyadic", "optimized") for o in (1, 2) for chi in (2, 4)]
+             for s in ("dyadic", "optimized") for o in (1, 2) for chi in (2,)]
     with ProcessPoolExecutor(JOBS) as ex:
         out = list(ex.map(_scale_case, cases))
     dump("scaling.json", out)
@@ -225,7 +259,7 @@ def _ansatz_case(args):
     rec, est, ans, _ = get_inputs(N, J2, chi)
     ans.statevector = None
     try:
-        plan = refine(j1j2_chain(N, 1.0, J2), est, ans, Config(eps=eps, schedule="optimized", order=2))
+        plan = refine(j1j2_chain(N, 1.0, J2), est, ans, Config(eps=eps, schedule="auto", order=2))
     except (RuntimeError, ValueError) as e:      # e.g. gamma ~ 1e-6 for a product state
         return dict(N=N, J2=J2, eps=eps, chi=chi, gamma=ans.gamma, trial_cost=ans.cost,
                     plan=None, error=str(e))
@@ -234,7 +268,7 @@ def _ansatz_case(args):
 
 
 def run_ansatz():
-    cases = [(N, J2, eps, chi) for N in (16, 24, 32, 48) for J2 in J2S for eps in (1e-2, 1e-3)
+    cases = [(N, J2, eps, chi) for N in (16, 32, 48) for J2 in J2S for eps in (1e-2,)
              for chi in CHIS]
     with ProcessPoolExecutor(JOBS) as ex:
         out = list(ex.map(_ansatz_case, cases))

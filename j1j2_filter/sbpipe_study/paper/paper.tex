@@ -35,12 +35,15 @@ ground energy, a lower bound on the gap and on the trial overlap), and every one
 an explicit input. We apply it to the open spin-$\tfrac12$ $J_1$--$J_2$ chain with DMRG inputs and
 bond-dimension-$\chi$ matrix-product trial states, $N=8$--$48$. In all \nSimOK{} of \nSim{} simulated
 circuits ($N\le14$) the certified bound held; it overestimates the measured infidelity by a median
-factor of \boundRatioMed, almost entirely in its Trotter term. An optimised filter beats the halving
-(``dyadic'') schedule by a median \gainOptMed$\times$ in expected CNOT count and a second-order product
-formula beats first order by a median \gainOrderMed$\times$. At $N=48$ near the critical coupling the
-certified circuit for infidelity $10^{-2}$ costs \cnotFortyEight{} CNOTs per successful preparation.
-Overestimating the gap is the one input error that breaks the guarantee in practice; a conservative
-gap costs little.
+factor of \boundRatioMed, mostly through its Trotter term. A second-order product formula is a median
+\gainOrderMed$\times$ cheaper than first order, and an optimised filter a median \gainOptMed$\times$
+cheaper than a closed-form halving (``dyadic'') schedule, which however is the only design that stays
+feasible for small overlaps. Near the critical coupling at $N=48$, a $\chi=4$ trial state is refined to
+infidelity $10^{-2}$ for \cnotFortyEightChiFour{} CNOTs per success. Overestimating the gap by
+$50\%$ is the one input error that broke the target; a conservative gap costs at most
+\gapMarginCost$\times$. For this one-dimensional model at $\epsilon=10^{-2}$, however, a $\chi=8$
+matrix-product circuit alone already meets the target with about $10^{3}$--$10^{4}$ CNOTs, so the value of
+the pipeline lies in its certificate and in models where compact trial states are not available.
 \end{abstract}
 
 \maketitle
@@ -126,8 +129,10 @@ The Hamiltonian is $H=\sum_a c_aP_a$ with real $c_a$ and Pauli strings $P_a$, in
 also the Trotter order, and with an optional grouping of terms (here: one group per bond). The pipeline
 assumes
 \begin{equation}
-E_0\in[E_0^{\rm est}-\delta E_0,\;E_0^{\rm est}+\delta E_0],\quad E_1\ge E_1^{\rm est}-\delta E_1,\quad
-E_{\rm top}\le E_{\max},
+\begin{gathered}
+E_0\in[E_0^{\rm est}-\delta E_0,\;E_0^{\rm est}+\delta E_0],\\
+E_1\ge E_1^{\rm est}-\delta E_1,\qquad E_{\rm top}\le E_{\max},
+\end{gathered}
 \label{eq:assumptions}
 \end{equation}
 where $E_1$ is the lowest level above the ground space that the trial state can overlap with. If no
@@ -189,7 +194,8 @@ constraint in place of a grid objective; it uses the SLSQP designer \texttt{floo
 Nonzero phases trade success probability ($F(0)<1$) for a shorter $T$.
 
 For each schedule the leakage share $\epsilon_\ell/\epsilon\in\{0.5,0.25,0.1,0.05\}$ is scanned and the
-plan with the smallest expected CNOT count per success is kept.
+plan with the smallest expected CNOT count per success is kept. An ``auto'' mode does the same over the dyadic and optimised
+schedules together.
 
 \subsection{Trotterisation}
 
@@ -280,10 +286,10 @@ on $b+1$ qubits; we cost each with the quantum Shannon decomposition bound
 $\frac{23}{48}4^n-\frac32 2^n+\frac43$ CNOTs (3, 20, 100 for $n=2,3,4$)~\cite{Shende2006} and $4^n-1$
 rotations.
 
-For $N\le14$ we compare with exact diagonalisation (ED). DMRG reproduces $E_0$ to \dmrgEzeroErr{},
-the first excited level of any symmetry to \dmrgEoneErr{} (so the first excitation is the triplet in
+For $N\le14$ we compare with exact diagonalisation (ED). DMRG reproduces $E_0$ to $\dmrgEzeroErr$,
+the first excited level of any symmetry to $\dmrgEoneErr$ (so the first excitation is the triplet in
 every ED case, as also found for $N\le16$ in Ref.~\cite{repoWriteup}), and the trial overlaps to
-\dmrgGammaErr. The Weyl bound equals the exact top of the spectrum to \weylErr.
+$\dmrgGammaErr$ (largest difference, for a $\chi=1$ trial). The Weyl bound equals the exact top of the spectrum to $\weylErr$.
 Table~\ref{tab:inputs} lists the inputs. The trial overlap decays roughly exponentially with $N$ at
 fixed $\chi$, the familiar orthogonality catastrophe, so the filter has more to do at larger $N$.
 
@@ -307,32 +313,38 @@ For $N\in\{8,10,12,14\}$, the three couplings, $\epsilon\in\{10^{-2},10^{-3}\}$,
 both Trotter orders we plan a circuit for the $\chi=2$ trial state and, when its size permits,
 simulate it exactly: the ancilla-0 block of the Trotterised circuit is
 $\frac12(e^{-i\phi}S(t)+e^{i\phi}S(-t))$ per pulse, applied to the trial statevector and compared with
-the ED ground state. Of \nPlans{} plans, \nSim{} were simulated (the others are uniform or first-order
-plans with more than $\sim10^{6}$ steps), and the certificate held in all \nSimOK{}
-(Fig.~\ref{fig:validation}).
+the ED ground state. Of \nPlans{} plans, \nSim{} were simulated (the others, mostly uniform or first-order plans
+with $10^{4}$--$10^{8}$ steps, exceed our simulation budget), and the certificate held in all
+\nSimOK{} (Fig.~\ref{fig:validation}).
 
 \begin{figure}[t]
 \includegraphics[width=\columnwidth]{figs/fig_validation.pdf}
-\caption{Certified bound versus measured value for all simulated plans. (a) Total infidelity;
-(b) Trotter distance between the Trotterised and the exact filtered state. Points below the dashed
-line respect the bound. Filled circles: second order; open squares: first order.}
+\caption{All simulated plans. (a) Measured infidelity of the planned circuit divided by the target
+$\epsilon$ (the certified bound is $\le\epsilon$ by construction); points are offset horizontally by
+schedule and order. (b) Measured distance between the Trotterised and the exact filtered state against
+its certified bound. Points below the dashed lines respect the bound. Filled circles: second order;
+open squares: first order.}
 \label{fig:validation}
 \end{figure}
 
 The bound is conservative by a median factor \boundRatioMed{} (range \boundRatioMin--$\boundRatioMax$)
 in infidelity. Splitting it shows where: the leakage term $\ell$ overestimates the exact filter's
-infidelity by \leakRatioMin--\leakRatioMax$\times$ (median \leakRatioMed), because $\eta$ is a worst
-case over the whole stop band while the trial state's excited weight sits mostly low in the band. The
+infidelity by a median \leakRatioMed$\times$ (range \leakRatioMin--$\leakRatioMax$). By schedule the medians are 1.4 (optimised), 4 (uniform)
+and 56 (dyadic): the optimised design pushes $|F|$ to $\eta F_{\rm pass}$ across the band, whereas the
+closed-form dyadic bound $1/(2^K\sin\theta)$ is reached only near the band edge. More generally, $\eta$ is
+a worst case over the whole stop band while the trial state's excited weight sits mostly low in the
+band. The
 Trotter term overestimates the measured Trotter distance by a median \trotRatioMed$\times$ (range
 \trotRatioMin--$\trotRatioMax$), consistent with earlier findings for this model~\cite{repoWriteup}:
 commutator bounds are worst-case over all states, while the filtered state lives in the low-energy
 subspace, where Trotter errors are much smaller~\cite{Sahinoglu2021}. The measured success probability
-is \psuccRatioMin--\psuccRatioMax{} times the bound $p_g$.
+equals $p_g$ to two digits in every case, because after filtering almost all of the surviving norm is
+ground-state weight.
 
 Table~\ref{tab:schedules} compares the schedules for one case. The uniform filter needs a total time
 an order of magnitude larger than the others, as its $\Delta^{-2}$ scaling predicts. The optimised
-filter is shortest; its nonzero phases lower $p_g$, which the cost criterion accounts for. Second
-order cuts the step count by one to two orders of magnitude at these sizes.
+filter is shortest; its nonzero phases lower $p_g$ (0.58 against 0.81 here), which the cost criterion
+accounts for. Second order cuts the step count by one to two orders of magnitude at these sizes.
 Figure~\ref{fig:filters} shows the three filter functions.
 
 \begin{figure}[t]
@@ -379,33 +391,40 @@ $\epsilon$ & schedule & 8 & 10 & 12 & 8 & 10 & 12 & 8 & 10 & 12\\
 
 \subsection{Resources up to $N=48$}
 
-Without simulation the pipeline only needs DMRG, so we plan for $N$ up to 48
-(Fig.~\ref{fig:scaling}, Table~\ref{tab:scaling}). Over all sizes, couplings, targets and trial bond
-dimensions the second-order plan is \gainOrderMin--\gainOrderMax$\times$ (median \gainOrderMed)
-cheaper than first order, and the optimised schedule is \gainOptMin--\gainOptMax$\times$ (median
-\gainOptMed) cheaper than the dyadic one at second order. For $N\ge16$, $\chi=4$, $\epsilon=10^{-2}$ the
-expected CNOT count of the optimised second-order plan grows as $N^{\fitAOptTwoCnot}$,
-$N^{\fitBOptTwoCnot}$ and $N^{\fitCOptTwoCnot}$ for $J_2=0,0.2411,0.4$ (first order:
-$N^{\fitAOptOneCnot}$, $N^{\fitBOptOneCnot}$, $N^{\fitCOptOneCnot}$). These exponents combine the
-shrinking gap ($T\propto1/\Delta$), the growing commutator constants and number of terms, and the
-decaying overlap; they are fits over $N=16$--48, not asymptotic statements.
+Without simulation the pipeline only needs DMRG, so we plan for $N$ up to 48 with the same $\chi=2$
+trial family (Fig.~\ref{fig:scaling}, Table~\ref{tab:scaling}). Over all sizes, couplings and targets
+the second-order plan is \gainOrderMin--\gainOrderMax$\times$ (median \gainOrderMed) cheaper than the
+first-order plan of the same schedule. The optimised schedule is \gainOptMin--\gainOptMax$\times$
+(median \gainOptMed) cheaper than the dyadic one at second order, and more expensive in \nDyaWins{} of
+\nOptCmp{} comparable cases. Its numerical design, however, failed in \nScaleFail{} of \nScale{} plans,
+all at $N\ge32$ where $\gamma\lesssim0.4$ or $\epsilon=10^{-3}$ demand a suppression $\eta$ the
+SLSQP search with $F(0)^2\ge10^{-3}$ did not reach; the dyadic schedule is feasible everywhere, which
+is why the pipeline offers an automatic choice between the two. For $N=16$--48 the expected CNOT count
+of the dyadic second-order plan grows as $N^{\fitADyaTwoCnot}$, $N^{\fitBDyaTwoCnot}$ and
+$N^{\fitCDyaTwoCnot}$ for $J_2=0,0.2411,0.4$, and its step count as $N^{\fitADyaTwoSteps}$,
+$N^{\fitBDyaTwoSteps}$, $N^{\fitCDyaTwoSteps}$. These exponents combine the shrinking gap
+($T\propto1/\Delta$, and $\Delta=g/W$ with $W\propto N$), the growing commutator constant, the number of
+terms per step and the decaying overlap ($1/p_g$); they are fits over $N=16$--48, not asymptotic
+statements. At $N=48$, $J_2=0.2411$ the best $\chi=2$ plan (\schedFortyEight) needs
+\cnotFortyEight{} CNOTs per success, which the next section reduces by choosing a better trial.
 
 \begin{figure*}[t]
 \includegraphics[width=\textwidth]{figs/fig_scaling.pdf}
-\caption{Expected CNOTs per successful preparation versus $N$ (trial $\chi=4$, $\epsilon=10^{-2}$),
+\caption{Expected CNOTs per successful preparation versus $N$ (trial $\chi=2$, $\epsilon=10^{-2}$),
 including the trial circuit and the $1/p_g$ repetitions. Solid: second order; dashed: first order.
-Source: \texttt{results/scaling.json}.}
+Missing optimised points: no feasible design (see text). Source: \texttt{results/scaling.json}.}
 \label{fig:scaling}
 \end{figure*}
 
 \begin{table*}[t]
-\caption{Optimised plans for $\epsilon=10^{-2}$, trial $\chi=4$. $\Delta$ is the scaled gap,
-$T_{\rm phys}$ in $1/J_1$. Steps for first (1st) and second (2nd) order; CNOT and $T$ counts for second
-order. Source: \texttt{results/scaling.json}.}
+\caption{Cheapest second-order plan (``sch.'': dyadic or optimised) for $\epsilon=10^{-2}$, trial
+$\chi=2$. $\Delta$ is the scaled gap, $T_{\rm phys}=T/W$ in $1/J_1$. Steps for first (1st) and second
+(2nd) order with the same schedule; CNOT and $T$ counts for second order. Source:
+\texttt{results/scaling.json}.}
 \label{tab:scaling}
 \begin{ruledtabular}
-\begin{tabular}{rrrrrrrrrrr}
-$N$ & $J_2$ & $\gamma$ & $\Delta$ & $T_{\rm phys}$ & $p_g$ & steps (1st) & steps (2nd) & CNOT/attempt & CNOT/success & $T$/success\\
+\begin{tabular}{rrrrlrrrrrrr}
+$N$ & $J_2$ & $\gamma$ & $\Delta$ & sch. & $T_{\rm phys}$ & $p_g$ & steps (1st) & steps (2nd) & CNOT/attempt & CNOT/success & $T$/success\\
 \midrule
 \input{generated/tab_scaling.tex}
 \end{tabular}
@@ -429,10 +448,10 @@ Source: \texttt{results/sensitivity.json}.}
 \end{figure*}
 
 \emph{Gap.} A gap assumed larger than the true one moves the stop-band edge above the first
-excitation, which then sits in the filter's transition region. In \nGapFail{} of the overestimated
-cases the target was missed, starting at $f=\gapFailFactor$, with infidelity up to \gapWorstInf{} at
-$f=\gapWorstF$. Underestimating the gap is safe and cheap: assuming $f=\gapMarginF$ costs at most
-\gapMarginCost$\times$. Since DMRG gives an \emph{upper} bound on $E_1$, an explicit margin $\delta E_1$
+excitation, which then sits in the filter's transition region. The target was missed in \nGapFail{}
+cases, $f\ge\gapFailFactor$, with infidelity up to \gapWorstInf{} at $f=\gapWorstF$; at $f=1.1$ and
+1.25 the looseness of the certificate still covered the error. Underestimating the gap is safe and
+cheap: even $f=\gapMarginF$ costs only \gapMarginCost$\times$. Since DMRG gives an \emph{upper} bound on $E_1$, an explicit margin $\delta E_1$
 is the natural safeguard.
 
 \emph{Ground energy.} An error bar $\delta E_0$ widens the pass band and lowers $F_{\rm pass}$; the
@@ -440,32 +459,40 @@ cost stays flat until $\delta E_0$ is a sizeable fraction of the gap (\eZeroHiCo
 $\delta E_0=\eZeroHiF$ gap). DMRG energies are far more accurate than this, so $E_0$ is never the
 limiting input here.
 
-\emph{Overlap.} Underestimating $\gamma$ is safe (a stricter $\eta$) and costs
-\gammaLowCost$\times$ at $f=0.25$. Overestimating it by 2\% did not break the target here
-(\nGammaFail{} failures), because the leakage term is itself loose.
+\emph{Overlap.} Underestimating $\gamma$ is safe (a stricter $\eta$); the planned cost rises
+\gammaLowCost$\times$ at $f=0.25$, mostly because the planned success probability $p_g=\gamma F_{\rm
+pass}^2$ uses the pessimistic $\gamma$, while the actual success rate does not change. Overestimating
+it by 2\% did not break the target here (\nGammaFail{} failures), because the leakage term is itself
+loose.
 
 \subsection{Choosing the ansatz}
 
 The trial bond dimension trades circuit depth for overlap. Figure~\ref{fig:ansatz} and
-Table~\ref{tab:ansatz} show the expected total cost for $\chi=1$ to 8. A product state ($\chi=1$) has
-an exponentially small overlap and is the most expensive start; $\chi=2$ or 4 is usually best, because
-beyond that the filter cost barely changes (it depends on $\gamma$ only through $\ln$ and $1/p_g$)
-while the trial circuit grows as $4^{\log_2\chi+1}$ per site. The best $\chi$ over the cases shown is in
-$\{\bestChiList\}$. Stars mark trial states that already meet $1-\gamma\le\epsilon$ without a
-filter; when they exist they are much cheaper, which is the regime where direct MPS preparation should
-be preferred~\cite{repoWriteup}.
+Table~\ref{tab:ansatz} show the expected total cost for $\chi=1$ to 8 (the pipeline choosing the
+cheaper of the dyadic and optimised schedules). A product state ($\chi=1$) has an exponentially small
+overlap and is by far the most expensive start ($10^{7}$--$10^{23}$ CNOTs). Going to $\chi=2$ and
+$\chi=4$ lowers the cost by orders of magnitude: at $N=48$, $J_2=0.2411$ the $\chi=4$ plan needs
+\cnotFortyEightChiFour{} CNOTs and \tFortyEightChiFour{} $T$ gates per success. At $\chi=8$ the trial
+state alone satisfies $1-\gamma\le10^{-2}$ in \nNoFilterChiEight{} of \nChiEight{} cases
+($\gamma=\gammaFortyEightChiEight$ at $N=48$, $J_2=0.2411$), and the pipeline returns the empty filter:
+\cnotFortyEightChiEight{} CNOTs. For this gapless-to-weakly-gapped one-dimensional chain at
+$\epsilon=10^{-2}$, directly compiling a better MPS is therefore much cheaper than filtering a worse
+one, in agreement with earlier analyses of this model~\cite{repoWriteup}. The filter becomes the better
+tool when the target is tighter than what a compilable MPS reaches, when a certificate on the output
+is required, or when the classical method cannot provide a compact high-overlap trial circuit, as for
+two-dimensional lattices.
 
 \begin{figure*}[t]
 \includegraphics[width=\textwidth]{figs/fig_ansatz.pdf}
-\caption{Expected CNOTs per success versus trial bond dimension ($\epsilon=10^{-2}$, optimised,
-second order). Stars: cost of the trial circuit alone when it already satisfies $1-\gamma\le\epsilon$.
-Source: \texttt{results/ansatz.json}.}
+\caption{Expected CNOTs per success versus trial bond dimension ($\epsilon=10^{-2}$, second order,
+cheaper of dyadic and optimised). Stars: the trial state alone satisfies $1-\gamma\le\epsilon$ and no
+filter is used. Source: \texttt{results/ansatz.json}.}
 \label{fig:ansatz}
 \end{figure*}
 
 \begin{table*}[t]
 \caption{Overlap $\gamma$ and expected CNOTs per success for trial bond dimension $\chi=1,2,4,8$
-($\epsilon=10^{-2}$, optimised, second order).}
+($\epsilon=10^{-2}$, second order, cheaper schedule; no filter when $1-\gamma\le\epsilon$).}
 \label{tab:ansatz}
 \begin{ruledtabular}
 \begin{tabular}{rrrrrrrrrr}
@@ -488,21 +515,26 @@ broke the target in our tests. Rigorous lower bounds on $E_1$ from classical dat
 (e.g.\ Temple-type bounds from the energy variance) would make the guarantee unconditional and plug
 into the same interface.
 
-\emph{Where the cost goes.} The certified cost is dominated by the Trotter term, which is two to three
-orders of magnitude loose. Second-order formulas recover most of the first-order looseness;
+\emph{Where the cost goes.} The certified cost is dominated by the Trotter term, whose bound is a
+median \trotRatioMed$\times$ the measured Trotter distance; at the level of step counts the certified
+second-order plan uses \oracleMin--\oracleMax$\times$ (median \oracleMed) more steps than needed. Second-order formulas recover most of the first-order looseness;
 bounds restricted to the low-energy subspace~\cite{Sahinoglu2021} or higher-order formulas are the
-obvious next lever. The leakage term is loose by about one order of magnitude, which would only be
-recovered with knowledge of the excited-state distribution of the trial state.
+obvious next lever. The leakage term is nearly tight for optimised filters (median 1.4$\times$); for the closed-form
+schedules it could be tightened by certifying $\eta$ numerically when $L$ is small enough.
 
-\emph{Is the filter worth it here?} In one dimension, increasing the bond dimension of a directly
-compiled MPS is a strong competitor at these sizes~\cite{repoWriteup}; the filter's advantages are a
-certificate and a cost that depends on the trial state only logarithmically. The pipeline is generic
+\emph{Is the filter worth it here?} Not for this model at $\epsilon=10^{-2}$: a $\chi=8$ MPS circuit
+meets the target directly with between one and more than three orders of magnitude fewer CNOTs than
+the cheapest filtered plan (Table~\ref{tab:ansatz}).
+The filter's advantages are a certificate on the output and a cost that depends on the trial overlap
+only through $\ln(1/\eta)$ and $1/p_g$. The pipeline is generic
 in $H$, so the same comparison can be run for two-dimensional models where MPS compilation scales
 worse; we leave that to future work.
 
 \emph{Limitations.} Noiseless simulation; repeat-until-success rather than early abort; ladder CNOT
 counts (an upper bound, about $1.5\times$ a compiler's); all-to-all connectivity; trial circuits costed
-by a generic decomposition bound rather than compiled; validation only up to $N=14$.
+by a generic decomposition bound rather than compiled; validation only up to $N=14$; the optimised
+designer can fail for small overlaps; $E_1$ is taken as the lowest $S^z=1$ state, which is the first
+excitation in every ED case here but is an assumption for larger $N$.
 
 %=====================================================================================================
 \appendix

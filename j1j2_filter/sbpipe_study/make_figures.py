@@ -127,28 +127,32 @@ def validation():
     macro("psuccRatioMin", f"{min(pr):.2f}")
     macro("psuccRatioMax", f"{max(pr):.2f}")
 
-    fig, ax = plt.subplots(1, 2, figsize=(6.8, 2.7))
+    fig, ax = plt.subplots(1, 2, figsize=(6.8, 2.6))
+    off = {"uniform": -0.45, "dyadic": 0.0, "optimized": 0.45}
     for v in sims:
         s, o = v["schedule"], v["order"]
         kw = dict(color=SCHED_COL[s], marker="o" if o == 2 else "s",
-                  mfc=SCHED_COL[s] if o == 2 else "white", mew=1.0, ls="none", ms=4.5)
-        ax[0].plot(v["plan"]["infidelity_bound"], v["sim"]["infidelity_trotter"], **kw)
+                  mfc=SCHED_COL[s] if o == 2 else "white", mew=1.0, ls="none", ms=4)
+        x = v["N"] + off[s] + (0.12 if o == 1 else -0.12)
+        ax[0].plot(x, v["sim"]["infidelity_trotter"] / v["eps"], **kw)
         ax[1].plot(v["sim"]["trotter_dist_bound"], max(v["sim"]["trotter_state_dist"], 1e-9), **kw)
-    for a, lab in zip(ax, [(r"certified bound on $1-F$", r"measured $1-F$"),
-                           (r"bound on Trotter distance $\epsilon_U/\sqrt{p_g}$",
-                            r"measured Trotter distance")]):
-        lim = np.array([1e-9, 1])
-        a.plot(lim, lim, color=INK2, lw=0.8, ls="--")
-        a.text(2e-2, 4e-2, "bound = measured", rotation=33, color=INK2, fontsize=7, ha="right")
-        a.set_xscale("log"); a.set_yscale("log")
-        a.set_xlabel(lab[0]); a.set_ylabel(lab[1])
-    ax[0].set_xlim(3e-4, 2e-2); ax[0].set_ylim(1e-7, 2e-2)
+    ax[0].axhline(1.0, color=INK2, lw=0.8, ls="--")
+    ax[0].text(7.4, 1.25, "target / bound", color=INK2, fontsize=7)
+    ax[0].set_yscale("log"); ax[0].set_ylim(1e-6, 3)
+    ax[0].set_xticks([8, 10, 12, 14]); ax[0].set_xlim(7, 15)
+    ax[0].set_xlabel("$N$"); ax[0].set_ylabel(r"measured $1-F$ / target $\epsilon$")
+    lim = np.array([1e-9, 1])
+    ax[1].plot(lim, lim, color=INK2, lw=0.8, ls="--")
+    ax[1].text(4e-3, 6e-3, "bound = measured", rotation=28, color=INK2, fontsize=7)
+    ax[1].set_xscale("log"); ax[1].set_yscale("log")
     ax[1].set_xlim(3e-3, 0.2); ax[1].set_ylim(1e-9, 0.2)
+    ax[1].set_xlabel(r"bound on Trotter distance $\epsilon_T/\sqrt{p_g}$")
+    ax[1].set_ylabel("measured Trotter distance")
     h = [plt.Line2D([], [], color=SCHED_COL[s], marker="o", ls="none", label=s) for s in SCHED_COL]
     h += [plt.Line2D([], [], color=INK2, marker="o", ls="none", label="2nd order"),
           plt.Line2D([], [], color=INK2, marker="s", mfc="white", ls="none", label="1st order")]
-    ax[0].legend(handles=h, loc="upper left", ncol=1)
-    ax[0].set_title("(a) total infidelity", loc="left")
+    ax[1].legend(handles=h, loc="lower right", ncol=1)
+    ax[0].set_title(r"(a) total infidelity ($\epsilon=10^{-2},10^{-3}$)", loc="left")
     ax[1].set_title("(b) Trotter part", loc="left")
     fig.tight_layout()
     fig.savefig(os.path.join(FIG, "fig_validation.pdf"))
@@ -159,19 +163,17 @@ def validation():
     if c:
         fig, ax = plt.subplots(figsize=(3.4, 2.4))
         delta = c[0]["plan"]["delta"]
-        E = np.linspace(0, 1, 20001)
+        E = np.linspace(0, 1, 40001)
         for v in sorted(c, key=lambda v: v["schedule"]):
             t, ph = np.array(v["times"]), np.array(v["phases"])
             F = np.prod(np.cos(np.outer(E, t) + ph), axis=1)
-            ax.plot(E, np.abs(F) + 1e-12, color=SCHED_COL[v["schedule"]], lw=1.0,
-                    label=f"{v['schedule']}  ($T={v['plan']['T_scaled']:.0f}$, $m={v['plan']['m']}$)")
-            ax.axhline(v["plan"]["eta"] * v["plan"]["f_pass"], color=SCHED_COL[v["schedule"]],
-                       lw=0.6, ls=":")
-        ax.axvspan(0, delta, color=GRID, alpha=0.7, lw=0)
-        ax.text(delta * 1.1, 2e-5, r"$\Delta$", color=INK2)
-        ax.set_yscale("log"); ax.set_ylim(1e-5, 1.5); ax.set_xlim(0, 1)
-        ax.set_xscale("symlog", linthresh=delta, linscale=0.6)
-        ax.set_xlabel(r"scaled energy $(E-E_0)/W$"); ax.set_ylabel(r"$|F(E)|$")
+            ax.plot(E, np.abs(F) + 1e-12, color=SCHED_COL[v["schedule"]], lw=0.9,
+                    label=f"{v['schedule']} ($m={v['plan']['m']}$)")
+        ax.axvspan(0, delta, color=GRID, alpha=0.8, lw=0)
+        ax.text(delta * 1.15, 3e-6, r"$\Delta$", color=INK2)
+        ax.set_yscale("log"); ax.set_ylim(1e-6, 2)
+        ax.set_xscale("log"); ax.set_xlim(1e-3, 1)
+        ax.set_xlabel(r"scaled energy $(E-s)/W$"); ax.set_ylabel(r"$|F(E)|$")
         ax.legend(loc="lower left", fontsize=6.5)
         fig.tight_layout()
         fig.savefig(os.path.join(FIG, "fig_filters.pdf"))
@@ -207,7 +209,7 @@ def scaling():
     macro("nScale", len(S))
     S = [r for r in S if r["plan"] is not None]
     fig, ax = plt.subplots(1, 3, figsize=(7.0, 2.5), sharey=False)
-    eps, chi = 1e-2, 4
+    eps, chi = 1e-2, 2
     fits = {}
     for k, J2 in enumerate(J2S):
         a = ax[k]
@@ -239,45 +241,48 @@ def scaling():
             ("One" if o == 1 else "Two") + ("Cnot" if q == "cnot" else "Steps")
         macro(f"fit{tag}", f"{p:.1f}")
 
-    # gap / T table
+    # table: the cheaper schedule (second order) per case, with first-order steps of that schedule
+    def pick(N, J2, e, o, sched=None):
+        c = [r for r in S if r["N"] == N and r["J2"] == J2 and r["eps"] == e and r["chi"] == chi
+             and r["order"] == o and (sched is None or r["schedule"] == sched)]
+        return min(c, key=lambda r: r["plan"]["res_expected_cnot"]) if c else None
+
     lines = []
     for N in (16, 24, 32, 48):
         for J2 in J2S:
-            r1 = [r for r in S if r["N"] == N and r["J2"] == J2 and r["eps"] == eps and r["chi"] == chi
-                  and r["schedule"] == "optimized" and r["order"] == 1]
-            r2 = [r for r in S if r["N"] == N and r["J2"] == J2 and r["eps"] == eps and r["chi"] == chi
-                  and r["schedule"] == "optimized" and r["order"] == 2]
-            if not (r1 and r2):
+            b = pick(N, J2, eps, 2)
+            if b is None:
                 continue
-            p1, p2 = r1[0]["plan"], r2[0]["plan"]
-            lines.append(f"{N} & {J2:g} & {r2[0]['gamma']:.3f} & {p2['delta']:.4f} & {p2['T_phys']:.1f} & "
-                         f"{p2['p_g']:.2f} & {num(p1['res_steps'])} & {num(p2['res_steps'])} & "
-                         f"${sci(p2['res_attempt_cnot'])}$ & ${sci(p2['res_expected_cnot'])}$ & "
-                         f"${sci(p2['res_expected_t'])}$ \\\\")
+            b1 = pick(N, J2, eps, 1, b["schedule"])
+            p1, p2 = (b1 or {}).get("plan"), b["plan"]
+            lines.append(f"{N} & {J2:g} & {b['gamma']:.3f} & {p2['delta']:.4f} & {b['schedule'][:3]}. & "
+                         f"{p2['T_phys']:.1f} & {p2['p_g']:.2f} & {num(p1['res_steps']) if p1 else '--'} & "
+                         f"{num(p2['res_steps'])} & ${sci(p2['res_attempt_cnot'])}$ & "
+                         f"${sci(p2['res_expected_cnot'])}$ & ${sci(p2['res_expected_t'])}$ \\\\")
     with open(os.path.join(GEN, "tab_scaling.tex"), "w") as fh:
         fh.write("\n".join(lines) + "\n")
-    r = [r for r in S if r["N"] == 48 and r["J2"] == 0.2411 and r["eps"] == 1e-2 and r["chi"] == 4
-         and r["schedule"] == "optimized" and r["order"] == 2]
-    if r:
-        macro("cnotFortyEight", f"${sci(r[0]['plan']['res_expected_cnot'])}$")
-        macro("tFortyEight", f"${sci(r[0]['plan']['res_expected_t'])}$")
-    # order-2 vs order-1 and optimized vs dyadic gains
+    b = pick(48, 0.2411, 1e-2, 2)
+    macro("cnotFortyEight", f"${sci(b['plan']['res_expected_cnot'])}$")
+    macro("tFortyEight", f"${sci(b['plan']['res_expected_t'])}$")
+    macro("schedFortyEight", b["schedule"])
+    # order-2 vs order-1 (same schedule) and optimized vs dyadic (second order) gains
     g12, gdo = [], []
     for r in S:
-        if r["order"] != 2 or r["schedule"] != "optimized":
+        if r["order"] != 2 or r["plan"]["m"] == 0:
             continue
-        m1 = [q for q in S if q["N"] == r["N"] and q["J2"] == r["J2"] and q["eps"] == r["eps"]
-              and q["chi"] == r["chi"] and q["schedule"] == "optimized" and q["order"] == 1]
-        md = [q for q in S if q["N"] == r["N"] and q["J2"] == r["J2"] and q["eps"] == r["eps"]
-              and q["chi"] == r["chi"] and q["schedule"] == "dyadic" and q["order"] == 2]
+        m1 = pick(r["N"], r["J2"], r["eps"], 1, r["schedule"])
         if m1:
-            g12.append(m1[0]["plan"]["res_expected_cnot"] / r["plan"]["res_expected_cnot"])
-        if md:
-            gdo.append(md[0]["plan"]["res_expected_cnot"] / r["plan"]["res_expected_cnot"])
+            g12.append(m1["plan"]["res_expected_cnot"] / r["plan"]["res_expected_cnot"])
+        if r["schedule"] == "optimized":
+            md = pick(r["N"], r["J2"], r["eps"], 2, "dyadic")
+            if md:
+                gdo.append(md["plan"]["res_expected_cnot"] / r["plan"]["res_expected_cnot"])
     macro("gainOrderMin", f"{min(g12):.0f}"); macro("gainOrderMax", f"{max(g12):.0f}")
     macro("gainOrderMed", f"{np.median(g12):.0f}")
     macro("gainOptMin", f"{min(gdo):.1f}"); macro("gainOptMax", f"{max(gdo):.1f}")
     macro("gainOptMed", f"{np.median(gdo):.1f}")
+    macro("nDyaWins", sum(g < 1 for g in gdo))
+    macro("nOptCmp", len(gdo))
 
 
 # ----------------------------------------------------------------------------- sensitivity
@@ -381,6 +386,16 @@ def ansatz():
     with open(os.path.join(GEN, "tab_ansatz.tex"), "w") as fh:
         fh.write("\n".join(lines) + "\n")
     macro("bestChiList", ", ".join(sorted({str(v) for v in best.values()})))
+    none = [r for r in A if r["plan"]["m"] == 0]
+    macro("nNoFilter", len(none))
+    macro("nNoFilterChiEight", sum(r["chi"] == 8 for r in none))
+    macro("nChiEight", sum(r["chi"] == 8 for r in A))
+    r4 = [r for r in A if r["N"] == 48 and r["J2"] == 0.2411 and r["chi"] == 4 and r["eps"] == eps][0]
+    r8 = [r for r in A if r["N"] == 48 and r["J2"] == 0.2411 and r["chi"] == 8 and r["eps"] == eps][0]
+    macro("cnotFortyEightChiFour", f"${sci(r4['plan']['res_expected_cnot'])}$")
+    macro("tFortyEightChiFour", f"${sci(r4['plan']['res_expected_t'])}$")
+    macro("cnotFortyEightChiEight", num(r8['plan']['res_expected_cnot']))
+    macro("gammaFortyEightChiEight", f"{r8['gamma']:.4f}")
 
 
 # ----------------------------------------------------------------------------- oracle

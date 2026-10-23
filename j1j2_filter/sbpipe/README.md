@@ -11,7 +11,7 @@ EnergyEstimates (E0 ± dE0, E1 - dE1, E_max)      Ansatz (gamma, statevector?, c
                  \                                  /
                   refine(H, estimates, ansatz, Config)            H : PauliSum
                     1. window   H_s = (H - shift)/W, pass band [0,w0], stop band [delta,1]
-                    2. design   F(E) = prod cos(E t_i + phi_i), certified eta   (uniform | dyadic | optimized)
+                    2. design   F(E) = prod cos(E t_i + phi_i), certified eta   (uniform | dyadic | optimized | auto)
                     3. Trotter  first/second-order commutator bounds -> per-pulse steps k_i
                     4. certificate  1 - F <= (sqrt(ell) + eps_U / sqrt(p_g))^2 <= eps
                     5. resources  qubits, CNOT, rotations, T count, expected cost / success
@@ -48,12 +48,15 @@ ans = sbpipe.Ansatz(gamma=0.9, cost={"cnot": 120, "rotations": 300}, statevector
 | `pauli.py` | `PauliSum`, Pauli products, local exact operator norms, statevector action |
 | `models.py` | `j1j2_chain`, rigorous Weyl spectral bounds for any grouped `PauliSum` |
 | `inputs.py` | `EnergyEstimates`, `Ansatz` |
-| `design.py` | filter schedules and the interval certificate (uses `../floor.py` for the optimised design) |
+| `design.py` | filter schedules: `uniform` and `dyadic` (closed-form certificates), `optimized` (SLSQP design + interval certificate from `../floor.py`); `Config(schedule="auto")` keeps the cheaper of dyadic and optimised |
 | `trotter.py` | exact local commutator constants α₁ (Childs et al. Prop. 15) and β₂ (Prop. 16), product formulas |
 | `pipeline.py` | `Config`, `refine`, `validate`, `certificate` |
 | `resources.py` | gate-count model (`GateModel`) |
 | `simulate.py` | exact and Trotterised post-selected filter on a statevector |
 | `frontends/dmrg_quimb.py` | DMRG E0, E1 (symmetry-sector penalty), reference MPS, bond-dimension-χ trial |
+
+If the trial state already satisfies 1 − γ ≤ ε, `refine` also considers the empty filter and keeps it when
+it is cheaper. Synthesis error of the trial circuit's rotations is included in the certificate.
 
 ## What is certified and what is assumed
 

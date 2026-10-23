@@ -28,7 +28,7 @@ from .trotter import alpha1, beta2, steps_for_budget, trotter_error
 @dataclass
 class Config:
     eps: float = 1e-2                       # target infidelity 1 - F
-    schedule: str = "optimized"             # uniform | dyadic | optimized
+    schedule: str = "optimized"             # uniform | dyadic | optimized | auto (cheaper of the last two)
     order: int = 2                          # Trotter order (1 or 2)
     leak_fracs: Sequence[float] = (0.5, 0.25, 0.1, 0.05)   # leakage share of eps to scan
     synth_frac: float = 0.1                 # share of the unitary-error budget for Rz synthesis
@@ -122,19 +122,20 @@ def refine(H: PauliSum, est: EnergyEstimates, ansatz: Ansatz, cfg: Config = Conf
                           expected_cnot=res["expected_cnot"], steps=0))
         best = (des, steps, cert, res)
     fracs = [] if ansatz.gamma >= 1 - 1e-12 else cfg.leak_fracs
-    for f in fracs:
+    scheds = ("dyadic", "optimized") if cfg.schedule == "auto" else (cfg.schedule,)
+    for sched, f in [(s, f) for s in scheds for f in fracs]:
         eps_leak = f * cfg.eps
-        des = D.design_filter(cfg.schedule, win["delta"], win["w0"], eps_leak, ansatz.gamma,
+        des = D.design_filter(sched, win["delta"], win["w0"], eps_leak, ansatz.gamma,
                               **cfg.design_kw)
         if des is None:
-            cands.append(dict(leak_frac=f, feasible=False))
+            cands.append(dict(schedule=sched, leak_frac=f, feasible=False))
             continue
         out = _plan_for(H, Hs, win, des, ansatz.gamma, cfg, const, ansatz.cost)
         if out is None:
-            cands.append(dict(leak_frac=f, feasible=False))
+            cands.append(dict(schedule=sched, leak_frac=f, feasible=False))
             continue
         steps, cert, res = out
-        cands.append(dict(leak_frac=f, feasible=True, T=des.T, m=des.m,
+        cands.append(dict(schedule=sched, leak_frac=f, feasible=True, T=des.T, m=des.m,
                           expected_cnot=res["expected_cnot"], steps=res["steps"]))
         if best is None or res["expected_cnot"] < best[3]["expected_cnot"]:
             best = (des, steps, cert, res)
