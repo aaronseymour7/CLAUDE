@@ -85,7 +85,7 @@ with typed inputs and a certificate:
 \end{enumerate}
 We then apply it to the open $J_1$--$J_2$ Heisenberg chain using DMRG, validate the certificate by
 statevector simulation for $N\le14$, and report resources for $N\le48$. The code is the \texttt{sbpipe}
-package in the accompanying repository; every number below is produced by the scripts named in
+package, available with all data at \url{https://github.com/aaronseymour7/FilterPipeline}; every number below is produced by the scripts named in
 Appendix~\ref{app:repro}.
 
 The contribution is methodological and quantitative rather than algorithmic: the filter is SBC's, the
@@ -158,7 +158,7 @@ Two numbers characterize a filter: the pass-band floor $F_{\rm pass}\le\min_{[0,
 suppression ratio $\eta=\sup_{[\Delta,1]}|F|/F_{\rm pass}$. Both are certified, not sampled: since
 $|F'|\le L:=\sum_i|t_i|$ and $|F''|\le L^2$, an interval branch-and-bound gives a rigorous upper bound
 on $\sup|F|$ over the stop band, and $F_{\rm pass}=|F(0)|-Lw_0$ (the certifier is
-\texttt{floor.certify} of the repository; it is used for the optimized schedule, the other two have
+\texttt{sbpipe.floor.certify}; it is used for the optimized schedule, the other two have
 closed-form certificates). Given a target leakage $\epsilon_\ell$ and $\gamma$, the
 design target is $\eta^2\le\gamma\epsilon_\ell/[(1-\epsilon_\ell)(1-\gamma)]$ (Lemma~\ref{lem:leak}).
 We provide three schedules:
@@ -190,7 +190,7 @@ test suite checks them against a $2\times10^6$-point grid.
 \emph{Optimized}: times and phases chosen to maximize $F(0)^2$ subject to the certified constraint on
 $\eta$ at fixed $(T,m)$, over a grid of $x=T\Delta/\pi$ and $m\in\{4,6,8\}$, picking the pair with the
 smallest $T^2/F(0)^2$. This is SBC's recipe for energy filters~\cite{Stetcu2023} with a certified
-constraint in place of a grid objective; it uses the SLSQP designer \texttt{floor.py} of the repository.
+constraint in place of a grid objective; it uses the SLSQP designer \texttt{sbpipe/floor.py}.
 Nonzero phases trade success probability ($F(0)<1$) for a shorter $T$.
 
 For each schedule the leakage share $\epsilon_\ell/\epsilon\in\{0.5,0.25,0.1,0.05\}$ is scanned and the
@@ -537,6 +537,10 @@ designer can fail for small overlaps; $E_1$ is taken as the lowest $S^z=1$ state
 excitation in every ED case here but is an assumption for larger $N$.
 
 %=====================================================================================================
+\section*{Code and data availability}
+The \texttt{sbpipe} package, the study scripts, all raw results (\texttt{sbpipe\_study/results/*.json}) and
+the sources of this paper are available at \url{https://github.com/aaronseymour7/FilterPipeline}.
+
 \appendix
 
 \section{Proof of Theorem~\ref{thm:cert}}
@@ -586,6 +590,8 @@ levels $\le E_{\rm top}$, so $\langle H\rangle-E_0\le(E_{\rm top}-E_0)D^2$. \qed
 \section{Reproducing the results}
 \label{app:repro}
 
+The code, raw results and paper sources are at \url{https://github.com/aaronseymour7/FilterPipeline}. After
+\texttt{pip install -r requirements.txt}, all commands below run from the repository root.
 \texttt{python sbpipe\_study/run\_study.py all} runs the DMRG front end (cached), the validation (A),
 scaling (B), sensitivity (C), ansatz (D) and oracle (E) studies and writes \texttt{results/*.json};
 \texttt{python sbpipe\_study/make\_figures.py} writes every figure, table and the numerical macros used
@@ -629,8 +635,8 @@ qiskit, and an end-to-end certificate check).
   J.\ Open Source Softw.\ \textbf{3}, 819 (2018).
 \bibitem{Sahinoglu2021} B.~\c{S}ahino\u{g}lu and R.~D. Somma, Hamiltonian simulation in the low-energy
   subspace, npj Quantum Inf.\ \textbf{7}, 119 (2021).
-\bibitem{repoWriteup} Earlier analysis of the certified filter for this model in the same repository:
-  \texttt{j1j2\_filter/WRITEUP.md} and \texttt{simple\_paper/paper.md}.
+\bibitem{repoWriteup} Earlier analysis of the certified filter for this model:
+  \url{https://github.com/aaronseymour7/CLAUDE} (\texttt{j1j2\_filter/WRITEUP.md}).
 \end{thebibliography}
 
 \end{document}
