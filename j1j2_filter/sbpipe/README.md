@@ -48,11 +48,11 @@ ans = sbpipe.Ansatz(gamma=0.9, cost={"cnot": 120, "rotations": 300}, statevector
 | `pauli.py` | `PauliSum`, Pauli products, local exact operator norms, statevector action |
 | `models.py` | `j1j2_chain`, rigorous Weyl spectral bounds for any grouped `PauliSum` |
 | `inputs.py` | `EnergyEstimates`, `Ansatz` |
-| `design.py` | filter schedules: `uniform` and `dyadic` (closed-form certificates), `optimized` (SLSQP design + interval certificate from `../floor.py`); `Config(schedule="auto")` keeps the cheaper of dyadic and optimised |
+| `design.py` | filter schedules: `uniform` and `dyadic` (closed-form certificates), `optimized` (SLSQP design + interval certificate from `../floor.py`); `Config(schedule="auto")` keeps the cheaper of dyadic and optimized |
 | `trotter.py` | exact local commutator constants α₁ (Childs et al. Prop. 15) and β₂ (Prop. 16), product formulas |
 | `pipeline.py` | `Config`, `refine`, `validate`, `certificate` |
 | `resources.py` | gate-count model (`GateModel`) |
-| `simulate.py` | exact and Trotterised post-selected filter on a statevector |
+| `simulate.py` | exact and Trotterized post-selected filter on a statevector |
 | `frontends/dmrg_quimb.py` | DMRG E0, E1 (symmetry-sector penalty), reference MPS, bond-dimension-χ trial |
 
 If the trial state already satisfies 1 − γ ≤ ε, `refine` also considers the empty filter and keeps it when

@@ -37,7 +37,7 @@ JOBS = int(os.environ.get("JOBS", "4"))
 
 
 def _install_design_cache():
-    """Filter designs depend only on (schedule, delta, w0, eps_leak, gamma); the optimised ones take
+    """Filter designs depend only on (schedule, delta, w0, eps_leak, gamma); the optimized ones take
     minutes at N = 48, and both Trotter orders and several studies reuse them. Cache them on disk."""
     import hashlib
     import pickle
