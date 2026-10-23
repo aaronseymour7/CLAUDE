@@ -14,7 +14,8 @@ Counting rules (all-to-all connectivity, Clifford+Rz):
   with Rz(2 phi_i) into one ancilla rotation per pulse;
 * arbitrary-angle Rz cost T_rot = a log2(1/delta) + b T gates at synthesis error delta
   (default a = 3, b = 0: the leading term of Ross-Selinger gridsynth);
-* expected cost per success = (trial + filter) / p_succ for the repeat-until-success protocol.
+* expected cost per success = (trial + filter) / p_succ for the repeat-until-success protocol, with
+  p_succ the certified lower bound (sqrt(p_g) - eps_U)^2 of Theorem 1 (pipeline._plan_for).
   An early-abort protocol (measure after each pulse) is cheaper; it is not modelled.
 """
 from __future__ import annotations

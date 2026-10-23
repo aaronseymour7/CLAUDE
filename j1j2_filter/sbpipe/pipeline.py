@@ -5,7 +5,8 @@ Certificate (proof in the paper, Appendix A; same structure as j1j2_filter/CERTI
   p_g  = gamma F_pass^2                                    lower bound on the success probability
   eps_U = eps_Trotter + R delta                            operator-norm error of the implemented block
   D    <= sqrt(ell) + eps_U / sqrt(p_g)                    trace distance to the ground space
-  1 - F <= D^2,   <H> - E0 <= (E_top - E0) D^2.
+  1 - F <= D^2,   <H> - E0 <= (E_top - E0) D^2,   p_succ >= (sqrt(p_g) - eps_U)^2.
+Expected costs per success divide the cost of one attempt by this certified p_succ bound.
 It holds whenever E0 is in [E0 - E0_err, E0 + E0_err], every other level is >= E1 - E1_err,
 E_top <= E_max, and the trial state's ground-space weight is >= gamma.
 """
@@ -91,7 +92,11 @@ def _plan_for(H, Hs, win, des, gamma, cfg, const, trial_cost):
     cert.update(eps_U=eps_U, trace_dist_bound=D, infidelity_bound=min(1.0, D ** 2),
                 eps_trotter=eps_T, synth_delta=delta_syn)
     assert cert["infidelity_bound"] <= cfg.eps * (1 + 1e-9)
-    res = total_costs(Hs, steps, cfg.order, trial_cost, p_eff, delta_syn, cfg.gate_model)
+    # certified success probability of the implemented circuit (Theorem 1): (sqrt(p_g) - eps_U)^2;
+    # with no filter nothing is post-selected and every attempt succeeds
+    p_succ = (math.sqrt(p_eff) - eps_U) ** 2 if des.m else 1.0
+    cert["p_succ_bound"] = p_succ
+    res = total_costs(Hs, steps, cfg.order, trial_cost, p_succ, delta_syn, cfg.gate_model)
     return steps, cert, res
 
 

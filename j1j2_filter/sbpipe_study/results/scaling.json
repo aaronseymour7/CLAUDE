@@ -27,6 +27,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.04531187431930632,
    "synth_delta": 1.6576000935016472e-08,
+   "p_succ_bound": 0.6887131301282012,
    "res_qubits": 9,
    "res_steps": 14488,
    "res_filter_cnot": 1216992,
@@ -38,9 +39,9 @@
    "res_synth_delta": 1.6576000935016472e-08,
    "res_t_per_rotation": 77.53898630874743,
    "res_attempt_t": 23599843.411916677,
-   "res_p_succ": 0.7748301732623842,
-   "res_expected_cnot": 1570683.540724578,
-   "res_expected_t": 30458085.173104063
+   "res_p_succ": 0.6887131301282012,
+   "res_expected_cnot": 1767082.6164929625,
+   "res_expected_t": 34266579.76961128
   }
  },
  {
@@ -58,33 +59,34 @@
    "delta": 0.07662385862750111,
    "w0": 3.902490347820427e-11,
    "W": 5.124932598787891,
-   "m": 8,
-   "T_scaled": 87.54011798312038,
-   "T_phys": 17.081223273809435,
-   "eta": 0.07945283953857057,
-   "f_pass": 0.9999999965837554,
+   "m": 12,
+   "T_scaled": 81.70411011757903,
+   "T_phys": 15.942475055555473,
+   "eta": 0.10100405900381129,
+   "f_pass": 0.999999996811505,
    "trotter_const": 0.006485007709005776,
-   "leak": 0.0018311609134308564,
-   "p_g": 0.7748301732623842,
-   "eps_U": 0.05035696253988887,
+   "leak": 0.0029559403105959533,
+   "p_g": 0.7748301736153188,
+   "eps_U": 0.040166818790916055,
    "trace_dist_bound": 0.1,
    "infidelity_bound": 0.010000000000000002,
-   "eps_trotter": 0.04415123053928467,
-   "synth_delta": 4.893724470155505e-07,
+   "eps_trotter": 0.03459218201996715,
+   "synth_delta": 4.3117308151820737e-07,
+   "p_succ_bound": 0.7057303137083022,
    "res_qubits": 9,
-   "res_steps": 314,
-   "res_filter_cnot": 50272,
-   "res_filter_rotations": 12576,
+   "res_steps": 320,
+   "res_filter_cnot": 51248,
+   "res_filter_rotations": 12824,
    "res_trial_cnot": 21,
    "res_trial_rotations": 105,
-   "res_attempt_cnot": 50293,
-   "res_attempt_rotations": 12681,
-   "res_synth_delta": 4.893724470155505e-07,
-   "res_t_per_rotation": 62.88769136435147,
-   "res_attempt_t": 797478.8141913409,
-   "res_p_succ": 0.7748301732623842,
-   "res_expected_cnot": 64908.41701252263,
-   "res_expected_t": 1029230.4581190943
+   "res_attempt_cnot": 51269,
+   "res_attempt_rotations": 12929,
+   "res_synth_delta": 4.3117308151820737e-07,
+   "res_t_per_rotation": 63.43568865575959,
+   "res_attempt_t": 820160.0186303158,
+   "res_p_succ": 0.7057303137083022,
+   "res_expected_cnot": 72646.73063369485,
+   "res_expected_t": 1162143.6725889468
   }
  },
  {
@@ -115,6 +117,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.034207425439251704,
    "synth_delta": 7.716612924391389e-08,
+   "p_succ_bound": 0.5017948429590782,
    "res_qubits": 9,
    "res_steps": 2368,
    "res_filter_cnot": 198912,
@@ -126,9 +129,9 @@
    "res_synth_delta": 7.716612924391389e-08,
    "res_t_per_rotation": 70.8823710571431,
    "res_attempt_t": 3532706.491116955,
-   "res_p_succ": 0.5571549055583103,
-   "res_expected_cnot": 357051.5094014195,
-   "res_expected_t": 6340618.122310029
+   "res_p_succ": 0.5017948429590782,
+   "res_expected_cnot": 396442.89452417346,
+   "res_expected_t": 7040141.086912387
   }
  },
  {
@@ -159,6 +162,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.031249846203637625,
    "synth_delta": 2.101780028112914e-06,
+   "p_succ_bound": 0.5017948429590782,
    "res_qubits": 9,
    "res_steps": 78,
    "res_filter_cnot": 12504,
@@ -170,9 +174,9 @@
    "res_synth_delta": 2.101780028112914e-06,
    "res_t_per_rotation": 56.57987065291299,
    "res_attempt_t": 183149.04130347935,
-   "res_p_succ": 0.5571549055583103,
-   "res_expected_cnot": 22480.283086530537,
-   "res_expected_t": 328721.93976278557
+   "res_p_succ": 0.5017948429590782,
+   "res_expected_cnot": 24960.400003595543,
+   "res_expected_t": 364987.8907153602
   }
  },
  {
@@ -203,6 +207,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.015486877854861173,
    "synth_delta": 8.599339735960738e-10,
+   "p_succ_bound": 0.7448294878732247,
    "res_qubits": 9,
    "res_steps": 95376,
    "res_filter_cnot": 8011584,
@@ -214,9 +219,9 @@
    "res_synth_delta": 8.599339735960738e-10,
    "res_t_per_rotation": 90.34516516818479,
    "res_attempt_t": 180962540.3190213,
-   "res_p_succ": 0.7748301706153748,
-   "res_expected_cnot": 10339820.652101265,
-   "res_expected_t": 233551231.20115438
+   "res_p_succ": 0.7448294878732247,
+   "res_expected_cnot": 10756294.0652044,
+   "res_expected_t": 242958345.85676667
   }
  },
  {
@@ -247,6 +252,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.015257901534856904,
    "synth_delta": 4.956781346386398e-08,
+   "p_succ_bound": 0.7448294878732247,
    "res_qubits": 9,
    "res_steps": 981,
    "res_filter_cnot": 157008,
@@ -258,9 +264,9 @@
    "res_synth_delta": 4.956781346386398e-08,
    "res_t_per_rotation": 72.79806341721745,
    "res_attempt_t": 2865986.9586724336,
-   "res_p_succ": 0.7748301706153748,
-   "res_expected_cnot": 202662.47489470706,
-   "res_expected_t": 3698858.2367620626
+   "res_p_succ": 0.7448294878732247,
+   "res_expected_cnot": 210825.4339504983,
+   "res_expected_t": 3847843.0370096266
   }
  },
  {
@@ -291,6 +297,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.01560605884066724,
    "synth_delta": 5.745019486972823e-09,
+   "p_succ_bound": 0.6070870445602073,
    "res_qubits": 9,
    "res_steps": 14418,
    "res_filter_cnot": 1211112,
@@ -302,9 +309,9 @@
    "res_synth_delta": 5.745019486972823e-09,
    "res_t_per_rotation": 82.12512320255539,
    "res_attempt_t": 24874960.691945203,
-   "res_p_succ": 0.6344187508449919,
-   "res_expected_cnot": 1909043.5116977135,
-   "res_expected_t": 39209056.57156865
+   "res_p_succ": 0.6070870445602073,
+   "res_expected_cnot": 1994990.6868419212,
+   "res_expected_t": 40974290.12006902
   }
  },
  {
@@ -335,6 +342,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.01506644768922345,
    "synth_delta": 2.335545383539059e-07,
+   "p_succ_bound": 0.6070870445602073,
    "res_qubits": 9,
    "res_steps": 241,
    "res_filter_cnot": 38592,
@@ -346,9 +354,9 @@
    "res_synth_delta": 2.335545383539059e-07,
    "res_t_per_rotation": 66.08921155449634,
    "res_attempt_t": 645096.7939834389,
-   "res_p_succ": 0.6344187508449919,
-   "res_expected_cnot": 60863.58568149312,
-   "res_expected_t": 1016831.2224760456
+   "res_p_succ": 0.6070870445602073,
+   "res_expected_cnot": 63603.729227943666,
+   "res_expected_t": 1062610.0486969985
   }
  },
  {
@@ -366,33 +374,34 @@
    "delta": 0.07354743910567331,
    "w0": 3.811955399961372e-11,
    "W": 5.246651102004674,
-   "m": 8,
-   "T_scaled": 87.79097799926531,
-   "T_phys": 16.73276463260947,
-   "eta": 0.08564143196132067,
-   "f_pass": 0.9999999966534471,
+   "m": 9,
+   "T_scaled": 61.45368459948571,
+   "T_phys": 11.712935242826628,
+   "eta": 0.20050068755527167,
+   "f_pass": 0.999999997657413,
    "trotter_const": 0.26716942698715684,
-   "leak": 0.0007768254842295792,
-   "p_g": 0.9041616678070269,
-   "eps_U": 0.06858504202354573,
+   "leak": 0.0042430505377282655,
+   "p_g": 0.9041616696225219,
+   "eps_U": 0.033148707190964626,
    "trace_dist_bound": 0.1,
    "infidelity_bound": 0.010000000000000002,
-   "eps_trotter": 0.06172491368574704,
-   "synth_delta": 1.054377558131649e-08,
+   "eps_trotter": 0.029826777586272016,
+   "synth_delta": 5.035057603814432e-09,
+   "p_succ_bound": 0.8422200081492301,
    "res_qubits": 9,
-   "res_steps": 16680,
-   "res_filter_cnot": 2602080,
-   "res_filter_rotations": 650528,
+   "res_steps": 16914,
+   "res_filter_cnot": 2638584,
+   "res_filter_rotations": 659655,
    "res_trial_cnot": 21,
    "res_trial_rotations": 105,
-   "res_attempt_cnot": 2602101,
-   "res_attempt_rotations": 650633,
-   "res_synth_delta": 1.054377558131649e-08,
-   "res_t_per_rotation": 79.49709957094196,
-   "res_attempt_t": 51723436.38514068,
-   "res_p_succ": 0.9041616678070269,
-   "res_expected_cnot": 2877915.6346134334,
-   "res_expected_t": 57205960.202440135
+   "res_attempt_cnot": 2638605,
+   "res_attempt_rotations": 659760,
+   "res_synth_delta": 5.035057603814432e-09,
+   "res_t_per_rotation": 82.696033711317,
+   "res_attempt_t": 54559535.2013785,
+   "res_p_succ": 0.8422200081492301,
+   "res_expected_cnot": 3132916.547302536,
+   "res_expected_t": 64780621.06512112
   }
  },
  {
@@ -423,6 +432,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.02881686127334717,
    "synth_delta": 1.928092721599437e-07,
+   "p_succ_bound": 0.8422200081492301,
    "res_qubits": 9,
    "res_steps": 294,
    "res_filter_cnot": 89412,
@@ -434,9 +444,9 @@
    "res_synth_delta": 1.928092721599437e-07,
    "res_t_per_rotation": 66.91896669616463,
    "res_attempt_t": 1503468.4247627307,
-   "res_p_succ": 0.9041616696225219,
-   "res_expected_cnot": 98912.62039159142,
-   "res_expected_t": 1662831.41088077
+   "res_p_succ": 0.8422200081492301,
+   "res_expected_cnot": 106187.2184638882,
+   "res_expected_t": 1785125.5137794544
   }
  },
  {
@@ -454,33 +464,34 @@
    "delta": 0.07354743910567331,
    "w0": 3.811955399961372e-11,
    "W": 5.246651102004674,
-   "m": 6,
-   "T_scaled": 32.03639064586536,
-   "T_phys": 6.106064615888922,
-   "eta": 0.09540899413311082,
-   "f_pass": 0.8586634881729446,
+   "m": 4,
+   "T_scaled": 25.629112516692295,
+   "T_phys": 4.884851692711139,
+   "eta": 0.15071677674718476,
+   "f_pass": 0.8174901015090019,
    "trotter_const": 0.26716942698715684,
-   "leak": 0.0009639464803953215,
-   "p_g": 0.6666411018916286,
-   "eps_U": 0.0562984112250424,
+   "leak": 0.0024019938647951667,
+   "p_g": 0.6042422647566352,
+   "eps_U": 0.039635958556371774,
    "trace_dist_bound": 0.1,
    "infidelity_bound": 0.010000000000000002,
-   "eps_trotter": 0.05062870441680427,
-   "synth_delta": 5.3627941017925454e-08,
+   "eps_trotter": 0.03563985736759109,
+   "synth_delta": 4.157105900299271e-08,
+   "p_succ_bound": 0.5441928175127837,
    "res_qubits": 9,
-   "res_steps": 2708,
-   "res_filter_cnot": 422448,
-   "res_filter_rotations": 105618,
+   "res_steps": 2462,
+   "res_filter_cnot": 384072,
+   "res_filter_rotations": 96022,
    "res_trial_cnot": 21,
    "res_trial_rotations": 105,
-   "res_attempt_cnot": 422469,
-   "res_attempt_rotations": 105723,
-   "res_synth_delta": 5.3627941017925454e-08,
-   "res_t_per_rotation": 72.4573196857886,
-   "res_attempt_t": 7660405.209140629,
-   "res_p_succ": 0.6666411018916286,
-   "res_expected_cnot": 633727.8016630273,
-   "res_expected_t": 11491048.462814298
+   "res_attempt_cnot": 384093,
+   "res_attempt_rotations": 96127,
+   "res_synth_delta": 4.157105900299271e-08,
+   "res_t_per_rotation": 73.55953577609168,
+   "res_attempt_t": 7071057.495548365,
+   "res_p_succ": 0.5441928175127837,
+   "res_expected_cnot": 705803.1411650839,
+   "res_expected_t": 12993661.93009752
   }
  },
  {
@@ -511,6 +522,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.020771012429339937,
    "synth_delta": 6.141822930941004e-07,
+   "p_succ_bound": 0.5848788599883419,
    "res_qubits": 9,
    "res_steps": 71,
    "res_filter_cnot": 21600,
@@ -522,9 +534,9 @@
    "res_synth_delta": 6.141822930941004e-07,
    "res_t_per_rotation": 61.90448923280283,
    "res_attempt_t": 341031.8311835108,
-   "res_p_succ": 0.6224078213869266,
-   "res_expected_cnot": 34737.67400901453,
-   "res_expected_t": 547923.4345474341
+   "res_p_succ": 0.5848788599883419,
+   "res_expected_cnot": 36966.629295562096,
+   "res_expected_t": 583081.1378450375
   }
  },
  {
@@ -555,6 +567,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.020079014779712086,
    "synth_delta": 4.959807295073675e-10,
+   "p_succ_bound": 0.8622300537459003,
    "res_qubits": 9,
    "res_steps": 115371,
    "res_filter_cnot": 17997876,
@@ -566,9 +579,9 @@
    "res_synth_delta": 4.959807295073675e-10,
    "res_t_per_rotation": 92.72699064194714,
    "res_attempt_t": 417233068.9146364,
-   "res_p_succ": 0.9041616647812019,
-   "res_expected_cnot": 19905618.321426306,
-   "res_expected_t": 461458481.55993503
+   "res_p_succ": 0.8622300537459003,
+   "res_expected_cnot": 20873660.01893503,
+   "res_expected_t": 483899937.26383746
   }
  },
  {
@@ -599,6 +612,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.019786732875367377,
    "synth_delta": 2.979319205243158e-08,
+   "p_succ_bound": 0.8622300537459003,
    "res_qubits": 9,
    "res_steps": 1113,
    "res_filter_cnot": 338400,
@@ -610,9 +624,9 @@
    "res_synth_delta": 2.979319205243158e-08,
    "res_t_per_rotation": 75.00132616922264,
    "res_attempt_t": 6353887.349078034,
-   "res_p_succ": 0.9041616647812019,
-   "res_expected_cnot": 374292.57751366234,
-   "res_expected_t": 7027379.722646847
+   "res_p_succ": 0.8622300537459003,
+   "res_expected_cnot": 392495.0174605406,
+   "res_expected_t": 7369132.311584361
   }
  },
  {
@@ -643,6 +657,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.012728443752600335,
    "synth_delta": 1.895973311719733e-09,
+   "p_succ_bound": 0.7463654301224348,
    "res_qubits": 9,
    "res_steps": 19149,
    "res_filter_cnot": 2987244,
@@ -654,9 +669,9 @@
    "res_synth_delta": 1.895973311719733e-09,
    "res_t_per_rotation": 86.92324259222588,
    "res_attempt_t": 64924882.203470536,
-   "res_p_succ": 0.7710052097745436,
-   "res_expected_cnot": 3874506.8932459387,
-   "res_expected_t": 84208097.9225235
+   "res_p_succ": 0.7463654301224348,
+   "res_expected_cnot": 4002416.0812351196,
+   "res_expected_t": 86988061.85707204
   }
  },
  {
@@ -687,6 +702,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.012386011622959481,
    "synth_delta": 8.847292386060171e-08,
+   "p_succ_bound": 0.7463654301224348,
    "res_qubits": 9,
    "res_steps": 260,
    "res_filter_cnot": 79064,
@@ -698,9 +714,9 @@
    "res_synth_delta": 8.847292386060171e-08,
    "res_t_per_rotation": 70.29056627065088,
    "res_attempt_t": 1397165.5857617275,
-   "res_p_succ": 0.7710052097745436,
-   "res_expected_cnot": 102573.88536080832,
-   "res_expected_t": 1812135.07775166
+   "res_p_succ": 0.7463654301224348,
+   "res_expected_cnot": 105960.1594717842,
+   "res_expected_t": 1871959.1360662759
   }
  },
  {
@@ -731,6 +747,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.042520173258767224,
    "synth_delta": 1.9104734175379766e-08,
+   "p_succ_bound": 0.8844005201511947,
    "res_qubits": 9,
    "res_steps": 6354,
    "res_filter_cnot": 991224,
@@ -742,9 +759,9 @@
    "res_synth_delta": 1.9104734175379766e-08,
    "res_t_per_rotation": 76.92448372507346,
    "res_attempt_t": 19070887.231669035,
-   "res_p_succ": 0.9755162740438993,
-   "res_expected_cnot": 1016123.4890432929,
-   "res_expected_t": 19549532.63118071
+   "res_p_succ": 0.8844005201511947,
+   "res_expected_cnot": 1120810.0599381595,
+   "res_expected_t": 21563631.85811868
   }
  },
  {
@@ -775,6 +792,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.04150688392563985,
    "synth_delta": 5.059109296687196e-07,
+   "p_succ_bound": 0.8844005201511947,
    "res_qubits": 9,
    "res_steps": 148,
    "res_filter_cnot": 45016,
@@ -786,9 +804,9 @@
    "res_synth_delta": 5.059109296687196e-07,
    "res_t_per_rotation": 62.74383977050327,
    "res_attempt_t": 713083.7389917697,
-   "res_p_succ": 0.9755162740438993,
-   "res_expected_cnot": 46167.34871403415,
-   "res_expected_t": 730980.8743997235
+   "res_p_succ": 0.8844005201511947,
+   "res_expected_cnot": 50923.76018989744,
+   "res_expected_t": 806290.5015816395
   }
  },
  {
@@ -819,6 +837,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.0357249440896332,
    "synth_delta": 8.19565440761243e-08,
+   "p_succ_bound": 0.5480358510504288,
    "res_qubits": 9,
    "res_steps": 1265,
    "res_filter_cnot": 197340,
@@ -830,9 +849,9 @@
    "res_synth_delta": 8.19565440761243e-08,
    "res_t_per_rotation": 70.62169682605582,
    "res_attempt_t": 3491819.1778675043,
-   "res_p_succ": 0.6085117617102304,
-   "res_expected_cnot": 324333.91171489324,
-   "res_expected_t": 5738293.649499396
+   "res_p_succ": 0.5480358510504288,
+   "res_expected_cnot": 360124.250305368,
+   "res_expected_t": 6371515.971399828
   }
  },
  {
@@ -863,6 +882,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.022311900490800216,
    "synth_delta": 1.145569062833414e-06,
+   "p_succ_bound": 0.7303587255156212,
    "res_qubits": 9,
    "res_steps": 53,
    "res_filter_cnot": 16128,
@@ -874,9 +894,9 @@
    "res_synth_delta": 1.145569062833414e-06,
    "res_t_per_rotation": 59.20651239724644,
    "res_attempt_t": 245174.1678369975,
-   "res_p_succ": 0.777334898451139,
-   "res_expected_cnot": 20774.829526086276,
-   "res_expected_t": 315403.5259776883
+   "res_p_succ": 0.7303587255156212,
+   "res_expected_cnot": 22111.052330618866,
+   "res_expected_t": 335690.06471978355
   }
  },
  {
@@ -907,6 +927,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.016504683601883563,
    "synth_delta": 6.256695435368601e-10,
+   "p_succ_bound": 0.9396265957416137,
    "res_qubits": 9,
    "res_steps": 75166,
    "res_filter_cnot": 11725896,
@@ -918,9 +939,9 @@
    "res_synth_delta": 6.256695435368601e-10,
    "res_t_per_rotation": 91.72164021274676,
    "res_attempt_t": 268889968.06636566,
-   "res_p_succ": 0.9755162706498415,
-   "res_expected_cnot": 12020216.733226566,
-   "res_expected_t": 275638629.6737462
+   "res_p_succ": 0.9396265957416137,
+   "res_expected_cnot": 12479337.061277147,
+   "res_expected_t": 286166834.022126
   }
  },
  {
@@ -951,6 +972,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.01623743224303297,
    "synth_delta": 3.7185356625540806e-08,
+   "p_succ_bound": 0.9396265957416137,
    "res_qubits": 9,
    "res_steps": 742,
    "res_filter_cnot": 225600,
@@ -962,9 +984,9 @@
    "res_synth_delta": 3.7185356625540806e-08,
    "res_t_per_rotation": 74.0420704522323,
    "res_attempt_t": 4184339.5274670036,
-   "res_p_succ": 0.9755162706498415,
-   "res_expected_cnot": 231283.68720052435,
-   "res_expected_t": 4289359.03311956
+   "res_p_succ": 0.9396265957416137,
+   "res_expected_cnot": 240117.72444768384,
+   "res_expected_t": 4453194.009652796
   }
  },
  {
@@ -995,6 +1017,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.012391981494948762,
    "synth_delta": 2.755879264144488e-09,
+   "p_succ_bound": 0.7061755591140508,
    "res_qubits": 9,
    "res_steps": 12821,
    "res_filter_cnot": 2000076,
@@ -1006,9 +1029,9 @@
    "res_synth_delta": 2.755879264144488e-09,
    "res_t_per_rotation": 85.30452050832073,
    "res_attempt_t": 42663349.84182645,
-   "res_p_succ": 0.7295086824124596,
-   "res_expected_cnot": 2741704.174631273,
-   "res_expected_t": 58482305.79071417
+   "res_p_succ": 0.7061755591140508,
+   "res_expected_cnot": 2832294.284595843,
+   "res_expected_t": 60414650.848792836
   }
  },
  {
@@ -1039,6 +1062,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.01212191879211608,
    "synth_delta": 1.1689671648884939e-07,
+   "p_succ_bound": 0.7061755591140508,
    "res_qubits": 9,
    "res_steps": 184,
    "res_filter_cnot": 55960,
@@ -1050,9 +1074,9 @@
    "res_synth_delta": 1.1689671648884939e-07,
    "res_t_per_rotation": 69.08478677287492,
    "res_attempt_t": 974164.5782843092,
-   "res_p_succ": 0.7295086824124596,
-   "res_expected_cnot": 76737.94890949453,
-   "res_expected_t": 1335370.78004717
+   "res_p_succ": 0.7061755591140508,
+   "res_expected_cnot": 79273.48840879211,
+   "res_expected_t": 1379493.4782314901
   }
  },
  {
@@ -1083,6 +1107,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.05516016706754364,
    "synth_delta": 2.1401572976289386e-09,
+   "p_succ_bound": 0.5005625706617746,
    "res_qubits": 13,
    "res_steps": 86877,
    "res_filter_cnot": 11467764,
@@ -1094,9 +1119,9 @@
    "res_synth_delta": 2.1401572976289386e-09,
    "res_t_per_rotation": 86.39890805408496,
    "res_attempt_t": 247716123.6589361,
-   "res_p_succ": 0.5910545530438833,
-   "res_expected_cnot": 19402264.8856045,
-   "res_expected_t": 419108730.9677559
+   "res_p_succ": 0.5005625706617746,
+   "res_expected_cnot": 22909817.217933144,
+   "res_expected_t": 494875442.5074974
   }
  },
  {
@@ -1127,6 +1152,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.020724821021113247,
    "synth_delta": 4.03356563687838e-08,
+   "p_succ_bound": 0.5558431863855522,
    "res_qubits": 13,
    "res_steps": 976,
    "res_filter_cnot": 249896,
@@ -1138,9 +1164,9 @@
    "res_synth_delta": 4.03356563687838e-08,
    "res_t_per_rotation": 73.69010707943134,
    "res_attempt_t": 4616611.518419295,
-   "res_p_succ": 0.5910545558610716,
-   "res_expected_cnot": 422852.6749715914,
-   "res_expected_t": 7810804.387919204
+   "res_p_succ": 0.5558431863855522,
+   "res_expected_cnot": 449639.40572016034,
+   "res_expected_t": 8305600.628910205
   }
  },
  {
@@ -1159,32 +1185,33 @@
    "w0": 2.53418275716867e-11,
    "W": 7.892090632936479,
    "m": 8,
-   "T_scaled": 110.31490729267702,
-   "T_phys": 13.977906795988124,
-   "eta": 0.026475330183712165,
-   "f_pass": 0.9523799041110825,
+   "T_scaled": 88.25192583414162,
+   "T_phys": 11.1823254367905,
+   "eta": 0.0592441757487979,
+   "f_pass": 0.9441579179186699,
    "trotter_const": 0.12041404212620624,
-   "leak": 0.00048474126688852003,
-   "p_g": 0.5361027304928061,
-   "eps_U": 0.057098517991127036,
+   "leak": 0.0024225666505946633,
+   "p_g": 0.5268862347970191,
+   "eps_U": 0.0368599506980119,
    "trace_dist_bound": 0.1,
    "infidelity_bound": 0.010000000000000002,
-   "eps_trotter": 0.051373032276089574,
-   "synth_delta": 1.2160693844210753e-08,
+   "eps_trotter": 0.03316242965885869,
+   "synth_delta": 7.921115010621862e-09,
+   "p_succ_bound": 0.4747338778389448,
    "res_qubits": 13,
-   "res_steps": 14262,
-   "res_filter_cnot": 1882584,
-   "res_filter_rotations": 470654,
+   "res_steps": 14140,
+   "res_filter_cnot": 1866480,
+   "res_filter_rotations": 466628,
    "res_trial_cnot": 33,
    "res_trial_rotations": 165,
-   "res_attempt_cnot": 1882617,
-   "res_attempt_rotations": 470819,
-   "res_synth_delta": 1.2160693844210753e-08,
-   "res_t_per_rotation": 78.8795976393787,
-   "res_attempt_t": 37138013.28097464,
-   "res_p_succ": 0.5361027304928061,
-   "res_expected_cnot": 3511672.0973784756,
-   "res_expected_t": 69274061.04952303
+   "res_attempt_cnot": 1866513,
+   "res_attempt_rotations": 466793,
+   "res_synth_delta": 7.921115010621862e-09,
+   "res_t_per_rotation": 80.73494798806261,
+   "res_attempt_t": 37686508.576191716,
+   "res_p_succ": 0.4747338778389448,
+   "res_expected_cnot": 3931703.8179298034,
+   "res_expected_t": 79384493.78785856
   }
  },
  {
@@ -1215,6 +1242,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.03194453250670742,
    "synth_delta": 3.002148776219681e-07,
+   "p_succ_bound": 0.4747338778389448,
    "res_qubits": 13,
    "res_steps": 253,
    "res_filter_cnot": 64800,
@@ -1226,9 +1254,9 @@
    "res_synth_delta": 3.002148776219681e-07,
    "res_t_per_rotation": 65.00250357135653,
    "res_attempt_t": 1064285.9909738204,
-   "res_p_succ": 0.5268862347970191,
-   "res_expected_cnot": 123049.3334580598,
-   "res_expected_t": 2019954.06348741
+   "res_p_succ": 0.4747338778389448,
+   "res_expected_cnot": 136567.03898008904,
+   "res_expected_t": 2241858.103362245
   }
  },
  {
@@ -1259,6 +1287,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.017812977509005314,
    "synth_delta": 1.2541277352611562e-10,
+   "p_succ_bound": 0.5610135100187742,
    "res_qubits": 13,
    "res_steps": 478268,
    "res_filter_cnot": 63131376,
@@ -1270,9 +1299,9 @@
    "res_synth_delta": 1.2541277352611562e-10,
    "res_t_per_rotation": 98.67778995616582,
    "res_attempt_t": 1557434420.5340738,
-   "res_p_succ": 0.5910545502266952,
-   "res_expected_cnot": 106811476.15864958,
-   "res_expected_t": 2635009611.103966
+   "res_p_succ": 0.5610135100187742,
+   "res_expected_cnot": 112530995.90754476,
+   "res_expected_t": 2776108583.3422346
   }
  },
  {
@@ -1303,6 +1332,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.007803332056195973,
    "synth_delta": 4.93830813026266e-09,
+   "p_succ_bound": 0.5777108524284504,
    "res_qubits": 13,
    "res_steps": 2922,
    "res_filter_cnot": 748092,
@@ -1314,9 +1344,9 @@
    "res_synth_delta": 4.93830813026266e-09,
    "res_t_per_rotation": 82.78000798925247,
    "res_attempt_t": 15496665.835612029,
-   "res_p_succ": 0.5910545530438833,
-   "res_expected_cnot": 1265746.1077784048,
-   "res_expected_t": 26218672.63487854
+   "res_p_succ": 0.5777108524284504,
+   "res_expected_cnot": 1294981.7315274605,
+   "res_expected_t": 26824259.52441545
   }
  },
  {
@@ -1347,6 +1377,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.01001930949494505,
    "synth_delta": 4.6149373596603887e-10,
+   "p_succ_bound": 0.4658065533047792,
    "res_qubits": 13,
    "res_steps": 73127,
    "res_filter_cnot": 9652764,
@@ -1358,9 +1389,9 @@
    "res_synth_delta": 4.6149373596603887e-10,
    "res_t_per_rotation": 93.03890964939167,
    "res_attempt_t": 224536755.1470945,
-   "res_p_succ": 0.4811271327625449,
-   "res_expected_cnot": 20062882.22527669,
-   "res_expected_t": 466689030.52265024
+   "res_p_succ": 0.4658065533047792,
+   "res_expected_cnot": 20722759.118599463,
+   "res_expected_t": 482038635.03865117
   }
  },
  {
@@ -1391,6 +1422,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.00988110218755231,
    "synth_delta": 3.0669500404171494e-08,
+   "p_succ_bound": 0.4658065533047792,
    "res_qubits": 13,
    "res_steps": 635,
    "res_filter_cnot": 162592,
@@ -1402,9 +1434,9 @@
    "res_synth_delta": 3.0669500404171494e-08,
    "res_t_per_rotation": 74.87586027995611,
    "res_attempt_t": 3056507.4924880886,
-   "res_p_succ": 0.4811271327625449,
-   "res_expected_cnot": 338008.3743484528,
-   "res_expected_t": 6352806.32571723
+   "res_p_succ": 0.4658065533047792,
+   "res_expected_cnot": 349125.616301911,
+   "res_expected_t": 6561752.879608378
   }
  },
  {
@@ -1435,6 +1467,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.04356066577723225,
    "synth_delta": 9.943119055439564e-10,
+   "p_succ_bound": 0.7209622113320105,
    "res_qubits": 13,
    "res_steps": 77308,
    "res_filter_cnot": 19481616,
@@ -1446,9 +1479,9 @@
    "res_synth_delta": 9.943119055439564e-10,
    "res_t_per_rotation": 89.7167474019333,
    "res_attempt_t": 436972505.8441609,
-   "res_p_succ": 0.8055035163025552,
-   "res_expected_cnot": 24185678.405756947,
-   "res_expected_t": 542483672.6349307
+   "res_p_succ": 0.7209622113320105,
+   "res_expected_cnot": 27021733.863147646,
+   "res_expected_t": 606096268.259101
   }
  },
  {
@@ -1471,14 +1504,15 @@
    "T_phys": 23.290981938940593,
    "eta": 0.09385171246097433,
    "f_pass": 0.9999999953418036,
-   "trotter_const": 0.005013907459628736,
+   "trotter_const": 0.005013907459628738,
    "leak": 0.0021222962878026273,
    "p_g": 0.8055035163025552,
    "eps_U": 0.048403540463824626,
    "trace_dist_bound": 0.1,
    "infidelity_bound": 0.010000000000000002,
-   "eps_trotter": 0.042949756226945426,
-   "synth_delta": 4.9669713726461505e-08,
+   "eps_trotter": 0.04294975622694544,
+   "synth_delta": 4.966971372646138e-08,
+   "p_succ_bound": 0.7209622113320105,
    "res_qubits": 13,
    "res_steps": 884,
    "res_filter_cnot": 438504,
@@ -1487,12 +1521,12 @@
    "res_trial_rotations": 165,
    "res_attempt_cnot": 438537,
    "res_attempt_rotations": 109801,
-   "res_synth_delta": 4.9669713726461505e-08,
+   "res_synth_delta": 4.966971372646138e-08,
    "res_t_per_rotation": 72.78917498200474,
    "res_attempt_t": 7992324.202199102,
-   "res_p_succ": 0.8055035163025552,
-   "res_expected_cnot": 544425.9287817697,
-   "res_expected_t": 9922146.881351545
+   "res_p_succ": 0.7209622113320105,
+   "res_expected_cnot": 608266.2767994219,
+   "res_expected_t": 11085635.386399683
   }
  },
  {
@@ -1523,6 +1557,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.03480182494417345,
    "synth_delta": 4.596037999379168e-09,
+   "p_succ_bound": 0.5199104453826714,
    "res_qubits": 13,
    "res_steps": 13384,
    "res_filter_cnot": 3372768,
@@ -1534,9 +1569,9 @@
    "res_synth_delta": 4.596037999379168e-09,
    "res_t_per_rotation": 83.09088638387534,
    "res_attempt_t": 70075779.21336426,
-   "res_p_succ": 0.5771837634369925,
-   "res_expected_cnot": 5843547.954148553,
-   "res_expected_t": 121409824.13656199
+   "res_p_succ": 0.5199104453826714,
+   "res_expected_cnot": 6487273.010099857,
+   "res_expected_t": 134784326.4848933
   }
  },
  {
@@ -1559,14 +1594,15 @@
    "T_phys": 8.66208152148286,
    "eta": 0.10002103343859381,
    "f_pass": 0.8464929208170692,
-   "trotter_const": 0.005013907459628736,
+   "trotter_const": 0.005013907459628738,
    "leak": 0.0024097897136446966,
    "p_g": 0.5771837634369925,
    "eps_U": 0.03867795333944386,
    "trace_dist_bound": 0.1,
    "infidelity_bound": 0.010000000000000002,
-   "eps_trotter": 0.03386152973235052,
-   "synth_delta": 1.707891070207915e-07,
+   "eps_trotter": 0.033861529732350536,
+   "synth_delta": 1.70789107020791e-07,
+   "p_succ_bound": 0.5199104453826714,
    "res_qubits": 13,
    "res_steps": 226,
    "res_filter_cnot": 112120,
@@ -1575,12 +1611,12 @@
    "res_trial_rotations": 165,
    "res_attempt_cnot": 112153,
    "res_attempt_rotations": 28201,
-   "res_synth_delta": 1.707891070207915e-07,
-   "res_t_per_rotation": 67.44384210549187,
-   "res_attempt_t": 1901983.7912169762,
-   "res_p_succ": 0.5771837634369925,
-   "res_expected_cnot": 194310.73274160636,
-   "res_expected_t": 3295282.909365145
+   "res_synth_delta": 1.70789107020791e-07,
+   "res_t_per_rotation": 67.44384210549188,
+   "res_attempt_t": 1901983.7912169765,
+   "res_p_succ": 0.5199104453826714,
+   "res_expected_cnot": 215715.99685298043,
+   "res_expected_t": 3658291.169389861
   }
  },
  {
@@ -1611,6 +1647,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.014132111463545677,
    "synth_delta": 4.6495885859492805e-11,
+   "p_succ_bound": 0.7775638564805369,
    "res_qubits": 13,
    "res_steps": 536160,
    "res_filter_cnot": 135112320,
@@ -1622,9 +1659,9 @@
    "res_synth_delta": 4.6495885859492805e-11,
    "res_t_per_rotation": 102.97231793182712,
    "res_attempt_t": 3478225727.9039187,
-   "res_p_succ": 0.8055035125503616,
-   "res_expected_cnot": 167736516.222271,
-   "res_expected_t": 4318076425.130987
+   "res_p_succ": 0.7775638564805369,
+   "res_expected_cnot": 173763674.67947242,
+   "res_expected_t": 4473234833.2744055
   }
  },
  {
@@ -1655,6 +1692,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.014089630885374297,
    "synth_delta": 4.585926051327424e-09,
+   "p_succ_bound": 0.7775638564805369,
    "res_qubits": 13,
    "res_steps": 2835,
    "res_filter_cnot": 1406220,
@@ -1666,9 +1704,9 @@
    "res_synth_delta": 4.585926051327424e-09,
    "res_t_per_rotation": 83.100419287593,
    "res_attempt_t": 29229325.978121523,
-   "res_p_succ": 0.8055035125503616,
-   "res_expected_cnot": 1745806.167309641,
-   "res_expected_t": 36287024.851793
+   "res_p_succ": 0.7775638564805369,
+   "res_expected_cnot": 1808536.9944599522,
+   "res_expected_t": 37590901.03598862
   }
  },
  {
@@ -1699,6 +1737,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.016088513353735477,
    "synth_delta": 3.5296323126446634e-10,
+   "p_succ_bound": 0.6450447667456997,
    "res_qubits": 13,
    "res_steps": 80421,
    "res_filter_cnot": 20266092,
@@ -1710,9 +1749,9 @@
    "res_synth_delta": 3.5296323126446634e-10,
    "res_t_per_rotation": 94.19928913609125,
    "res_attempt_t": 477279161.468677,
-   "res_p_succ": 0.6740798519729186,
-   "res_expected_cnot": 30064872.790196076,
-   "res_expected_t": 708045434.189675
+   "res_p_succ": 0.6450447667456997,
+   "res_expected_cnot": 31418168.233879574,
+   "res_expected_t": 739916337.7087562
   }
  },
  {
@@ -1743,6 +1782,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.01589965832339472,
    "synth_delta": 2.2443584030506175e-08,
+   "p_succ_bound": 0.6450447667456997,
    "res_qubits": 13,
    "res_steps": 709,
    "res_filter_cnot": 351696,
@@ -1754,9 +1794,9 @@
    "res_synth_delta": 2.2443584030506175e-08,
    "res_t_per_rotation": 76.22736503954182,
    "res_attempt_t": 6715402.177888516,
-   "res_p_succ": 0.6740798519729186,
-   "res_expected_cnot": 521791.29664022475,
-   "res_expected_t": 9962324.43119856
+   "res_p_succ": 0.6450447667456997,
+   "res_expected_cnot": 545278.433579889,
+   "res_expected_t": 10410753.678024916
   }
  },
  {
@@ -1787,6 +1827,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.026775134371359977,
    "synth_delta": 1.241993990133796e-09,
+   "p_succ_bound": 0.8884925737165047,
    "res_qubits": 13,
    "res_steps": 38037,
    "res_filter_cnot": 9585324,
@@ -1798,9 +1839,9 @@
    "res_synth_delta": 1.241993990133796e-09,
    "res_t_per_rotation": 88.7540839843395,
    "res_attempt_t": 212699251.0225536,
-   "res_p_succ": 0.945465328580168,
-   "res_expected_cnot": 10138242.736404307,
-   "res_expected_t": 224967795.8492355
+   "res_p_succ": 0.8884925737165047,
+   "res_expected_cnot": 10788336.654188449,
+   "res_expected_t": 239393392.03798512
   }
  },
  {
@@ -1823,14 +1864,15 @@
    "T_phys": 11.335922412227486,
    "eta": 0.2896739990604588,
    "f_pass": 0.9999999977328156,
-   "trotter_const": 0.006259988361227368,
+   "trotter_const": 0.006259988361227365,
    "leak": 0.004816695243058877,
    "p_g": 0.945465328580168,
    "eps_U": 0.02975157421070961,
    "trace_dist_bound": 0.1,
    "infidelity_bound": 0.010000000000000002,
-   "eps_trotter": 0.02653435363492898,
-   "synth_delta": 5.8381341313819074e-08,
+   "eps_trotter": 0.026534353634928967,
+   "synth_delta": 5.8381341313819326e-08,
+   "p_succ_bound": 0.8884925737165047,
    "res_qubits": 13,
    "res_steps": 443,
    "res_filter_cnot": 219748,
@@ -1839,12 +1881,12 @@
    "res_trial_rotations": 165,
    "res_attempt_cnot": 219781,
    "res_attempt_rotations": 55107,
-   "res_synth_delta": 5.8381341313819074e-08,
-   "res_t_per_rotation": 72.08975220569263,
-   "res_attempt_t": 3972649.974799104,
-   "res_p_succ": 0.945465328580168,
-   "res_expected_cnot": 232458.02183994558,
-   "res_expected_t": 4201793.397083048
+   "res_synth_delta": 5.8381341313819326e-08,
+   "res_t_per_rotation": 72.08975220569262,
+   "res_attempt_t": 3972649.974799103,
+   "res_p_succ": 0.8884925737165047,
+   "res_expected_cnot": 247363.91333094754,
+   "res_expected_t": 4471224.737626985
   }
  },
  {
@@ -1875,6 +1917,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.03554247083669361,
    "synth_delta": 9.97327398060442e-09,
+   "p_succ_bound": 0.5407388922956897,
    "res_qubits": 13,
    "res_steps": 6297,
    "res_filter_cnot": 1586844,
@@ -1886,9 +1929,9 @@
    "res_synth_delta": 9.97327398060442e-09,
    "res_t_per_rotation": 79.73785701091194,
    "res_attempt_t": 31646520.16620475,
-   "res_p_succ": 0.6003928126957713,
-   "res_expected_cnot": 2643064.6177706597,
-   "res_expected_t": 52709691.8834046
+   "res_p_succ": 0.5407388922956897,
+   "res_expected_cnot": 2934645.579612305,
+   "res_expected_t": 58524586.666682065
   }
  },
  {
@@ -1906,33 +1949,34 @@
    "delta": 0.03563216196902851,
    "w0": 2.4109090269504497e-11,
    "W": 8.295626162758174,
-   "m": 6,
-   "T_scaled": 44.08366599142184,
-   "T_phys": 5.314085413989373,
-   "eta": 0.20435991470422976,
-   "f_pass": 0.7968836891999027,
+   "m": 4,
+   "T_scaled": 35.26693279313747,
+   "T_phys": 4.251268331191498,
+   "eta": 0.2893170749067369,
+   "f_pass": 0.7706326257370376,
    "trotter_const": 0.006259988361227368,
-   "leak": 0.002403109551354057,
-   "p_g": 0.6003928126957713,
-   "eps_U": 0.03950068376066385,
+   "leak": 0.004804889694294299,
+   "p_g": 0.5614878878294051,
+   "eps_U": 0.02299130406032775,
    "trace_dist_bound": 0.1,
    "infidelity_bound": 0.010000000000000002,
-   "eps_trotter": 0.03436900634024437,
-   "synth_delta": 3.273379741289459e-07,
+   "eps_trotter": 0.020087761465303874,
+   "synth_delta": 1.9777553266288918e-07,
+   "p_succ_bound": 0.5275605721419404,
    "res_qubits": 13,
-   "res_steps": 125,
-   "res_filter_cnot": 62024,
-   "res_filter_rotations": 15512,
+   "res_steps": 117,
+   "res_filter_cnot": 58048,
+   "res_filter_rotations": 14516,
    "res_trial_cnot": 33,
    "res_trial_rotations": 165,
-   "res_attempt_cnot": 62057,
-   "res_attempt_rotations": 15677,
-   "res_synth_delta": 3.273379741289459e-07,
-   "res_t_per_rotation": 64.62814705982562,
-   "res_attempt_t": 1013175.4614568863,
-   "res_p_succ": 0.6003928126957713,
-   "res_expected_cnot": 103360.66436465702,
-   "res_expected_t": 1687520.969659373
+   "res_attempt_cnot": 58081,
+   "res_attempt_rotations": 14681,
+   "res_synth_delta": 1.9777553266288918e-07,
+   "res_t_per_rotation": 66.80889812014664,
+   "res_attempt_t": 980821.4333018728,
+   "res_p_succ": 0.5275605721419404,
+   "res_expected_cnot": 110093.51924118635,
+   "res_expected_t": 1859163.6393896062
   }
  },
  {
@@ -1963,6 +2007,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.010041071363663619,
    "synth_delta": 4.365687301463695e-11,
+   "p_succ_bound": 0.9238928865883421,
    "res_qubits": 13,
    "res_steps": 405712,
    "res_filter_cnot": 102239424,
@@ -1974,9 +2019,9 @@
    "res_synth_delta": 4.365687301463695e-11,
    "res_t_per_rotation": 103.24500073442208,
    "res_attempt_t": 2638945419.366851,
-   "res_p_succ": 0.9454653242930792,
-   "res_expected_cnot": 108136654.3785665,
-   "res_expected_t": 2791160449.3162985
+   "res_p_succ": 0.9238928865883421,
+   "res_expected_cnot": 110661591.27768533,
+   "res_expected_t": 2856332652.4914384
   }
  },
  {
@@ -2007,6 +2052,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.010007476251365836,
    "synth_delta": 4.540742024985549e-09,
+   "p_succ_bound": 0.9238928865883421,
    "res_qubits": 13,
    "res_steps": 2040,
    "res_filter_cnot": 1011880,
@@ -2018,9 +2064,9 @@
    "res_synth_delta": 4.540742024985549e-09,
    "res_t_per_rotation": 83.14327433793909,
    "res_attempt_t": 21047304.18227759,
-   "res_p_succ": 0.9454653242930792,
-   "res_expected_cnot": 1070280.394213932,
-   "res_expected_t": 22261317.936767887
+   "res_p_succ": 0.9238928865883421,
+   "res_expected_cnot": 1095270.9071467037,
+   "res_expected_t": 22781108.597987954
   }
  },
  {
@@ -2051,6 +2097,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.01623170832503204,
    "synth_delta": 5.194721816589904e-10,
+   "p_succ_bound": 0.6567696341835487,
    "res_qubits": 13,
    "res_steps": 55154,
    "res_filter_cnot": 13898808,
@@ -2062,9 +2109,9 @@
    "res_synth_delta": 5.194721816589904e-10,
    "res_t_per_rotation": 92.52670336703142,
    "res_attempt_t": 321518728.3625133,
-   "res_p_succ": 0.6863294989979437,
-   "res_expected_cnot": 20250974.233648147,
-   "res_expected_t": 468461182.02982354
+   "res_p_succ": 0.6567696341835487,
+   "res_expected_cnot": 21162429.37644048,
+   "res_expected_t": 489545666.59008753
   }
  },
  {
@@ -2087,14 +2134,15 @@
    "T_phys": 10.628170827978742,
    "eta": 0.04101936642199734,
    "f_pass": 0.8520077165668684,
-   "trotter_const": 0.006259988361227367,
+   "trotter_const": 0.00625998836122737,
    "leak": 9.704268546786324e-05,
    "p_g": 0.6863294989979437,
    "eps_U": 0.018036809222274325,
    "trace_dist_bound": 0.03162277660168379,
    "infidelity_bound": 0.0009999999999999998,
-   "eps_trotter": 0.015943200169149394,
-   "synth_delta": 3.244044583920745e-08,
+   "eps_trotter": 0.015943200169149404,
+   "synth_delta": 3.244044583920729e-08,
+   "p_succ_bound": 0.6567696341835487,
    "res_qubits": 13,
    "res_steps": 519,
    "res_filter_cnot": 257456,
@@ -2103,12 +2151,12 @@
    "res_trial_rotations": 165,
    "res_attempt_cnot": 257489,
    "res_attempt_rotations": 64537,
-   "res_synth_delta": 3.244044583920745e-08,
-   "res_t_per_rotation": 74.632893335993,
-   "res_attempt_t": 4816583.03722498,
-   "res_p_succ": 0.6863294989979437,
-   "res_expected_cnot": 375168.1959990641,
-   "res_expected_t": 7017887.245495492
+   "res_synth_delta": 3.244044583920729e-08,
+   "res_t_per_rotation": 74.63289333599303,
+   "res_attempt_t": 4816583.037224982,
+   "res_p_succ": 0.6567696341835487,
+   "res_expected_cnot": 392053.7530942532,
+   "res_expected_t": 7333748.07014735
   }
  },
  {
@@ -2139,6 +2187,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.04286597725790867,
    "synth_delta": 4.3166177835324135e-10,
+   "p_succ_bound": 0.41163474597281585,
    "res_qubits": 17,
    "res_steps": 245285,
    "res_filter_cnot": 44151300,
@@ -2150,9 +2199,9 @@
    "res_synth_delta": 4.3166177835324135e-10,
    "res_t_per_rotation": 93.32813878310431,
    "res_attempt_t": 1030162995.498314,
-   "res_p_succ": 0.47502195923609786,
-   "res_expected_cnot": 92945903.11361937,
-   "res_expected_t": 2168663943.778433
+   "res_p_succ": 0.41163474597281585,
+   "res_expected_cnot": 107258547.61278032,
+   "res_expected_t": 2502614285.0592732
   }
  },
  {
@@ -2183,6 +2232,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.023082920362224632,
    "synth_delta": 1.5742939061807026e-08,
+   "p_succ_bound": 0.44001777186654184,
    "res_qubits": 17,
    "res_steps": 2016,
    "res_filter_cnot": 709712,
@@ -2194,9 +2244,9 @@
    "res_synth_delta": 1.5742939061807026e-08,
    "res_t_per_rotation": 77.76215956567495,
    "res_attempt_t": 13816236.176512165,
-   "res_p_succ": 0.4750219609367515,
-   "res_expected_cnot": 1494156.1830117223,
-   "res_expected_t": 29085468.278700862
+   "res_p_succ": 0.44001777186654184,
+   "res_expected_cnot": 1613018.9400969706,
+   "res_expected_t": 31399268.529323522
   }
  },
  {
@@ -2227,6 +2277,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.028344049761545344,
    "synth_delta": 1.8420343869876953e-09,
+   "p_succ_bound": 0.3467701245266989,
    "res_qubits": 17,
    "res_steps": 38020,
    "res_filter_cnot": 6843600,
@@ -2238,9 +2289,9 @@
    "res_synth_delta": 1.8420343869876953e-09,
    "res_t_per_rotation": 87.04815858048283,
    "res_attempt_t": 148950976.73629734,
-   "res_p_succ": 0.3848563611388239,
-   "res_expected_cnot": 17782335.673883762,
-   "res_expected_t": 387030050.10892445
+   "res_p_succ": 0.3467701245266989,
+   "res_expected_cnot": 19735393.899173938,
+   "res_expected_t": 429538089.35991293
   }
  },
  {
@@ -2271,6 +2322,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.0279394863633863,
    "synth_delta": 8.659044201466803e-08,
+   "p_succ_bound": 0.3467701245266989,
    "res_qubits": 17,
    "res_steps": 464,
    "res_filter_cnot": 163360,
@@ -2282,9 +2334,9 @@
    "res_synth_delta": 8.659044201466803e-08,
    "res_t_per_rotation": 70.38365091672654,
    "res_attempt_t": 2890867.694102709,
-   "res_p_succ": 0.3848563611388239,
-   "res_expected_cnot": 424586.9797148999,
-   "res_expected_t": 7511549.726106584
+   "res_p_succ": 0.3467701245266989,
+   "res_expected_cnot": 471219.9478632391,
+   "res_expected_t": 8336553.496493992
   }
  },
  {
@@ -2315,6 +2367,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.014938231856762083,
    "synth_delta": 2.674044065803395e-11,
+   "p_succ_bound": 0.45241776548635326,
    "res_qubits": 17,
    "res_steps": 1379560,
    "res_filter_cnot": 248320800,
@@ -2326,9 +2379,9 @@
    "res_synth_delta": 2.674044065803395e-11,
    "res_t_per_rotation": 105.36655741151249,
    "res_attempt_t": 6541204352.7231045,
-   "res_p_succ": 0.4750219558347904,
-   "res_expected_cnot": 522756563.0384554,
-   "res_expected_t": 13770320029.161123
+   "res_p_succ": 0.45241776548635326,
+   "res_expected_cnot": 548875097.1860108,
+   "res_expected_t": 14458327792.878004
   }
  },
  {
@@ -2359,6 +2412,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.010059056101450648,
    "synth_delta": 2.461245829221846e-09,
+   "p_succ_bound": 0.4596074457238123,
    "res_qubits": 17,
    "res_steps": 5610,
    "res_filter_cnot": 1974840,
@@ -2370,9 +2424,9 @@
    "res_synth_delta": 2.461245829221846e-09,
    "res_t_per_rotation": 85.79389227785892,
    "res_attempt_t": 42379179.99903258,
-   "res_p_succ": 0.4750219575354441,
-   "res_expected_cnot": 4157460.447189207,
-   "res_expected_t": 89215202.21698473
+   "res_p_succ": 0.4596074457238123,
+   "res_expected_cnot": 4296895.140351468,
+   "res_expected_t": 92207339.96659209
   }
  },
  {
@@ -2403,6 +2457,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.01529356634823171,
    "synth_delta": 5.95511418451756e-11,
+   "p_succ_bound": 0.4518868948640714,
    "res_qubits": 17,
    "res_steps": 634173,
    "res_filter_cnot": 114151140,
@@ -2414,9 +2469,9 @@
    "res_synth_delta": 5.95511418451756e-11,
    "res_t_per_rotation": 101.90123961867327,
    "res_attempt_t": 2908059818.0649695,
-   "res_p_succ": 0.47502195957242255,
-   "res_expected_cnot": 240307174.64672565,
-   "res_expected_t": 6121948174.10668
+   "res_p_succ": 0.4518868948640714,
+   "res_expected_cnot": 252610080.7467252,
+   "res_expected_t": 6435370999.063207
   }
  },
  {
@@ -2447,6 +2502,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.015234359156340374,
    "synth_delta": 6.117548596234459e-09,
+   "p_succ_bound": 0.4518868948640714,
    "res_qubits": 17,
    "res_steps": 3264,
    "res_filter_cnot": 1148976,
@@ -2458,9 +2514,9 @@
    "res_synth_delta": 6.117548596234459e-09,
    "res_t_per_rotation": 81.8531975917119,
    "res_attempt_t": 23531239.09686293,
-   "res_p_succ": 0.47502195957242255,
-   "res_expected_cnot": 2418879.752494513,
-   "res_expected_t": 49537160.59367846
+   "res_p_succ": 0.4518868948640714,
+   "res_expected_cnot": 2542718.12937976,
+   "res_expected_t": 52073293.92444802
   }
  },
  {
@@ -2491,6 +2547,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.04126250391289301,
    "synth_delta": 1.9737846941385114e-10,
+   "p_succ_bound": 0.6280979133631512,
    "res_qubits": 17,
    "res_steps": 267050,
    "res_filter_cnot": 92933400,
@@ -2502,9 +2559,9 @@
    "res_synth_delta": 1.9737846941385114e-10,
    "res_t_per_rotation": 96.71494897091532,
    "res_attempt_t": 2247035181.1163216,
-   "res_p_succ": 0.7028719688378903,
-   "res_expected_cnot": 132219592.07400699,
-   "res_expected_t": 3196933838.2230687
+   "res_p_succ": 0.6280979133631512,
+   "res_expected_cnot": 147960123.76858208,
+   "res_expected_t": 3577523716.142549
   }
  },
  {
@@ -2535,6 +2592,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.040877258511267334,
    "synth_delta": 1.422703834955375e-08,
+   "p_succ_bound": 0.6280979133631512,
    "res_qubits": 17,
    "res_steps": 2030,
    "res_filter_cnot": 1396688,
@@ -2546,9 +2604,9 @@
    "res_synth_delta": 1.422703834955375e-08,
    "res_t_per_rotation": 78.20036817781286,
    "res_attempt_t": 27323912.444641415,
-   "res_p_succ": 0.7028719688378903,
-   "res_expected_cnot": 1987179.830644436,
-   "res_expected_t": 38874665.168135874
+   "res_p_succ": 0.6280979133631512,
+   "res_expected_cnot": 2223750.4221613966,
+   "res_expected_t": 43502632.09494756
   }
  },
  {
@@ -2579,6 +2637,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.047031913081393685,
    "synth_delta": 1.4457584549494773e-09,
+   "p_succ_bound": 0.4994186648399806,
    "res_qubits": 17,
    "res_steps": 41572,
    "res_filter_cnot": 14467056,
@@ -2590,9 +2649,9 @@
    "res_synth_delta": 1.4457584549494773e-09,
    "res_t_per_rotation": 88.09657894441764,
    "res_attempt_t": 318645061.75222176,
-   "res_p_succ": 0.576015443506321,
-   "res_expected_cnot": 25115821.395231817,
-   "res_expected_t": 553188400.3188624
+   "res_p_succ": 0.4994186648399806,
+   "res_expected_cnot": 28967882.096748274,
+   "res_expected_t": 638031944.3093287
   }
  },
  {
@@ -2615,14 +2674,15 @@
    "T_phys": 14.958141292110415,
    "eta": 0.047918772710717865,
    "f_pass": 0.9052717101307648,
-   "trotter_const": 0.002874731848388202,
+   "trotter_const": 0.002874731848388201,
    "leak": 0.0009697446551715157,
    "p_g": 0.576015443506321,
    "eps_U": 0.05226121707567058,
    "trace_dist_bound": 0.1,
    "infidelity_bound": 0.010000000000000002,
-   "eps_trotter": 0.04639761417050014,
-   "synth_delta": 6.525773101811226e-08,
+   "eps_trotter": 0.046397614170500125,
+   "synth_delta": 6.525773101811241e-08,
+   "p_succ_bound": 0.4994186648399806,
    "res_qubits": 17,
    "res_steps": 521,
    "res_filter_cnot": 358480,
@@ -2631,12 +2691,12 @@
    "res_trial_rotations": 225,
    "res_attempt_cnot": 358525,
    "res_attempt_rotations": 89853,
-   "res_synth_delta": 6.525773101811226e-08,
+   "res_synth_delta": 6.525773101811241e-08,
    "res_t_per_rotation": 71.60782779795977,
    "res_attempt_t": 6434178.151130079,
-   "res_p_succ": 0.576015443506321,
-   "res_expected_cnot": 622422.5479400115,
-   "res_expected_t": 11170148.689007282
+   "res_p_succ": 0.4994186648399806,
+   "res_expected_cnot": 717884.6631911034,
+   "res_expected_t": 12883335.373922525
   }
  },
  {
@@ -2667,6 +2727,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.01822886255245224,
    "synth_delta": 1.2985377284345913e-11,
+   "p_succ_bound": 0.6693206440907331,
    "res_qubits": 17,
    "res_steps": 1792945,
    "res_filter_cnot": 623944860,
@@ -2678,9 +2739,9 @@
    "res_synth_delta": 1.2985377284345913e-11,
    "res_t_per_rotation": 108.49296333682409,
    "res_attempt_t": 16923434913.215427,
-   "res_p_succ": 0.7028719616274464,
-   "res_expected_cnot": 887707774.7635618,
-   "res_expected_t": 24077550161.526585
+   "res_p_succ": 0.6693206440907331,
+   "res_expected_cnot": 932206275.8838469,
+   "res_expected_t": 25284495648.876606
   }
  },
  {
@@ -2703,14 +2764,15 @@
    "T_phys": 52.42003836196334,
    "eta": 0.021731120087075,
    "f_pass": 0.9999999895159923,
-   "trotter_const": 0.002874731848388202,
+   "trotter_const": 0.002874731848388201,
    "leak": 0.00019959281970877916,
    "p_g": 0.7028719640837515,
    "eps_U": 0.014667400714332072,
    "trace_dist_bound": 0.03162277660168379,
    "infidelity_bound": 0.0009999999999999998,
-   "eps_trotter": 0.013144441327584949,
-   "synth_delta": 1.3788365014346646e-09,
+   "eps_trotter": 0.013144441327584947,
+   "synth_delta": 1.3788365014346663e-09,
+   "p_succ_bound": 0.6784935444158263,
    "res_qubits": 17,
    "res_steps": 6420,
    "res_filter_cnot": 4417080,
@@ -2719,12 +2781,12 @@
    "res_trial_rotations": 225,
    "res_attempt_cnot": 4417125,
    "res_attempt_rotations": 1104525,
-   "res_synth_delta": 1.3788365014346646e-09,
+   "res_synth_delta": 1.3788365014346663e-09,
    "res_t_per_rotation": 88.30170437317342,
    "res_attempt_t": 97531440.02277938,
-   "res_p_succ": 0.7028719640837515,
-   "res_expected_cnot": 6284394.919290979,
-   "res_expected_t": 138761317.85953254
+   "res_p_succ": 0.6784935444158263,
+   "res_expected_cnot": 6510194.586748919,
+   "res_expected_t": 143747041.9954439
   }
  },
  {
@@ -2755,6 +2817,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.005699591424009281,
    "synth_delta": 2.1221482845433537e-11,
+   "p_succ_bound": 0.42698205247580157,
    "res_qubits": 17,
    "res_steps": 343044,
    "res_filter_cnot": 119379312,
@@ -2766,9 +2829,9 @@
    "res_synth_delta": 2.1221482845433537e-11,
    "res_t_per_rotation": 106.36705072816908,
    "res_attempt_t": 3174531117.3723006,
-   "res_p_succ": 0.43529854436005583,
-   "res_expected_cnot": 274247085.24009156,
-   "res_expected_t": 7292767592.50198
+   "res_p_succ": 0.42698205247580157,
+   "res_expected_cnot": 279588700.0584541,
+   "res_expected_t": 7434811601.48344
   }
  },
  {
@@ -2799,6 +2862,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.005670164438440135,
    "synth_delta": 2.5837394817639244e-09,
+   "p_succ_bound": 0.42698205247580157,
    "res_qubits": 17,
    "res_steps": 1490,
    "res_filter_cnot": 1025152,
@@ -2810,9 +2874,9 @@
    "res_synth_delta": 2.5837394817639244e-09,
    "res_t_per_rotation": 85.58367673032495,
    "res_attempt_t": 21954010.338539686,
-   "res_p_succ": 0.43529854436005583,
-   "res_expected_cnot": 2355158.3465714776,
-   "res_expected_t": 50434375.72440053
+   "res_p_succ": 0.42698205247580157,
+   "res_expected_cnot": 2401030.661723425,
+   "res_expected_t": 51416705.248480886
   }
  },
  {
@@ -2843,6 +2907,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.056075463277083695,
    "synth_delta": 5.518031026108513e-10,
+   "p_succ_bound": 0.7959767306415529,
    "res_qubits": 17,
    "res_steps": 129807,
    "res_filter_cnot": 45172836,
@@ -2854,9 +2919,9 @@
    "res_synth_delta": 5.518031026108513e-10,
    "res_t_per_rotation": 92.26538214105236,
    "res_attempt_t": 1041994387.6754856,
-   "res_p_succ": 0.9110368498651777,
-   "res_expected_cnot": 49584032.74981142,
-   "res_expected_t": 1143745599.1266303
+   "res_p_succ": 0.7959767306415529,
+   "res_expected_cnot": 56751509.51157945,
+   "res_expected_t": 1309076443.5232217
   }
  },
  {
@@ -2879,14 +2944,15 @@
    "T_phys": 25.508457906539167,
    "eta": 0.11117902369938566,
    "f_pass": 0.9999999948983084,
-   "trotter_const": 0.0036046213577955698,
+   "trotter_const": 0.0036046213577955685,
    "leak": 0.0012055798443703345,
    "p_g": 0.9110368498651777,
    "eps_U": 0.06230722347446111,
    "trace_dist_bound": 0.1,
    "infidelity_bound": 0.010000000000000002,
-   "eps_trotter": 0.0552853193234497,
-   "synth_delta": 3.29903834726889e-08,
+   "eps_trotter": 0.05528531932344969,
+   "synth_delta": 3.299038347268893e-08,
+   "p_succ_bound": 0.7959767306415529,
    "res_qubits": 17,
    "res_steps": 1236,
    "res_filter_cnot": 850428,
@@ -2895,12 +2961,12 @@
    "res_trial_rotations": 225,
    "res_attempt_cnot": 850473,
    "res_attempt_rotations": 212847,
-   "res_synth_delta": 3.29903834726889e-08,
+   "res_synth_delta": 3.299038347268893e-08,
    "res_t_per_rotation": 74.560137634622,
    "res_attempt_t": 15869901.615116388,
-   "res_p_succ": 0.9110368498651777,
-   "res_expected_cnot": 933522.0634882767,
-   "res_expected_t": 17419604.50608001
+   "res_p_succ": 0.7959767306415529,
+   "res_expected_cnot": 1068464.6513655283,
+   "res_expected_t": 19937645.16498533
   }
  },
  {
@@ -2931,6 +2997,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.03669599159397158,
    "synth_delta": 2.4369403958969176e-09,
+   "p_succ_bound": 0.5801094877982135,
    "res_qubits": 17,
    "res_steps": 19266,
    "res_filter_cnot": 6704568,
@@ -2942,9 +3009,9 @@
    "res_synth_delta": 2.4369403958969176e-09,
    "res_t_per_rotation": 85.83684566629927,
    "res_attempt_t": 143894570.48015112,
-   "res_p_succ": 0.643894550265335,
-   "res_expected_cnot": 10412594.728806408,
-   "res_expected_t": 223475366.30160213
+   "res_p_succ": 0.5801094877982135,
+   "res_expected_cnot": 11557495.853838107,
+   "res_expected_t": 248047262.64053747
   }
  },
  {
@@ -2963,32 +3030,33 @@
    "w0": 1.783061095249568e-11,
    "W": 11.216665572079393,
    "m": 6,
-   "T_scaled": 89.16975150657296,
-   "T_phys": 7.949755739222089,
-   "eta": 0.15756455922323737,
-   "f_pass": 0.8406968120728205,
-   "trotter_const": 0.0036046213577955685,
-   "leak": 0.0024184640666882304,
-   "p_g": 0.643894550265335,
-   "eps_U": 0.04078121267626248,
+   "T_scaled": 74.30812625547748,
+   "T_phys": 6.624796449351741,
+   "eta": 0.2225575546409751,
+   "f_pass": 0.8282754282661152,
+   "trotter_const": 0.003604621357795567,
+   "leak": 0.00481352581756689,
+   "p_g": 0.6250078954637599,
+   "eps_U": 0.024207722159900868,
    "trace_dist_bound": 0.1,
    "infidelity_bound": 0.010000000000000002,
-   "eps_trotter": 0.03620180022831335,
-   "synth_delta": 9.957625623408063e-08,
+   "eps_trotter": 0.021280946459317267,
+   "synth_delta": 6.412040093293024e-08,
+   "p_succ_bound": 0.5873178980178249,
    "res_qubits": 17,
-   "res_steps": 266,
-   "res_filter_cnot": 183032,
-   "res_filter_rotations": 45764,
+   "res_steps": 264,
+   "res_filter_cnot": 181656,
+   "res_filter_rotations": 45420,
    "res_trial_cnot": 45,
    "res_trial_rotations": 225,
-   "res_attempt_cnot": 183077,
-   "res_attempt_rotations": 45989,
-   "res_synth_delta": 9.957625623408063e-08,
-   "res_t_per_rotation": 69.77886895092989,
-   "res_attempt_t": 3209060.404184315,
-   "res_p_succ": 0.643894550265335,
-   "res_expected_cnot": 284327.61222246394,
-   "res_expected_t": 4983829.111244893
+   "res_attempt_cnot": 181701,
+   "res_attempt_rotations": 45645,
+   "res_synth_delta": 6.412040093293024e-08,
+   "res_t_per_rotation": 71.68392393802415,
+   "res_attempt_t": 3272012.7081511123,
+   "res_p_succ": 0.5873178980178249,
+   "res_expected_cnot": 309374.1917507262,
+   "res_expected_t": 5571110.158900364
   }
  },
  {
@@ -3006,33 +3074,34 @@
    "delta": 0.021138957553503222,
    "w0": 1.783061095249568e-11,
    "W": 11.216665572079393,
-   "m": 25,
-   "T_scaled": 476.86640266185714,
-   "T_phys": 42.51409651089862,
-   "eta": 0.025706212504668636,
-   "f_pass": 0.9999999914971807,
+   "m": 20,
+   "T_scaled": 381.49312212948576,
+   "T_phys": 34.011277208718894,
+   "eta": 0.053460187142190196,
+   "f_pass": 0.9999999931977446,
    "trotter_const": 0.17782999889755363,
-   "leak": 6.452415449945592e-05,
-   "p_g": 0.9110368436680725,
-   "eps_U": 0.022516322120590886,
+   "leak": 0.0002790062427345942,
+   "p_g": 0.9110368467666251,
+   "eps_U": 0.01424020758887716,
    "trace_dist_bound": 0.03162277660168379,
    "infidelity_bound": 0.0009999999999999998,
-   "eps_trotter": 0.02026439708600163,
-   "synth_delta": 2.594171185504571e-11,
+   "eps_trotter": 0.012816055472009834,
+   "synth_delta": 1.62121957590139e-11,
+   "p_succ_bound": 0.8840555723398127,
    "res_qubits": 17,
-   "res_steps": 997780,
-   "res_filter_cnot": 347227440,
-   "res_filter_rotations": 86806885,
+   "res_steps": 1009704,
+   "res_filter_cnot": 351376992,
+   "res_filter_rotations": 87844268,
    "res_trial_cnot": 45,
    "res_trial_rotations": 225,
-   "res_attempt_cnot": 347227485,
-   "res_attempt_rotations": 86807110,
-   "res_synth_delta": 2.594171185504571e-11,
-   "res_t_per_rotation": 105.49780607917975,
-   "res_attempt_t": 9157959657.074026,
-   "res_p_succ": 0.9110368436680725,
-   "res_expected_cnot": 381134404.6218497,
-   "res_expected_t": 10052238524.40664
+   "res_attempt_cnot": 351377037,
+   "res_attempt_rotations": 87844493,
+   "res_synth_delta": 1.62121957590139e-11,
+   "res_t_per_rotation": 107.53238862871501,
+   "res_attempt_t": 9446128160.168436,
+   "res_p_succ": 0.8840555723398127,
+   "res_expected_cnot": 397460349.77192354,
+   "res_expected_t": 10684993631.302557
   }
  },
  {
@@ -3055,14 +3124,15 @@
    "T_phys": 34.011277208718894,
    "eta": 0.053460187142190196,
    "f_pass": 0.9999999931977446,
-   "trotter_const": 0.0036046213577955698,
+   "trotter_const": 0.003604621357795568,
    "leak": 0.0002790062427345942,
    "p_g": 0.9110368467666251,
    "eps_U": 0.01424020758887716,
    "trace_dist_bound": 0.03162277660168379,
    "infidelity_bound": 0.0009999999999999998,
-   "eps_trotter": 0.012788237991766316,
-   "synth_delta": 2.1330630179225767e-09,
+   "eps_trotter": 0.012788237991766309,
+   "synth_delta": 2.133063017922587e-09,
+   "p_succ_bound": 0.8840555723398127,
    "res_qubits": 17,
    "res_steps": 3956,
    "res_filter_cnot": 2721808,
@@ -3071,12 +3141,12 @@
    "res_trial_rotations": 225,
    "res_attempt_cnot": 2721853,
    "res_attempt_rotations": 680697,
-   "res_synth_delta": 2.1330630179225767e-09,
-   "res_t_per_rotation": 86.41327879670759,
-   "res_attempt_t": 58821259.637082465,
-   "res_p_succ": 0.9110368467666251,
-   "res_expected_cnot": 2987643.1558835083,
-   "res_expected_t": 64565181.799008355
+   "res_synth_delta": 2.133063017922587e-09,
+   "res_t_per_rotation": 86.41327879670756,
+   "res_attempt_t": 58821259.63708244,
+   "res_p_succ": 0.8840555723398127,
+   "res_expected_cnot": 3078825.6815079222,
+   "res_expected_t": 66535703.72437262
   }
  },
  {
@@ -3107,6 +3177,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.012621530072869638,
    "synth_delta": 1.036228124732288e-10,
+   "p_succ_bound": 0.7391582923209051,
    "res_qubits": 17,
    "res_steps": 155595,
    "res_filter_cnot": 54147060,
@@ -3118,9 +3189,9 @@
    "res_synth_delta": 1.036228124732288e-10,
    "res_t_per_rotation": 99.5038179084253,
    "res_attempt_t": 1346982984.0187175,
-   "res_p_succ": 0.7634695160206288,
-   "res_expected_cnot": 70922419.11926834,
-   "res_expected_t": 1764291770.337458
+   "res_p_succ": 0.7391582923209051,
+   "res_expected_cnot": 73255086.98547086,
+   "res_expected_t": 1822320060.5506103
   }
  },
  {
@@ -3151,6 +3222,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.012479529847278186,
    "synth_delta": 9.207553426413252e-09,
+   "p_succ_bound": 0.7391582923209051,
    "res_qubits": 17,
    "res_steps": 974,
    "res_filter_cnot": 670144,
@@ -3162,9 +3234,9 @@
    "res_synth_delta": 9.207553426413252e-09,
    "res_t_per_rotation": 80.08360497199226,
    "res_attempt_t": 13435546.32254617,
-   "res_p_succ": 0.7634695160206288,
-   "res_expected_cnot": 877820.2481392742,
-   "res_expected_t": 17598012.809437625
+   "res_p_succ": 0.7391582923209051,
+   "res_expected_cnot": 906692.1212446303,
+   "res_expected_t": 18176818.770928614
   }
  },
  {
@@ -3195,6 +3267,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.03764986777350305,
    "synth_delta": 5.16756150083904e-11,
+   "p_succ_bound": 0.2816609647300967,
    "res_qubits": 25,
    "res_steps": 1173402,
    "res_filter_cnot": 323858952,
@@ -3206,9 +3279,9 @@
    "res_synth_delta": 5.16756150083904e-11,
    "res_t_per_rotation": 102.51517617006809,
    "res_attempt_t": 8300151900.187884,
-   "res_p_succ": 0.32781487093381556,
-   "res_expected_cnot": 987932670.8927301,
-   "res_expected_t": 25319632012.251358
+   "res_p_succ": 0.2816609647300967,
+   "res_expected_cnot": 1149818617.2526243,
+   "res_expected_t": 29468591461.161663
   }
  },
  {
@@ -3226,33 +3299,34 @@
    "delta": 0.00943925728629624,
    "w0": 1.2342794638028038e-11,
    "W": 16.20378576046318,
-   "m": 21,
-   "T_scaled": 1185.7541624005162,
-   "T_phys": 73.17760058848259,
-   "eta": 0.018816332753942285,
-   "f_pass": 0.9999999853644799,
+   "m": 30,
+   "T_scaled": 980.3479295437337,
+   "T_phys": 60.50116584087142,
+   "eta": 0.04259660114785967,
+   "f_pass": 0.9999999878997669,
    "trotter_const": 0.0007556226430403454,
-   "leak": 0.0007254625881984323,
-   "p_g": 0.32781487093381556,
-   "eps_U": 0.04183378931692134,
+   "leak": 0.0037067841579300964,
+   "p_g": 0.32781487259602515,
+   "eps_U": 0.022396276057882546,
    "trace_dist_bound": 0.1,
    "infidelity_bound": 0.010000000000000002,
-   "eps_trotter": 0.03754206990673924,
-   "synth_delta": 5.444720686320834e-09,
+   "eps_trotter": 0.020110243855665212,
+   "synth_delta": 2.8236389377750056e-09,
+   "p_succ_bound": 0.3026704364698029,
    "res_qubits": 25,
-   "res_steps": 5793,
-   "res_filter_cnot": 3151476,
-   "res_filter_rotations": 787890,
+   "res_steps": 5950,
+   "res_filter_cnot": 3236920,
+   "res_filter_rotations": 809260,
    "res_trial_cnot": 69,
    "res_trial_rotations": 345,
-   "res_attempt_cnot": 3151545,
-   "res_attempt_rotations": 788235,
-   "res_synth_delta": 5.444720686320834e-09,
-   "res_t_per_rotation": 82.35748443981302,
-   "res_attempt_t": 64917051.74741602,
-   "res_p_succ": 0.32781487093381556,
-   "res_expected_cnot": 9613795.100333577,
-   "res_expected_t": 198029612.14813986
+   "res_attempt_cnot": 3236989,
+   "res_attempt_rotations": 809605,
+   "res_synth_delta": 2.8236389377750056e-09,
+   "res_t_per_rotation": 85.19939169838108,
+   "res_attempt_t": 68977853.51596782,
+   "res_p_succ": 0.3026704364698029,
+   "res_expected_cnot": 10694764.370629078,
+   "res_expected_t": 227897558.54747862
   }
  },
  {
@@ -3283,6 +3357,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.013857809502297865,
    "synth_delta": 8.885511742631467e-11,
+   "p_succ_bound": 0.25417735634381894,
    "res_qubits": 25,
    "res_steps": 251160,
    "res_filter_cnot": 69320160,
@@ -3294,9 +3369,9 @@
    "res_synth_delta": 8.885511742631467e-11,
    "res_t_per_rotation": 100.16926252825115,
    "res_attempt_t": 1735972686.134766,
-   "res_p_succ": 0.26994025967135155,
-   "res_expected_cnot": 256798408.22705144,
-   "res_expected_t": 6430951382.532892
+   "res_p_succ": 0.25417735634381894,
+   "res_expected_cnot": 272723857.06235915,
+   "res_expected_t": 6829769225.337926
   }
  },
  {
@@ -3327,6 +3402,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.013778167875181248,
    "synth_delta": 8.358764675518827e-09,
+   "p_succ_bound": 0.25417735634381894,
    "res_qubits": 25,
    "res_steps": 1422,
    "res_filter_cnot": 773600,
@@ -3338,9 +3414,9 @@
    "res_synth_delta": 8.358764675518827e-09,
    "res_t_per_rotation": 80.50218932649604,
    "res_attempt_t": 15597540.688576587,
-   "res_p_succ": 0.26994025967135155,
-   "res_expected_cnot": 2866074.8898364813,
-   "res_expected_t": 57781453.96898696
+   "res_p_succ": 0.25417735634381894,
+   "res_expected_cnot": 3043815.5905338735,
+   "res_expected_t": 61364792.33609704
   }
  },
  {
@@ -3371,6 +3447,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.011563888035559822,
    "synth_delta": 2.7855268499080015e-12,
+   "p_succ_bound": 0.3132667647999607,
    "res_qubits": 25,
    "res_steps": 6685248,
    "res_filter_cnot": 1845128448,
@@ -3382,9 +3459,9 @@
    "res_synth_delta": 2.7855268499080015e-12,
    "res_t_per_rotation": 115.15556074901443,
    "res_attempt_t": 53119245526.985054,
-   "res_p_succ": 0.3278148678360614,
-   "res_expected_cnot": 5628568738.14137,
-   "res_expected_t": 162040379308.08472
+   "res_p_succ": 0.3132667647999607,
+   "res_expected_cnot": 5889959371.139238,
+   "res_expected_t": 169565531667.25116
   }
  },
  {
@@ -3415,6 +3492,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.011506271292377957,
    "synth_delta": 6.199463077937712e-10,
+   "p_succ_bound": 0.3132667647999607,
    "res_qubits": 25,
    "res_steps": 15920,
    "res_filter_cnot": 8660672,
@@ -3426,9 +3504,9 @@
    "res_synth_delta": 6.199463077937712e-10,
    "res_t_per_rotation": 91.76141302996402,
    "res_attempt_t": 198714937.3625819,
-   "res_p_succ": 0.3278148678360614,
-   "res_expected_cnot": 26419610.1207075,
-   "res_expected_t": 606180368.4327041
+   "res_p_succ": 0.3132667647999607,
+   "res_expected_cnot": 27646536.349077422,
+   "res_expected_t": 634331374.0590168
   }
  },
  {
@@ -3459,6 +3537,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.008185386831818079,
    "synth_delta": 3.4443284801382933e-12,
+   "p_succ_bound": 0.3174337848235282,
    "res_qubits": 25,
    "res_steps": 3826911,
    "res_filter_cnot": 1056227436,
@@ -3470,9 +3549,9 @@
    "res_synth_delta": 3.4443284801382933e-12,
    "res_t_per_rotation": 114.2367432054512,
    "res_attempt_t": 30165036375.73836,
-   "res_p_succ": 0.32776484965777675,
-   "res_expected_cnot": 3222516099.8893566,
-   "res_expected_t": 92032554458.58224
+   "res_p_succ": 0.3174337848235282,
+   "res_expected_cnot": 3327394737.1014442,
+   "res_expected_t": 95027806799.16629
   }
  },
  {
@@ -3503,6 +3582,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.008174999768068425,
    "synth_delta": 7.049584239516728e-10,
+   "p_succ_bound": 0.3174337848235282,
    "res_qubits": 25,
    "res_steps": 9592,
    "res_filter_cnot": 5218096,
@@ -3514,9 +3594,9 @@
    "res_synth_delta": 7.049584239516728e-10,
    "res_t_per_rotation": 91.20522832228853,
    "res_attempt_t": 119011969.53841618,
-   "res_p_succ": 0.32776484965777675,
-   "res_expected_cnot": 15920453.3538247,
-   "res_expected_t": 363101686.0492454
+   "res_p_succ": 0.3174337848235282,
+   "res_expected_cnot": 16438593.651589254,
+   "res_expected_t": 374919038.95667195
   }
  },
  {
@@ -3547,6 +3627,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.04961654041776583,
    "synth_delta": 2.8845818333182285e-11,
+   "p_succ_bound": 0.44110209948189655,
    "res_qubits": 25,
    "res_steps": 1415766,
    "res_filter_cnot": 764513640,
@@ -3558,9 +3639,9 @@
    "res_synth_delta": 2.8845818333182285e-11,
    "res_t_per_rotation": 105.03854055497297,
    "res_attempt_t": 20075887689.098343,
-   "res_p_succ": 0.5173708876741463,
-   "res_expected_cnot": 1477689849.223814,
-   "res_expected_t": 38803667093.3496
+   "res_p_succ": 0.44110209948189655,
+   "res_expected_cnot": 1733189912.036174,
+   "res_expected_t": 45513017763.18633
   }
  },
  {
@@ -3578,33 +3659,34 @@
    "delta": 0.00867457766612298,
    "w0": 1.2024815910327517e-11,
    "W": 16.63227125400148,
-   "m": 21,
-   "T_scaled": 1186.6530866547798,
-   "T_phys": 71.34642458222827,
-   "eta": 0.02418728913809901,
-   "f_pass": 0.9999999857307151,
-   "trotter_const": 0.001297995933767062,
-   "leak": 0.0005454424658316245,
-   "p_g": 0.5173708876741463,
-   "eps_U": 0.05512980636850532,
+   "m": 30,
+   "T_scaled": 981.0911346358415,
+   "T_phys": 58.987201426251715,
+   "eta": 0.06473343210892309,
+   "f_pass": 0.9999999882025598,
+   "trotter_const": 0.0012979959337670619,
+   "leak": 0.0038938068907742778,
+   "p_g": 0.5173708902318671,
+   "eps_U": 0.027044845197067506,
    "trace_dist_bound": 0.1,
    "infidelity_bound": 0.010000000000000002,
-   "eps_trotter": 0.04947818906382781,
-   "synth_delta": 3.184341638242583e-09,
+   "eps_trotter": 0.024214806017515834,
+   "synth_delta": 1.4838517634530125e-09,
+   "p_succ_bound": 0.47919641171778893,
    "res_qubits": 25,
-   "res_steps": 6621,
-   "res_filter_cnot": 7097796,
-   "res_filter_rotations": 1774470,
+   "res_steps": 7115,
+   "res_filter_cnot": 7627400,
+   "res_filter_rotations": 1906880,
    "res_trial_cnot": 69,
    "res_trial_rotations": 345,
-   "res_attempt_cnot": 7097865,
-   "res_attempt_rotations": 1774815,
-   "res_synth_delta": 3.184341638242583e-09,
-   "res_t_per_rotation": 84.6790731824319,
-   "res_attempt_t": 150289689.2702779,
-   "res_p_succ": 0.5173708876741463,
-   "res_expected_cnot": 13719103.971830787,
-   "res_expected_t": 290487332.8801103
+   "res_attempt_cnot": 7627469,
+   "res_attempt_rotations": 1907225,
+   "res_synth_delta": 1.4838517634530125e-09,
+   "res_t_per_rotation": 87.98401763947851,
+   "res_attempt_t": 167805318.0424544,
+   "res_p_succ": 0.47919641171778893,
+   "res_expected_cnot": 15917208.08730098,
+   "res_expected_t": 350180664.8361951
   }
  },
  {
@@ -3635,6 +3717,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.014825052868799269,
    "synth_delta": 4.915550685430219e-11,
+   "p_succ_bound": 0.2769849489182481,
    "res_qubits": 25,
    "res_steps": 248256,
    "res_filter_cnot": 134058240,
@@ -3646,9 +3729,9 @@
    "res_synth_delta": 4.915550685430219e-11,
    "res_t_per_rotation": 102.73156798231646,
    "res_attempt_t": 3443039563.280922,
-   "res_p_succ": 0.2945950296976217,
-   "res_expected_cnot": 455059642.85140914,
-   "res_expected_t": 11687364742.083149
+   "res_p_succ": 0.2769849489182481,
+   "res_expected_cnot": 483991312.6094343,
+   "res_expected_t": 12430421135.616045
   }
  },
  {
@@ -3679,6 +3762,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.014729300688702457,
    "synth_delta": 4.889294162923638e-09,
+   "p_succ_bound": 0.2769849489182481,
    "res_qubits": 25,
    "res_steps": 1329,
    "res_filter_cnot": 1424720,
@@ -3690,9 +3774,9 @@
    "res_synth_delta": 4.889294162923638e-09,
    "res_t_per_rotation": 82.82317994013766,
    "res_attempt_t": 29529196.8135971,
-   "res_p_succ": 0.2945950296976217,
-   "res_expected_cnot": 4836432.581576249,
-   "res_expected_t": 100236575.08379035
+   "res_p_succ": 0.2769849489182481,
+   "res_expected_cnot": 5143922.0996102765,
+   "res_expected_t": 106609391.33668458
   }
  },
  {
@@ -3723,6 +3807,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.016097748466834916,
    "synth_delta": 1.707916040374412e-12,
+   "p_succ_bound": 0.4919599394583303,
    "res_qubits": 25,
    "res_steps": 7757652,
    "res_filter_cnot": 4189132080,
@@ -3734,9 +3819,9 @@
    "res_synth_delta": 1.707916040374412e-12,
    "res_t_per_rotation": 117.27270025063545,
    "res_attempt_t": 122817751424.75745,
-   "res_p_succ": 0.517370882752471,
-   "res_expected_cnot": 8096961558.241059,
-   "res_expected_t": 237388217078.14954
+   "res_p_succ": 0.4919599394583303,
+   "res_expected_cnot": 8515189577.453035,
+   "res_expected_t": 249649903526.66772
   }
  },
  {
@@ -3759,14 +3844,15 @@
    "T_phys": 95.12856610963769,
    "eta": 0.006994922841972568,
    "f_pass": 0.9999999809742868,
-   "trotter_const": 0.0012979959337670619,
+   "trotter_const": 0.0012979959337670623,
    "leak": 4.5641250666729295e-05,
    "p_g": 0.517370882752471,
    "eps_U": 0.017886420572557356,
    "trace_dist_bound": 0.03162277660168379,
    "infidelity_bound": 0.0009999999999999998,
-   "eps_trotter": 0.016074539004553752,
-   "synth_delta": 3.7800193060699434e-10,
+   "eps_trotter": 0.016074539004553762,
+   "synth_delta": 3.7800193060699217e-10,
+   "p_succ_bound": 0.4919599394583303,
    "res_qubits": 25,
    "res_steps": 17884,
    "res_filter_cnot": 19171760,
@@ -3775,12 +3861,12 @@
    "res_trial_rotations": 345,
    "res_attempt_cnot": 19171829,
    "res_attempt_rotations": 4793313,
-   "res_synth_delta": 3.7800193060699434e-10,
-   "res_t_per_rotation": 93.90266203796418,
-   "res_attempt_t": 450104850.6811802,
-   "res_p_succ": 0.517370882752471,
-   "res_expected_cnot": 37056258.168228805,
-   "res_expected_t": 869984890.3103553
+   "res_synth_delta": 3.7800193060699217e-10,
+   "res_t_per_rotation": 93.9026620379642,
+   "res_attempt_t": 450104850.6811803,
+   "res_p_succ": 0.4919599394583303,
+   "res_expected_cnot": 38970305.22670003,
+   "res_expected_t": 914921753.9476197
   }
  },
  {
@@ -3811,6 +3897,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.010361901909037283,
    "synth_delta": 1.5006974630958425e-12,
+   "p_succ_bound": 0.5009408394705546,
    "res_qubits": 25,
    "res_steps": 5682985,
    "res_filter_cnot": 3068811900,
@@ -3822,9 +3909,9 @@
    "res_synth_delta": 1.5006974630958425e-12,
    "res_t_per_rotation": 117.83251192840802,
    "res_attempt_t": 90401495769.40439,
-   "res_p_succ": 0.5173708889204409,
-   "res_expected_cnot": 5931551300.467369,
-   "res_expected_t": 174732474720.48227
+   "res_p_succ": 0.5009408394705546,
+   "res_expected_cnot": 6126096591.053414,
+   "res_expected_t": 180463417326.78436
   }
  },
  {
@@ -3847,14 +3934,15 @@
    "T_phys": 65.3237681049065,
    "eta": 0.01617053678734638,
    "f_pass": 0.999999986935165,
-   "trotter_const": 0.0012979959337670619,
+   "trotter_const": 0.0012979959337670616,
    "leak": 0.00024386779534629424,
    "p_g": 0.5173708889204409,
    "eps_U": 0.01151324200304836,
    "trace_dist_bound": 0.03162277660168379,
    "infidelity_bound": 0.0009999999999999998,
-   "eps_trotter": 0.010352261353727018,
-   "synth_delta": 3.4157771797018315e-10,
+   "eps_trotter": 0.010352261353727016,
+   "synth_delta": 3.4157771797018367e-10,
+   "p_succ_bound": 0.5009408394705546,
    "res_qubits": 25,
    "res_steps": 12681,
    "res_filter_cnot": 13594080,
@@ -3863,12 +3951,12 @@
    "res_trial_rotations": 345,
    "res_attempt_cnot": 13594149,
    "res_attempt_rotations": 3398877,
-   "res_synth_delta": 3.4157771797018315e-10,
-   "res_t_per_rotation": 94.34120124512727,
-   "res_attempt_t": 320654139.0644344,
-   "res_p_succ": 0.5173708889204409,
-   "res_expected_cnot": 26275442.416881807,
-   "res_expected_t": 619776152.7199943
+   "res_synth_delta": 3.4157771797018367e-10,
+   "res_t_per_rotation": 94.34120124512725,
+   "res_attempt_t": 320654139.06443435,
+   "res_p_succ": 0.5009408394705546,
+   "res_expected_cnot": 27137234.43743913,
+   "res_expected_t": 640103808.2727182
   }
  },
  {
@@ -3899,6 +3987,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.039821706222720285,
    "synth_delta": 6.209721724156074e-11,
+   "p_succ_bound": 0.7595721898233337,
    "res_qubits": 25,
    "res_steps": 527868,
    "res_filter_cnot": 285048720,
@@ -3910,9 +3999,9 @@
    "res_synth_delta": 6.209721724156074e-11,
    "res_t_per_rotation": 101.72004127578887,
    "res_attempt_t": 7248828815.37768,
-   "res_p_succ": 0.8386553895052846,
-   "res_expected_cnot": 339887864.0345324,
-   "res_expected_t": 8643393825.506445
+   "res_p_succ": 0.7595721898233337,
+   "res_expected_cnot": 375275441.6486713,
+   "res_expected_t": 9543304655.563627
   }
  },
  {
@@ -3935,14 +4024,15 @@
    "T_phys": 34.45265472084022,
    "eta": 0.1179916559360595,
    "f_pass": 0.9999999931094691,
-   "trotter_const": 0.0016341998826980078,
+   "trotter_const": 0.0016341998826980072,
    "leak": 0.002671233311391124,
    "p_g": 0.8386553895052846,
    "eps_U": 0.04424691183657735,
    "trace_dist_bound": 0.1,
    "infidelity_bound": 0.010000000000000002,
-   "eps_trotter": 0.039511447084874085,
-   "synth_delta": 6.094196284260582e-09,
+   "eps_trotter": 0.03951144708487407,
+   "synth_delta": 6.0941962842606e-09,
+   "p_succ_bound": 0.7595721898233337,
    "res_qubits": 25,
    "res_steps": 2898,
    "res_filter_cnot": 3106728,
@@ -3951,12 +4041,12 @@
    "res_trial_rotations": 345,
    "res_attempt_cnot": 3106797,
    "res_attempt_rotations": 777045,
-   "res_synth_delta": 6.094196284260582e-09,
+   "res_synth_delta": 6.0941962842606e-09,
    "res_t_per_rotation": 81.86975065897997,
    "res_attempt_t": 63616480.40080709,
-   "res_p_succ": 0.8386553895052846,
-   "res_expected_cnot": 3704497.745889014,
-   "res_expected_t": 75855328.89538084
+   "res_p_succ": 0.7595721898233337,
+   "res_expected_cnot": 4090193.1924635093,
+   "res_expected_t": 83753040.53141207
   }
  },
  {
@@ -3987,6 +4077,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.03676370175367417,
    "synth_delta": 3.4582238757856705e-10,
+   "p_succ_bound": 0.5833212458089648,
    "res_qubits": 25,
    "res_steps": 87533,
    "res_filter_cnot": 47267820,
@@ -3998,9 +4089,9 @@
    "res_synth_delta": 3.4582238757856705e-10,
    "res_t_per_rotation": 94.28774904242958,
    "res_attempt_t": 1114227371.0610955,
-   "res_p_succ": 0.6473893573933647,
-   "res_expected_cnot": 73013076.99947134,
-   "res_expected_t": 1721108569.8835053
+   "res_p_succ": 0.5833212458089648,
+   "res_expected_cnot": 81032345.96649687,
+   "res_expected_t": 1910143645.661074
   }
  },
  {
@@ -4018,33 +4109,34 @@
    "delta": 0.01024598400547618,
    "w0": 1.17237930393775e-11,
    "W": 17.059325367502346,
-   "m": 8,
-   "T_scaled": 229.96273358742582,
-   "T_phys": 13.480177476742425,
-   "eta": 0.11237373501908841,
-   "f_pass": 0.8785996050403615,
+   "m": 6,
+   "T_scaled": 183.97018686994068,
+   "T_phys": 10.784141981393942,
+   "eta": 0.1592147073604006,
+   "f_pass": 0.8398836432955069,
    "trotter_const": 0.0016341998826980078,
-   "leak": 0.002423520604561457,
-   "p_g": 0.6473893573933647,
-   "eps_U": 0.04085039142098547,
+   "leak": 0.004853157868044885,
+   "p_g": 0.591591322604231,
+   "eps_U": 0.023332457434139225,
    "trace_dist_bound": 0.1,
    "infidelity_bound": 0.010000000000000002,
-   "eps_trotter": 0.03631062488356084,
-   "synth_delta": 2.2849525306519628e-08,
+   "eps_trotter": 0.02077239800045734,
+   "synth_delta": 1.3620452729517312e-08,
+   "p_succ_bound": 0.5562434190342026,
    "res_qubits": 25,
-   "res_steps": 740,
-   "res_filter_cnot": 793312,
-   "res_filter_rotations": 198336,
+   "res_steps": 700,
+   "res_filter_cnot": 750424,
+   "res_filter_rotations": 187612,
    "res_trial_cnot": 69,
    "res_trial_rotations": 345,
-   "res_attempt_cnot": 793381,
-   "res_attempt_rotations": 198681,
-   "res_synth_delta": 2.2849525306519628e-08,
-   "res_t_per_rotation": 76.14978169545678,
-   "res_attempt_t": 15129514.777035048,
-   "res_p_succ": 0.6473893573933647,
-   "res_expected_cnot": 1225508.252397681,
-   "res_expected_t": 23370039.38086381
+   "res_attempt_cnot": 750493,
+   "res_attempt_rotations": 187957,
+   "res_synth_delta": 1.3620452729517312e-08,
+   "res_t_per_rotation": 78.38895030386033,
+   "res_attempt_t": 14733751.932262676,
+   "res_p_succ": 0.5562434190342026,
+   "res_expected_cnot": 1349216.861393291,
+   "res_expected_t": 26487957.300860614
   }
  },
  {
@@ -4075,6 +4167,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.015802974316022886,
    "synth_delta": 3.5202311140135257e-12,
+   "p_succ_bound": 0.8068034505504477,
    "res_qubits": 25,
    "res_steps": 3694910,
    "res_filter_cnot": 1995251400,
@@ -4086,9 +4179,9 @@
    "res_synth_delta": 3.5202311140135257e-12,
    "res_t_per_rotation": 114.14240096791212,
    "res_attempt_t": 56935739136.04737,
-   "res_p_succ": 0.8386553818002433,
-   "res_expected_cnot": 2379107691.072139,
-   "res_expected_t": 67889314695.42362
+   "res_p_succ": 0.8068034505504477,
+   "res_expected_cnot": 2473032890.028823,
+   "res_expected_t": 70569528547.75539
   }
  },
  {
@@ -4111,14 +4204,15 @@
    "T_phys": 57.42109120140037,
    "eta": 0.028384777462126087,
    "f_pass": 0.9999999885157818,
-   "trotter_const": 0.0016341998826980074,
+   "trotter_const": 0.001634199882698007,
    "leak": 0.0001549796083184149,
    "p_g": 0.8386553818002433,
    "eps_U": 0.017558912150749315,
    "trace_dist_bound": 0.03162277660168379,
    "infidelity_bound": 0.0009999999999999998,
-   "eps_trotter": 0.01575229539231374,
-   "synth_delta": 6.825393274165771e-10,
+   "eps_trotter": 0.015752295392313737,
+   "synth_delta": 6.825393274165785e-10,
+   "p_succ_bound": 0.8068034505504477,
    "res_qubits": 25,
    "res_steps": 9875,
    "res_filter_cnot": 10586120,
@@ -4127,12 +4221,12 @@
    "res_trial_rotations": 345,
    "res_attempt_cnot": 10586189,
    "res_attempt_rotations": 2646905,
-   "res_synth_delta": 6.825393274165771e-10,
-   "res_t_per_rotation": 91.34510632024099,
-   "res_attempt_t": 241781818.64457747,
-   "res_p_succ": 0.8386553818002433,
-   "res_expected_cnot": 12622811.740951173,
-   "res_expected_t": 288296985.73634946
+   "res_synth_delta": 6.825393274165785e-10,
+   "res_t_per_rotation": 91.34510632024097,
+   "res_attempt_t": 241781818.64457744,
+   "res_p_succ": 0.8068034505504477,
+   "res_expected_cnot": 13121149.882015865,
+   "res_expected_t": 299678711.685752
   }
  },
  {
@@ -4163,6 +4257,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.007251233207046129,
    "synth_delta": 7.564763869640358e-12,
+   "p_succ_bound": 0.6887332028489682,
    "res_qubits": 25,
    "res_steps": 788963,
    "res_filter_cnot": 426040020,
@@ -4174,9 +4269,9 @@
    "res_synth_delta": 7.564763869640358e-12,
    "res_t_per_rotation": 110.83152626554522,
    "res_attempt_t": 11804705540.229624,
-   "res_p_succ": 0.7021710500069153,
-   "res_expected_cnot": 606746873.1383958,
-   "res_expected_t": 16811723496.879238
+   "res_p_succ": 0.6887332028489682,
+   "res_expected_cnot": 618585088.1555742,
+   "res_expected_t": 17139736390.519667
   }
  },
  {
@@ -4207,6 +4302,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.00722771324491861,
    "synth_delta": 1.211346870009975e-09,
+   "p_succ_bound": 0.6887332028489682,
    "res_qubits": 25,
    "res_steps": 2553,
    "res_filter_cnot": 2736848,
@@ -4218,9 +4314,9 @@
    "res_synth_delta": 1.211346870009975e-09,
    "res_t_per_rotation": 88.86222243922998,
    "res_attempt_t": 60831967.30411147,
-   "res_p_succ": 0.7021710500069153,
-   "res_expected_cnot": 3897792.4253257746,
-   "res_expected_t": 86634114.72676405
+   "res_p_succ": 0.6887332028489682,
+   "res_expected_cnot": 3973842.1041393825,
+   "res_expected_t": 88324429.62307899
   }
  },
  {
@@ -4251,6 +4347,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.0270476456329665,
    "synth_delta": 9.333622202932992e-12,
+   "p_succ_bound": 0.2062763003163761,
    "res_qubits": 33,
    "res_steps": 3462335,
    "res_filter_cnot": 1287988620,
@@ -4262,9 +4359,9 @@
    "res_synth_delta": 9.333622202932992e-12,
    "res_t_per_rotation": 109.922100198414,
    "res_attempt_t": 35394658496.56435,
-   "res_p_succ": 0.23447826482335332,
-   "res_expected_cnot": 5492998312.531526,
-   "res_expected_t": 150950701222.6881
+   "res_p_succ": 0.2062763003163761,
+   "res_expected_cnot": 6243997546.128899,
+   "res_expected_t": 171588585030.26193
   }
  },
  {
@@ -4295,6 +4392,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.026986266726674153,
    "synth_delta": 1.4998145851219354e-09,
+   "p_succ_bound": 0.2062763003163761,
    "res_qubits": 33,
    "res_steps": 11110,
    "res_filter_cnot": 8177100,
@@ -4306,9 +4404,9 @@
    "res_synth_delta": 1.4998145851219354e-09,
    "res_t_per_rotation": 87.93770608711353,
    "res_attempt_t": 179812822.96427757,
-   "res_p_succ": 0.23447826482335332,
-   "res_expected_cnot": 34873991.43865371,
-   "res_expected_t": 766863500.5455259
+   "res_p_succ": 0.2062763003163761,
+   "res_expected_cnot": 39641941.35466962,
+   "res_expected_t": 871708590.3154643
   }
  },
  {
@@ -4339,6 +4437,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.02322404422632976,
    "synth_delta": 8.939450981513118e-12,
+   "p_succ_bound": 0.2101534892187263,
    "res_qubits": 33,
    "res_steps": 3103919,
    "res_filter_cnot": 1154657868,
@@ -4350,9 +4449,9 @@
    "res_synth_delta": 8.939450981513118e-12,
    "res_t_per_rotation": 110.10885272392409,
    "res_attempt_t": 31784565805.455795,
-   "res_p_succ": 0.23447826650313705,
-   "res_expected_cnot": 4924370937.31479,
-   "res_expected_t": 135554421650.54796
+   "res_p_succ": 0.2101534892187263,
+   "res_expected_cnot": 5494355412.763287,
+   "res_expected_t": 151244530479.21863
   }
  },
  {
@@ -4383,6 +4482,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.023199532792032296,
    "synth_delta": 1.437380327867661e-09,
+   "p_succ_bound": 0.2101534892187263,
    "res_qubits": 33,
    "res_steps": 9847,
    "res_filter_cnot": 7247440,
@@ -4394,9 +4494,9 @@
    "res_synth_delta": 1.437380327867661e-09,
    "res_t_per_rotation": 88.12173302264794,
    "res_attempt_t": 159706277.2610667,
-   "res_p_succ": 0.23447826650313705,
-   "res_expected_cnot": 30909188.762289986,
-   "res_expected_t": 681113348.5539054
+   "res_p_succ": 0.2101534892187263,
+   "res_expected_cnot": 34486855.42621097,
+   "res_expected_t": 759950633.4860113
   }
  },
  {
@@ -4427,6 +4527,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.010252619254947979,
    "synth_delta": 6.842218728480127e-13,
+   "p_succ_bound": 0.2235755221737777,
    "res_qubits": 33,
    "res_steps": 17902752,
    "res_filter_cnot": 6659823744,
@@ -4438,9 +4539,9 @@
    "res_synth_delta": 6.842218728480127e-13,
    "res_t_per_rotation": 121.23180302811004,
    "res_attempt_t": 201845672396.78134,
-   "res_p_succ": 0.23447825934487126,
-   "res_expected_cnot": 28402734887.266087,
-   "res_expected_t": 860828944059.6118
+   "res_p_succ": 0.2235755221737777,
+   "res_expected_cnot": 29787804014.71474,
+   "res_expected_t": 902807563342.7058
   }
  },
  {
@@ -4471,6 +4572,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.010235361178995267,
    "synth_delta": 2.103019341360967e-10,
+   "p_succ_bound": 0.2235755221737777,
    "res_qubits": 33,
    "res_steps": 29883,
    "res_filter_cnot": 21994084,
@@ -4482,9 +4584,9 @@
    "res_synth_delta": 2.103019341360967e-10,
    "res_t_per_rotation": 96.44045649105196,
    "res_attempt_t": 530329445.66027194,
-   "res_p_succ": 0.23447825934487126,
-   "res_expected_cnot": 93800495.88158578,
-   "res_expected_t": 2261742505.0066667
+   "res_p_succ": 0.2235755221737777,
+   "res_expected_cnot": 98374709.29802713,
+   "res_expected_t": 2372037155.5168047
   }
  },
  {
@@ -4537,6 +4639,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.03089447181806216,
    "synth_delta": 3.887410336814325e-12,
+   "p_succ_bound": 0.33199509493824453,
    "res_qubits": 33,
    "res_steps": 4825515,
    "res_filter_cnot": 3532276980,
@@ -4548,9 +4651,9 @@
    "res_synth_delta": 3.887410336814325e-12,
    "res_t_per_rotation": 113.71298321642121,
    "res_attempt_t": 100416495092.11435,
-   "res_p_succ": 0.37273159517219645,
-   "res_expected_cnot": 9476731027.77386,
-   "res_expected_t": 269406984523.8728
+   "res_p_succ": 0.33199509493824453,
+   "res_expected_cnot": 10639545965.753048,
+   "res_expected_t": 302463791252.076
   }
  },
  {
@@ -4573,14 +4676,15 @@
    "T_phys": 88.90547324816079,
    "eta": 0.033775214479132815,
    "f_pass": 0.9999999625240381,
-   "trotter_const": 0.0007350744856765198,
+   "trotter_const": 0.0007350744856765199,
    "leak": 0.0019161099668476857,
    "p_g": 0.37273159517219645,
    "eps_U": 0.03432732627290315,
    "trace_dist_bound": 0.1,
    "infidelity_bound": 0.010000000000000002,
-   "eps_trotter": 0.030840972782598015,
-   "synth_delta": 7.01344810062681e-10,
+   "eps_trotter": 0.030840972782598022,
+   "synth_delta": 7.013448100626796e-10,
+   "p_succ_bound": 0.33199509493824453,
    "res_qubits": 33,
    "res_steps": 13655,
    "res_filter_cnot": 19881820,
@@ -4589,12 +4693,12 @@
    "res_trial_rotations": 465,
    "res_attempt_cnot": 19881913,
    "res_attempt_rotations": 4970955,
-   "res_synth_delta": 7.01344810062681e-10,
+   "res_synth_delta": 7.013448100626796e-10,
    "res_t_per_rotation": 91.22747112534311,
    "res_attempt_t": 453487653.72788,
-   "res_p_succ": 0.37273159517219645,
-   "res_expected_cnot": 53341099.2186344,
-   "res_expected_t": 1216660083.5605993
+   "res_p_succ": 0.33199509493824453,
+   "res_expected_cnot": 59886164.89559371,
+   "res_expected_t": 1365946848.7395415
   }
  },
  {
@@ -4625,6 +4729,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.027865491815810127,
    "synth_delta": 3.3978222091009232e-12,
+   "p_succ_bound": 0.33588491083996874,
    "res_qubits": 33,
    "res_steps": 4979405,
    "res_filter_cnot": 3644924460,
@@ -4636,9 +4741,9 @@
    "res_synth_delta": 3.3978222091009232e-12,
    "res_t_per_rotation": 114.29558031931941,
    "res_attempt_t": 104149743612.9373,
-   "res_p_succ": 0.3727315961571484,
-   "res_expected_cnot": 9778952443.471558,
-   "res_expected_t": 279422900249.7187
+   "res_p_succ": 0.33588491083996874,
+   "res_expected_cnot": 10851706746.4713,
+   "res_expected_t": 310075684413.6982
   }
  },
  {
@@ -4661,14 +4766,15 @@
    "T_phys": 85.77058210810782,
    "eta": 0.038038588896531514,
    "f_pass": 0.9999999638452998,
-   "trotter_const": 0.0007350744856765199,
+   "trotter_const": 0.0007350744856765201,
    "leak": 0.0024291241396677825,
    "p_g": 0.3727315961571484,
    "eps_U": 0.03096169475674212,
    "trace_dist_bound": 0.1,
    "infidelity_bound": 0.010000000000000002,
-   "eps_trotter": 0.02784668195929653,
-   "synth_delta": 6.283970972098253e-10,
+   "eps_trotter": 0.02784668195929654,
+   "synth_delta": 6.283970972098231e-10,
+   "p_succ_bound": 0.33588491083996874,
    "res_qubits": 33,
    "res_steps": 13617,
    "res_filter_cnot": 19826400,
@@ -4677,12 +4783,12 @@
    "res_trial_rotations": 465,
    "res_attempt_cnot": 19826493,
    "res_attempt_rotations": 4957077,
-   "res_synth_delta": 6.283970972098253e-10,
-   "res_t_per_rotation": 91.70281329764623,
-   "res_attempt_t": 454577906.6330563,
-   "res_p_succ": 0.3727315961571484,
-   "res_expected_cnot": 53192412.997477405,
-   "res_expected_t": 1219585115.186748
+   "res_synth_delta": 6.283970972098231e-10,
+   "res_t_per_rotation": 91.70281329764624,
+   "res_attempt_t": 454577906.63305634,
+   "res_p_succ": 0.33588491083996874,
+   "res_expected_cnot": 59027638.21815821,
+   "res_expected_t": 1353374003.8999207
   }
  },
  {
@@ -4713,6 +4819,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.011167231072608353,
    "synth_delta": 2.5913256122238273e-13,
+   "p_succ_bound": 0.3577348819881712,
    "res_qubits": 33,
    "res_steps": 26165860,
    "res_filter_cnot": 19153409520,
@@ -4724,9 +4831,9 @@
    "res_synth_delta": 2.5913256122238273e-13,
    "res_t_per_rotation": 125.43412477567533,
    "res_attempt_t": 600622854375.962,
-   "res_p_succ": 0.37273158399741607,
-   "res_expected_cnot": 51386602142.9855,
-   "res_expected_t": 1611408531400.7783
+   "res_p_succ": 0.3577348819881712,
+   "res_expected_cnot": 53540793971.646645,
+   "res_expected_t": 1678960829980.8518
   }
  },
  {
@@ -4749,14 +4856,15 @@
    "T_phys": 124.46766254742512,
    "eta": 0.008710385210236598,
    "f_pass": 0.9999999475336534,
-   "trotter_const": 0.0007350744856765198,
+   "trotter_const": 0.0007350744856765201,
    "leak": 0.00012766634596351266,
    "p_g": 0.37273158399741607,
    "eps_U": 0.012408049222067181,
    "trace_dist_bound": 0.03162277660168379,
    "infidelity_bound": 0.0009999999999999998,
-   "eps_trotter": 0.011146570634340387,
-   "synth_delta": 9.210519751017458e-11,
+   "eps_trotter": 0.01114657063434039,
+   "synth_delta": 9.210519751017432e-11,
+   "p_succ_bound": 0.3577348819881712,
    "res_qubits": 33,
    "res_steps": 37625,
    "res_filter_cnot": 54782196,
@@ -4765,12 +4873,12 @@
    "res_trial_rotations": 465,
    "res_attempt_cnot": 54782289,
    "res_attempt_rotations": 13696063,
-   "res_synth_delta": 9.210519751017458e-11,
+   "res_synth_delta": 9.210519751017432e-11,
    "res_t_per_rotation": 100.01377942094612,
    "res_attempt_t": 1369795023.8173816,
-   "res_p_succ": 0.37273158399741607,
-   "res_expected_cnot": 146975172.89111665,
-   "res_expected_t": 3675017311.7255273
+   "res_p_succ": 0.3577348819881712,
+   "res_expected_cnot": 153136559.38592932,
+   "res_expected_t": 3829078719.42629
   }
  },
  {
@@ -4823,6 +4931,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.05028873970182504,
    "synth_delta": 2.3489291964253247e-11,
+   "p_succ_bound": 0.6730967397516379,
    "res_qubits": 33,
    "res_steps": 1300005,
    "res_filter_cnot": 951603660,
@@ -4834,9 +4943,9 @@
    "res_synth_delta": 2.3489291964253247e-11,
    "res_t_per_rotation": 105.92761745037127,
    "res_attempt_t": 25200328596.035374,
-   "res_p_succ": 0.7679045055240068,
-   "res_expected_cnot": 1239221473.7047799,
-   "res_expected_t": 32817008384.18579
+   "res_p_succ": 0.6730967397516379,
+   "res_expected_cnot": 1413769666.0826597,
+   "res_expected_t": 37439385912.54193
   }
  },
  {
@@ -4859,14 +4968,15 @@
    "T_phys": 51.94161409566823,
    "eta": 0.06595392372830669,
    "f_pass": 0.9999999896116771,
-   "trotter_const": 0.0009273226974997938,
+   "trotter_const": 0.0009273226974997942,
    "leak": 0.0013130163080155807,
    "p_g": 0.7679045055240068,
    "eps_U": 0.05587687516861893,
    "trace_dist_bound": 0.1,
    "infidelity_bound": 0.010000000000000002,
-   "eps_trotter": 0.050191619683721836,
-   "synth_delta": 2.7998805659085388e-09,
+   "eps_trotter": 0.05019161968372186,
+   "synth_delta": 2.7998805659085284e-09,
+   "p_succ_bound": 0.6730967397516379,
    "res_qubits": 33,
    "res_steps": 5577,
    "res_filter_cnot": 8120196,
@@ -4875,12 +4985,12 @@
    "res_trial_rotations": 465,
    "res_attempt_cnot": 8120289,
    "res_attempt_rotations": 2030535,
-   "res_synth_delta": 2.7998805659085388e-09,
-   "res_t_per_rotation": 85.23596269899782,
+   "res_synth_delta": 2.7998805659085284e-09,
+   "res_t_per_rotation": 85.23596269899784,
    "res_attempt_t": 173074605.51900956,
-   "res_p_succ": 0.7679045055240068,
-   "res_expected_cnot": 10574607.834158797,
-   "res_expected_t": 225385584.11101648
+   "res_p_succ": 0.6730967397516379,
+   "res_expected_cnot": 12064074.181961212,
+   "res_expected_t": 257131843.4596361
   }
  },
  {
@@ -4911,6 +5021,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.03018380091329657,
    "synth_delta": 8.274188978949105e-11,
+   "p_succ_bound": 0.3933385414063193,
    "res_qubits": 33,
    "res_steps": 221517,
    "res_filter_cnot": 162150444,
@@ -4922,9 +5033,9 @@
    "res_synth_delta": 8.274188978949105e-11,
    "res_t_per_rotation": 100.47777340581573,
    "res_attempt_t": 4073176418.457924,
-   "res_p_succ": 0.43653119578946953,
-   "res_expected_cnot": 371452346.5081337,
-   "res_expected_t": 9330779696.263306
+   "res_p_succ": 0.3933385414063193,
+   "res_expected_cnot": 412241669.53041667,
+   "res_expected_t": 10355396152.878716
   }
  },
  {
@@ -4943,32 +5054,33 @@
    "w0": 8.732771369152159e-12,
    "W": 22.902237050025676,
    "m": 8,
-   "T_scaled": 380.431048239409,
-   "T_phys": 16.611086830008272,
-   "eta": 0.08967209096874794,
-   "f_pass": 0.7539699379647528,
-   "trotter_const": 0.0009273226974997942,
-   "leak": 0.0024244868279367196,
-   "p_g": 0.43653119578946953,
-   "eps_U": 0.0335379985919017,
+   "T_scaled": 304.34483859152715,
+   "T_phys": 13.288869464006616,
+   "eta": 0.1269730347680616,
+   "f_pass": 0.7291756846807406,
+   "trotter_const": 0.0009273226974997941,
+   "leak": 0.0048492139416413315,
+   "p_g": 0.4082926679109974,
+   "eps_U": 0.01940173269469496,
    "trace_dist_bound": 0.1,
    "infidelity_bound": 0.010000000000000002,
-   "eps_trotter": 0.02998764171417105,
-   "synth_delta": 7.466560275857778e-09,
+   "eps_trotter": 0.017341229207092135,
+   "synth_delta": 4.604754896055906e-09,
+   "p_succ_bound": 0.38387454101092955,
    "res_qubits": 33,
-   "res_steps": 1305,
-   "res_filter_cnot": 1900112,
-   "res_filter_rotations": 475036,
+   "res_steps": 1228,
+   "res_filter_cnot": 1788000,
+   "res_filter_rotations": 447008,
    "res_trial_cnot": 93,
    "res_trial_rotations": 465,
-   "res_attempt_cnot": 1900205,
-   "res_attempt_rotations": 475501,
-   "res_synth_delta": 7.466560275857778e-09,
-   "res_t_per_rotation": 80.99072725293621,
-   "res_attempt_t": 38511171.799498424,
-   "res_p_succ": 0.43653119578946953,
-   "res_expected_cnot": 4352964.961790341,
-   "res_expected_t": 88220892.73562847
+   "res_attempt_cnot": 1788093,
+   "res_attempt_rotations": 447473,
+   "res_synth_delta": 4.604754896055906e-09,
+   "res_t_per_rotation": 83.08268546412006,
+   "res_attempt_t": 37177258.51268619,
+   "res_p_succ": 0.38387454101092955,
+   "res_expected_cnot": 4658014.035760423,
+   "res_expected_t": 96847418.9894966
   }
  },
  {
@@ -4999,6 +5111,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.013387265435071254,
    "synth_delta": 9.362726871814532e-13,
+   "p_succ_bound": 0.7420562091847327,
    "res_qubits": 33,
    "res_steps": 8681632,
    "res_filter_cnot": 6354954624,
@@ -5010,9 +5123,9 @@
    "res_synth_delta": 9.362726871814532e-13,
    "res_t_per_rotation": 119.87440938313692,
    "res_attempt_t": 190449167150.24255,
-   "res_p_succ": 0.7679045002058469,
-   "res_expected_cnot": 8275709694.755625,
-   "res_expected_t": 248011526302.02084
+   "res_p_succ": 0.7420562091847327,
+   "res_expected_cnot": 8563980246.162125,
+   "res_expected_t": 256650594379.47617
   }
  },
  {
@@ -5035,14 +5148,15 @@
    "T_phys": 69.25548546089097,
    "eta": 0.026647359655568276,
    "f_pass": 0.999999986148903,
-   "trotter_const": 0.0009273226974997938,
+   "trotter_const": 0.0009273226974997939,
    "leak": 0.0002145727783562626,
    "p_g": 0.7679045002058469,
    "eps_U": 0.01487475850733586,
    "trace_dist_bound": 0.03162277660168379,
    "infidelity_bound": 0.0009999999999999998,
-   "eps_trotter": 0.013369994748978462,
-   "synth_delta": 2.484738352892197e-10,
+   "eps_trotter": 0.013369994748978464,
+   "synth_delta": 2.4847383528921946e-10,
+   "p_succ_bound": 0.7420562091847327,
    "res_qubits": 33,
    "res_steps": 16636,
    "res_filter_cnot": 24222128,
@@ -5051,12 +5165,12 @@
    "res_trial_rotations": 465,
    "res_attempt_cnot": 24222221,
    "res_attempt_rotations": 6056025,
-   "res_synth_delta": 2.484738352892197e-10,
-   "res_t_per_rotation": 95.71856102187228,
-   "res_attempt_t": 579673998.5124841,
-   "res_p_succ": 0.7679045002058469,
-   "res_expected_cnot": 31543272.62505548,
-   "res_expected_t": 754877720.2856538
+   "res_synth_delta": 2.4847383528921946e-10,
+   "res_t_per_rotation": 95.71856102187229,
+   "res_attempt_t": 579673998.5124842,
+   "res_p_succ": 0.7420562091847327,
+   "res_expected_cnot": 32642029.943542928,
+   "res_expected_t": 781172627.2721964
   }
  },
  {
@@ -5087,6 +5201,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.013680880354749035,
    "synth_delta": 1.0622761349835815e-12,
+   "p_succ_bound": 0.7414942632862207,
    "res_qubits": 33,
    "res_steps": 7819643,
    "res_filter_cnot": 5723978676,
@@ -5098,9 +5213,9 @@
    "res_synth_delta": 1.0622761349835815e-12,
    "res_t_per_rotation": 119.32793490060251,
    "res_attempt_t": 170757695624.9662,
-   "res_p_succ": 0.7679045010692958,
-   "res_expected_cnot": 7454024245.240708,
-   "res_expected_t": 222368400481.03455
+   "res_p_succ": 0.7414942632862207,
+   "res_expected_cnot": 7719518615.87163,
+   "res_expected_t": 230288626736.2163
   }
  },
  {
@@ -5123,14 +5238,15 @@
    "T_phys": 66.44434732003307,
    "eta": 0.025969980331131053,
    "f_pass": 0.999999986711114,
-   "trotter_const": 0.0009273226974997942,
+   "trotter_const": 0.0009273226974997941,
    "leak": 0.00020380469118123212,
    "p_g": 0.7679045010692958,
    "eps_U": 0.015200992347622181,
    "trace_dist_bound": 0.03162277660168379,
    "infidelity_bound": 0.0009999999999999998,
-   "eps_trotter": 0.01366808508866641,
-   "synth_delta": 2.723397888618496e-10,
+   "eps_trotter": 0.013668085088666408,
+   "synth_delta": 2.723397888618499e-10,
+   "p_succ_bound": 0.7414942632862207,
    "res_qubits": 33,
    "res_steps": 15462,
    "res_filter_cnot": 22512720,
@@ -5139,12 +5255,12 @@
    "res_trial_rotations": 465,
    "res_attempt_cnot": 22512813,
    "res_attempt_rotations": 5628657,
-   "res_synth_delta": 2.723397888618496e-10,
+   "res_synth_delta": 2.723397888618499e-10,
    "res_t_per_rotation": 95.3216195197457,
    "res_attempt_t": 536532700.96115327,
-   "res_p_succ": 0.7679045010692958,
-   "res_expected_cnot": 29317204.11672446,
-   "res_expected_t": 698697169.0021863
+   "res_p_succ": 0.7414942632862207,
+   "res_expected_cnot": 30361412.238343827,
+   "res_expected_t": 723583077.4783065
   }
  },
  {
@@ -5162,33 +5278,34 @@
    "delta": 0.0024636749418346744,
    "w0": 4.2766242710859453e-10,
    "W": 32.83595632126591,
-   "m": 56,
-   "T_scaled": 5593.961184661534,
-   "T_phys": 170.3608425449956,
-   "eta": 0.008485922177578016,
-   "f_pass": 0.9999976076729826,
+   "m": 48,
+   "T_scaled": 4794.82387256703,
+   "T_phys": 146.02357932428194,
+   "eta": 0.016772553317757444,
+   "f_pass": 0.9999979494339851,
    "trotter_const": 0.03199777325082048,
-   "leak": 0.0005029230471958131,
-   "p_g": 0.1251949939816441,
-   "eps_U": 0.027447953595459176,
+   "leak": 0.0019618573332517274,
+   "p_g": 0.12519507955539674,
+   "eps_U": 0.01971081140706963,
    "trace_dist_bound": 0.1,
    "infidelity_bound": 0.010000000000000002,
-   "eps_trotter": 0.024703133640257134,
-   "synth_delta": 9.605456819514343e-13,
+   "eps_trotter": 0.017739705791834835,
+   "synth_delta": 6.742205799736976e-13,
+   "p_succ_bound": 0.11163507567205934,
    "res_qubits": 49,
-   "res_steps": 20266400,
-   "res_filter_cnot": 11430249600,
-   "res_filter_rotations": 2857562456,
+   "res_steps": 20734266,
+   "res_filter_cnot": 11694126024,
+   "res_filter_rotations": 2923531554,
    "res_trial_cnot": 141,
    "res_trial_rotations": 705,
-   "res_attempt_cnot": 11430249741,
-   "res_attempt_rotations": 2857563161,
-   "res_synth_delta": 9.605456819514343e-13,
-   "res_t_per_rotation": 119.76363301752629,
-   "res_attempt_t": 342232145738.4064,
-   "res_p_succ": 0.1251949939816441,
-   "res_expected_cnot": 91299574986.80727,
-   "res_expected_t": 2733592892608.6606
+   "res_attempt_cnot": 11694126165,
+   "res_attempt_rotations": 2923532259,
+   "res_synth_delta": 6.742205799736976e-13,
+   "res_t_per_rotation": 121.29553370573873,
+   "res_attempt_t": 354611405661.349,
+   "res_p_succ": 0.11163507567205934,
+   "res_expected_cnot": 104753153026.49875,
+   "res_expected_t": 3176523180788.2686
   }
  },
  {
@@ -5219,6 +5336,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.017722389835247286,
    "synth_delta": 2.0654202315110525e-10,
+   "p_succ_bound": 0.11163507567205934,
    "res_qubits": 49,
    "res_steps": 34380,
    "res_filter_cnot": 38505792,
@@ -5230,9 +5348,9 @@
    "res_synth_delta": 2.0654202315110525e-10,
    "res_t_per_rotation": 96.51853681756481,
    "res_attempt_t": 929203354.1685967,
-   "res_p_succ": 0.12519507955539674,
-   "res_expected_cnot": 307567463.0084944,
-   "res_expected_t": 7422043721.434274
+   "res_p_succ": 0.11163507567205934,
+   "res_expected_cnot": 344926832.0748537,
+   "res_expected_t": 8323578844.504362
   }
  },
  {
@@ -5272,33 +5390,34 @@
    "delta": 0.0024636749418346744,
    "w0": 4.2766242710859453e-10,
    "W": 32.83595632126591,
-   "m": 72,
-   "T_scaled": 7192.235808850545,
-   "T_phys": 219.03536898642292,
-   "eta": 0.0021721948098402154,
-   "f_pass": 0.9999969241509776,
+   "m": 64,
+   "T_scaled": 6393.09849675604,
+   "T_phys": 194.69810576570924,
+   "eta": 0.004293375840855398,
+   "f_pass": 0.9999972659119801,
    "trotter_const": 0.03199777325082048,
-   "leak": 3.296895224950754e-05,
-   "p_g": 0.12519482283422656,
-   "eps_U": 0.009157413901911918,
+   "leak": 0.00012878456130797084,
+   "p_g": 0.12519490840792072,
+   "eps_U": 0.00717368615931648,
    "trace_dist_bound": 0.03162277660168379,
    "infidelity_bound": 0.0009999999999999998,
-   "eps_trotter": 0.008241669564192092,
-   "synth_delta": 6.467742289998878e-14,
+   "eps_trotter": 0.006456314958473249,
+   "synth_delta": 5.023390711571611e-14,
+   "p_succ_bound": 0.12016985485206494,
    "res_qubits": 49,
-   "res_steps": 100415880,
-   "res_filter_cnot": 56634556320,
-   "res_filter_rotations": 14158639152,
+   "res_steps": 101280968,
+   "res_filter_cnot": 57122465952,
+   "res_filter_rotations": 14280616552,
    "res_trial_cnot": 141,
    "res_trial_rotations": 705,
-   "res_attempt_cnot": 56634556461,
-   "res_attempt_rotations": 14158639857,
-   "res_synth_delta": 6.467742289998878e-14,
-   "res_t_per_rotation": 131.44119339983064,
-   "res_attempt_t": 1861028519722.4873,
-   "res_p_succ": 0.12519482283422656,
-   "res_expected_cnot": 452371393472.0061,
-   "res_expected_t": 14865059733234.492
+   "res_attempt_cnot": 57122466093,
+   "res_attempt_rotations": 14280617257,
+   "res_synth_delta": 5.023390711571611e-14,
+   "res_t_per_rotation": 132.53499551537124,
+   "res_attempt_t": 1892681544113.228,
+   "res_p_succ": 0.12016985485206494,
+   "res_expected_cnot": 475347716474.4902,
+   "res_expected_t": 15750052677047.941
   }
  },
  {
@@ -5329,6 +5448,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.006454001875460865,
    "synth_delta": 2.930287574920988e-11,
+   "p_succ_bound": 0.12016985485206494,
    "res_qubits": 49,
    "res_steps": 87712,
    "res_filter_cnot": 98237696,
@@ -5340,9 +5460,9 @@
    "res_synth_delta": 2.930287574920988e-11,
    "res_t_per_rotation": 104.97050036339465,
    "res_attempt_t": 2578095748.2315426,
-   "res_p_succ": 0.12519490840792072,
-   "res_expected_cnot": 784679171.4557042,
-   "res_expected_t": 20592656530.65835
+   "res_p_succ": 0.12016985485206494,
+   "res_expected_cnot": 817491517.4935982,
+   "res_expected_t": 21453764352.177227
   }
  },
  {
@@ -5395,6 +5515,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.02110339000953876,
    "synth_delta": 3.0136018497040843e-13,
+   "p_succ_bound": 0.1708745791509956,
    "res_qubits": 49,
    "res_steps": 27888279,
    "res_filter_cnot": 31123319364,
@@ -5406,9 +5527,9 @@
    "res_synth_delta": 3.0136018497040843e-13,
    "res_t_per_rotation": 124.78072922889808,
    "res_attempt_t": 970897712905.445,
-   "res_p_succ": 0.19080997172021494,
-   "res_expected_cnot": 163111598541.80048,
-   "res_expected_t": 5088296508575.947
+   "res_p_succ": 0.1708745791509956,
+   "res_expected_cnot": 182141308904.10248,
+   "res_expected_t": 5681931845739.899
   }
  },
  {
@@ -5431,7 +5552,7 @@
    "T_phys": 142.49839981183177,
    "eta": 0.022517211412429534,
    "f_pass": 0.9999985702884653,
-   "trotter_const": 0.0003286823231019969,
+   "trotter_const": 0.00032868232310199693,
    "leak": 0.0021455780496084337,
    "p_g": 0.19080997172021494,
    "eps_U": 0.023448222550241447,
@@ -5439,6 +5560,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.02109066216478337,
    "synth_delta": 1.0195924915188196e-10,
+   "p_succ_bound": 0.1708745791509956,
    "res_qubits": 49,
    "res_steps": 41586,
    "res_filter_cnot": 92487372,
@@ -5450,9 +5572,9 @@
    "res_synth_delta": 1.0195924915188196e-10,
    "res_t_per_rotation": 99.57386488396187,
    "res_attempt_t": 2302404158.819275,
-   "res_p_succ": 0.19080997172021494,
-   "res_expected_cnot": 484710060.8327464,
-   "res_expected_t": 12066477124.137384
+   "res_p_succ": 0.1708745791509956,
+   "res_expected_cnot": 541259638.8505055,
+   "res_expected_t": 13474234554.132975
   }
  },
  {
@@ -5505,6 +5627,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.007284717036686039,
    "synth_delta": 2.0198910304116275e-14,
+   "p_succ_bound": 0.18380398352844324,
    "res_qubits": 49,
    "res_steps": 143627872,
    "res_filter_cnot": 160288705152,
@@ -5516,9 +5639,9 @@
    "res_synth_delta": 2.0198910304116275e-14,
    "res_t_per_rotation": 136.47814759266268,
    "res_attempt_t": 5468976490923.169,
-   "res_p_succ": 0.19080978985118663,
-   "res_expected_cnot": 840044451691.9695,
-   "res_expected_t": 28661928170396.535
+   "res_p_succ": 0.18380398352844324,
+   "res_expected_cnot": 872063282938.5642,
+   "res_expected_t": 29754395883791.375
   }
  },
  {
@@ -5541,14 +5664,15 @@
    "T_phys": 189.99786641577575,
    "eta": 0.006358472644463444,
    "f_pass": 0.9999980937179538,
-   "trotter_const": 0.0003286823231019969,
+   "trotter_const": 0.00032868232310199693,
    "leak": 0.000171426942254603,
    "p_g": 0.19080978985118663,
    "eps_U": 0.008094131346185479,
    "trace_dist_bound": 0.03162277660168379,
    "infidelity_bound": 0.0009999999999999998,
-   "eps_trotter": 0.00728168006990871,
-   "synth_delta": 1.3410158971771276e-11,
+   "eps_trotter": 0.007281680069908711,
+   "synth_delta": 1.3410158971771261e-11,
+   "p_succ_bound": 0.18380398352844324,
    "res_qubits": 49,
    "res_steps": 108964,
    "res_filter_cnot": 242336080,
@@ -5557,12 +5681,12 @@
    "res_trial_rotations": 705,
    "res_attempt_cnot": 242336221,
    "res_attempt_rotations": 60584761,
-   "res_synth_delta": 1.3410158971771276e-11,
-   "res_t_per_rotation": 108.35364811163036,
-   "res_attempt_t": 6564579874.321227,
-   "res_p_succ": 0.19080978985118663,
-   "res_expected_cnot": 1270040814.9340715,
-   "res_expected_t": 34403789655.87128
+   "res_synth_delta": 1.3410158971771261e-11,
+   "res_t_per_rotation": 108.35364811163038,
+   "res_attempt_t": 6564579874.321228,
+   "res_p_succ": 0.18380398352844324,
+   "res_expected_cnot": 1318449232.4264507,
+   "res_expected_t": 35715112090.07815
   }
  },
  {
@@ -5615,6 +5739,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.037134605367333526,
    "synth_delta": 3.0705657895771134e-12,
+   "p_succ_bound": 0.5757515505490345,
    "res_qubits": 49,
    "res_steps": 4816485,
    "res_filter_cnot": 5375197260,
@@ -5626,9 +5751,9 @@
    "res_synth_delta": 3.0705657895771134e-12,
    "res_t_per_rotation": 114.73389787266748,
    "res_attempt_t": 154179417009.58206,
-   "res_p_succ": 0.6400700373546673,
-   "res_expected_cnot": 8397826936.588137,
-   "res_expected_t": 240878978879.8537
+   "res_p_succ": 0.5757515505490345,
+   "res_expected_cnot": 9335966869.519035,
+   "res_expected_t": 267788105585.74643
   }
  },
  {
@@ -5659,6 +5784,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.03707871287256048,
    "synth_delta": 6.058463140995874e-10,
+   "p_succ_bound": 0.5757515505490345,
    "res_qubits": 49,
    "res_steps": 12414,
    "res_filter_cnot": 27608832,
@@ -5670,9 +5796,9 @@
    "res_synth_delta": 6.058463140995874e-10,
    "res_t_per_rotation": 91.8609872378344,
    "res_attempt_t": 634110607.6605748,
-   "res_p_succ": 0.6400700373546673,
-   "res_expected_cnot": 43134299.980834246,
-   "res_expected_t": 990689409.9921907
+   "res_p_succ": 0.5757515505490345,
+   "res_expected_cnot": 47952928.609001905,
+   "res_expected_t": 1101361528.34654
   }
  },
  {
@@ -5703,6 +5829,7 @@
    "infidelity_bound": 0.010000000000000002,
    "eps_trotter": 0.036559818734635555,
    "synth_delta": 1.8573865012526386e-12,
+   "p_succ_bound": 0.5767212888150418,
    "res_qubits": 49,
    "res_steps": 7838943,
    "res_filter_cnot": 8748260388,
@@ -5714,9 +5841,9 @@
    "res_synth_delta": 1.8573865012526386e-12,
    "res_t_per_rotation": 116.90958925054353,
    "res_attempt_t": 255688965978.64563,
-   "res_p_succ": 0.6400699631214813,
-   "res_expected_cnot": 13667662963.49331,
-   "res_expected_t": 399470340291.71814
+   "res_p_succ": 0.5767212888150418,
+   "res_expected_cnot": 15168957169.891508,
+   "res_expected_t": 443349276223.1753
   }
  },
  {
@@ -5739,14 +5866,15 @@
    "T_phys": 87.68220706362862,
    "eta": 0.0657233176327301,
    "f_pass": 0.9999997238757882,
-   "trotter_const": 0.00041547272263212017,
+   "trotter_const": 0.0004154727226321201,
    "leak": 0.0024231221500067234,
    "p_g": 0.6400699631214813,
    "eps_U": 0.04062204525491027,
    "trace_dist_bound": 0.1,
    "infidelity_bound": 0.010000000000000002,
-   "eps_trotter": 0.036541291965798424,
-   "synth_delta": 4.120918646887463e-10,
+   "eps_trotter": 0.03654129196579842,
+   "synth_delta": 4.12091864688747e-10,
+   "p_succ_bound": 0.5767212888150418,
    "res_qubits": 49,
    "res_steps": 17809,
    "res_filter_cnot": 39607264,
@@ -5755,12 +5883,12 @@
    "res_trial_rotations": 705,
    "res_attempt_cnot": 39607405,
    "res_attempt_rotations": 9902533,
-   "res_synth_delta": 4.120918646887463e-10,
+   "res_synth_delta": 4.12091864688747e-10,
    "res_t_per_rotation": 93.52894489781163,
    "res_attempt_t": 926173463.3057612,
-   "res_p_succ": 0.6400699631214813,
-   "res_expected_cnot": 61879805.774424,
-   "res_expected_t": 1446987855.4978828
+   "res_p_succ": 0.5767212888150418,
+   "res_expected_cnot": 68676856.16631077,
+   "res_expected_t": 1605929035.8584125
   }
  },
  {
@@ -5791,6 +5919,7 @@
    "infidelity_bound": 0.0009999999999999998,
    "eps_trotter": 0.017146148962866023,
    "synth_delta": 2.3565810360947343e-13,
+   "p_succ_bound": 0.6099490794064126,
    "res_qubits": 49,
    "res_steps": 28976100,
    "res_filter_cnot": 32337327600,
@@ -5802,9 +5931,9 @@
    "res_synth_delta": 2.3565810360947343e-13,
    "res_t_per_rotation": 125.84510982349593,
    "res_attempt_t": 1017373729559.6984,
-   "res_p_succ": 0.6400698511916418,
-   "res_expected_cnot": 50521560546.55034,
-   "res_expected_t": 1589472973403.7869
+   "res_p_succ": 0.6099490794064126,
+   "res_expected_cnot": 53016438310.669945,
+   "res_expected_t": 1667965021850.3179
   }
  },
  {
@@ -5822,33 +5951,34 @@
    "delta": 0.0031076428512180634,
    "w0": 9.104652239622433e-11,
    "W": 34.588247116554044,
-   "m": 40,
-   "T_scaled": 3993.121438036028,
-   "T_phys": 115.44734905415046,
-   "eta": 0.010415195845177187,
-   "f_pass": 0.9999996364401795,
-   "trotter_const": 0.00041547272263212017,
-   "leak": 6.099558035814415e-05,
-   "p_g": 0.6400698511916418,
-   "eps_U": 0.01905128746293488,
+   "m": 32,
+   "T_scaled": 3194.4971504288233,
+   "T_phys": 92.3578792433204,
+   "eta": 0.025949796270722435,
+   "f_pass": 0.9999997091521436,
+   "trotter_const": 0.0004154727226321202,
+   "leak": 0.0003785240345265776,
+   "p_g": 0.6400699442731511,
+   "eps_U": 0.009734197839723518,
    "trace_dist_bound": 0.03162277660168379,
    "infidelity_bound": 0.0009999999999999998,
-   "eps_trotter": 0.017131953886442074,
-   "synth_delta": 8.784615801609319e-11,
+   "eps_trotter": 0.008751527170405112,
+   "synth_delta": 4.492453368859562e-11,
+   "p_succ_bound": 0.6245891312961871,
    "res_qubits": 49,
-   "res_steps": 39295,
-   "res_filter_cnot": 87392240,
-   "res_filter_rotations": 21848100,
+   "res_steps": 39340,
+   "res_filter_cnot": 87492288,
+   "res_filter_rotations": 21873104,
    "res_trial_cnot": 141,
    "res_trial_rotations": 705,
-   "res_attempt_cnot": 87392381,
-   "res_attempt_rotations": 21848805,
-   "res_synth_delta": 8.784615801609319e-11,
-   "res_t_per_rotation": 100.21868955883139,
-   "res_attempt_t": 2189658605.526443,
-   "res_p_succ": 0.6400698511916418,
-   "res_expected_cnot": 136535693.46735886,
-   "res_expected_t": 3420968198.1581764
+   "res_attempt_cnot": 87492429,
+   "res_attempt_rotations": 21873809,
+   "res_synth_delta": 4.492453368859562e-11,
+   "res_t_per_rotation": 103.12111654486142,
+   "res_attempt_t": 2255651607.169039,
+   "res_p_succ": 0.6245891312961871,
+   "res_expected_cnot": 140079973.56346908,
+   "res_expected_t": 3611416680.4151187
   }
  },
  {
