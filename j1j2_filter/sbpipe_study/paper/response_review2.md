@@ -83,3 +83,13 @@ From the first review:
 - a ladder model;
 - broader sensitivity tests;
 - the title and abstract reframing.
+
+## Follow-up comments
+
+1. **"≥ (1−ε)² p_g" in Sec. II E.** The source already reads `\ge(1-\sqrt\epsilon)^2p_g`, which is (1−√ε)² p_g, and that matches the 0.81 figure. The radical probably got lost when the PDF was read as text. No change is needed.
+2. **The overlap condition deserves equal prominence.** Agreed, and done.
+   - The abstract now says the certificate is conditional on the DMRG energies and on an overlap estimated from a reference MPS.
+   - Sec. III A states that γ estimates the overlap with the exact ground state but is not a lower bound on it.
+   - The Discussion names all three conditions: the E₀ interval, the gap and the overlap.
+   - The Discussion also notes that the Eckart inequality 1−γ ≤ (⟨H⟩−E₀)/(E₁−E₀) would turn energy bounds into a lower bound on γ.
+3. **Title.** Changed to "From classical energy estimates to a conditionally certified ground state: …".

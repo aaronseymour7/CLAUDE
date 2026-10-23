@@ -16,7 +16,7 @@
 
 \begin{document}
 
-\title{From classical energy estimates to a certified ground state:\\
+\title{From classical energy estimates to a conditionally certified ground state:\\
 a modular Stetcu--Baroni filter pipeline and its cost for the $J_1$--$J_2$ chain}
 
 \author{Authors to be added}
@@ -31,8 +31,10 @@ that takes energy estimates and an ansatz for any Hamiltonian written as a sum o
 a cosine filter with a certified suppression ratio, chooses first- or second-order Trotter step counts
 from commutator bounds, and returns an a-priori bound on the infidelity of the prepared state together
 with a transparent gate count. The bound is a theorem conditional on the inputs (an interval for the
-ground energy, a lower bound on the gap and on the trial overlap), and every one of these conditions is
-an explicit input. We apply it to the open spin-$\tfrac12$ $J_1$--$J_2$ chain with DMRG inputs and
+ground energy, a lower bound on the gap and a lower bound on the trial state's ground-space weight), and
+every one of these conditions is an explicit input. With DMRG inputs these conditions are confirmed by
+exact diagonalization only for small systems; beyond that the certificate is conditional on the DMRG
+energies and on an overlap estimated from a reference MPS. We apply it to the open spin-$\tfrac12$ $J_1$--$J_2$ chain with DMRG inputs and
 bond-dimension-$\chi$ matrix-product trial states, $N=8$--$48$. In all \nSimOK{} of \nSim{} simulated
 circuits ($N\le14$) the certified bound held; it overestimates the measured infidelity by a median
 factor of \boundRatioMed, mostly through its Trotter term. A second-order product formula is a median
@@ -43,7 +45,7 @@ infidelity $10^{-2}$ for \cnotFortyEightChiFour{} CNOTs per success. Overestimat
 $50\%$ is the one input error that broke the target; a conservative gap costs at most
 \gapMarginCost$\times$. For this one-dimensional model at $\epsilon=10^{-2}$, however, a $\chi=8$
 matrix-product circuit alone already meets the target with about $10^{3}$--$10^{4}$ CNOTs, so the value of
-the pipeline lies in its certificate and in models where compact trial states are not available.
+the pipeline lies in its conditional certificate and in models where compact trial states are not available.
 \end{abstract}
 
 \maketitle
@@ -316,7 +318,8 @@ DMRG error in $E_1$ (or convergence of the penalty run to a higher state) biases
 is the dangerous direction (Sec.~\ref{sec:sens}); these error bars do not protect against that bias, and
 the certificate for $N>14$ is conditional on the gap. The trial state is
 the variationally optimal MPS at fixed bond dimension $\chi\in\{1,2,4,8\}$, and $\gamma$ is its
-overlap with the reference MPS. An MPS of bond dimension $2^b$ is exactly a staircase of $N-b$ unitaries
+overlap with the reference MPS. This is an estimate of the overlap with the exact ground state, not a
+lower bound on it, so for $N>14$ the certificate is equally conditional on $\gamma$. An MPS of bond dimension $2^b$ is exactly a staircase of $N-b$ unitaries
 on $b+1$ qubits; we cost each with the quantum Shannon decomposition bound
 $\frac{23}{48}4^n-\frac32 2^n+\frac43$ CNOTs (3, 20, 100 for $n=2,3,4$)~\cite{Shende2006} and $4^n-1$
 rotations.
@@ -550,10 +553,12 @@ $N$ & $J_2$ & $\gamma_1$ & CNOT & $\gamma_2$ & CNOT & $\gamma_4$ & CNOT & $\gamm
 spectral upper bound (Weyl), the filter certificate and the Trotter constants are rigorous here. The
 interval for $E_0$, the lower bound on $E_1$ and the overlap $\gamma$ come from DMRG and are
 well-converged estimates, not bounds; for $N\le14$ ED confirms them, beyond that the certificate is
-conditional. The gap is the critical input: an overestimated gap was the only input error that
+conditional on all three: the $E_0$ interval, the gap and the overlap. The gap is the critical input: an overestimated gap was the only input error that
 broke the target in our tests. Rigorous lower bounds on $E_1$ from classical data
-(e.g.\ Temple-type bounds from the energy variance) would make the guarantee unconditional and plug
-into the same interface.
+(e.g.\ Temple-type bounds from the energy variance) would remove the gap condition and plug into the
+same interface. Given such energy bounds, the Eckart inequality
+$1-\gamma\le(\langle H\rangle_\psi-E_0)/(E_1-E_0)$ turns the trial state's energy into a lower bound on
+$\gamma$, which would remove the overlap condition as well.
 
 \emph{Where the cost goes.} The certified cost is dominated by the Trotter term, whose bound is a
 median \trotRatioMed$\times$ the measured Trotter distance; at the level of step counts the certified
