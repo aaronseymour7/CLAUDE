@@ -191,9 +191,10 @@ def validation():
                 v = vv[0]
                 p = v["plan"]
                 meas = (f"${sci(v['sim']['infidelity_trotter'])}$" if "sim" in v else "--")
-                lines.append(f"${sci(eps, 0)}$ & {s} & {o} & {p['m']} & {p['T_phys']:.1f} & "
+                lines.append(f"$10^{{{int(round(np.log10(eps)))}}}$ & {s} & {o} & {p['m']} & {p['T_phys']:.1f} & "
                              f"{p['p_g']:.2f} & {num(p['res_steps'])} & ${sci(p['res_filter_cnot'])}$ & "
-                             f"${sci(p['res_expected_cnot'])}$ & ${sci(p['res_expected_t'])}$ & {meas} \\\\")
+                             f"${sci(p['res_expected_cnot'])}$ & ${sci(p['res_attempt_rotations'])}$ & "
+                             f"${sci(p['res_synth_delta'], 0)}$ & ${sci(p['res_expected_t'])}$ & {meas} \\\\")
         lines.append("\\midrule")
     with open(os.path.join(GEN, "tab_schedules.tex"), "w") as fh:
         fh.write("\n".join(lines[:-1]) + "\n")
@@ -258,7 +259,8 @@ def scaling():
             lines.append(f"{N} & {J2:g} & {b['gamma']:.3f} & {p2['delta']:.4f} & {b['schedule'][:3]}. & "
                          f"{p2['T_phys']:.1f} & {p2['p_g']:.2f} & {num(p1['res_steps']) if p1 else '--'} & "
                          f"{num(p2['res_steps'])} & ${sci(p2['res_attempt_cnot'])}$ & "
-                         f"${sci(p2['res_expected_cnot'])}$ & ${sci(p2['res_expected_t'])}$ \\\\")
+                         f"${sci(p2['res_expected_cnot'])}$ & ${sci(p2['res_attempt_rotations'])}$ & "
+                         f"${sci(p2['res_synth_delta'], 0)}$ & ${sci(p2['res_expected_t'])}$ \\\\")
     with open(os.path.join(GEN, "tab_scaling.tex"), "w") as fh:
         fh.write("\n".join(lines) + "\n")
     b = pick(48, 0.2411, 1e-2, 2)

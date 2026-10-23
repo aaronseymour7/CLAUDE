@@ -16,7 +16,7 @@
 
 \begin{document}
 
-\title{From classical energy estimates to a certified ground state:\\
+\title{From classical energy estimates to a conditionally certified ground state:\\
 a modular Stetcu--Baroni filter pipeline and its cost for the $J_1$--$J_2$ chain}
 
 \author{Authors to be added}
@@ -31,8 +31,10 @@ that takes energy estimates and an ansatz for any Hamiltonian written as a sum o
 a cosine filter with a certified suppression ratio, chooses first- or second-order Trotter step counts
 from commutator bounds, and returns an a-priori bound on the infidelity of the prepared state together
 with a transparent gate count. The bound is a theorem conditional on the inputs (an interval for the
-ground energy, a lower bound on the gap and on the trial overlap), and every one of these conditions is
-an explicit input. We apply it to the open spin-$\tfrac12$ $J_1$--$J_2$ chain with DMRG inputs and
+ground energy, a lower bound on the gap and a lower bound on the trial state's ground-space weight), and
+every one of these conditions is an explicit input. With DMRG inputs these conditions are confirmed by
+exact diagonalization only for small systems; beyond that the certificate is conditional on the DMRG
+energies and on an overlap estimated from a reference MPS. We apply it to the open spin-$\tfrac12$ $J_1$--$J_2$ chain with DMRG inputs and
 bond-dimension-$\chi$ matrix-product trial states, $N=8$--$48$. In all \nSimOK{} of \nSim{} simulated
 circuits ($N\le14$) the certified bound held; it overestimates the measured infidelity by a median
 factor of \boundRatioMed, mostly through its Trotter term. A second-order product formula is a median
@@ -43,7 +45,7 @@ infidelity $10^{-2}$ for \cnotFortyEightChiFour{} CNOTs per success. Overestimat
 $50\%$ is the one input error that broke the target; a conservative gap costs at most
 \gapMarginCost$\times$. For this one-dimensional model at $\epsilon=10^{-2}$, however, a $\chi=8$
 matrix-product circuit alone already meets the target with about $10^{3}$--$10^{4}$ CNOTs, so the value of
-the pipeline lies in its certificate and in models where compact trial states are not available.
+the pipeline lies in its conditional certificate and in models where compact trial states are not available.
 \end{abstract}
 
 \maketitle
@@ -85,7 +87,7 @@ with typed inputs and a certificate:
 \end{enumerate}
 We then apply it to the open $J_1$--$J_2$ Heisenberg chain using DMRG, validate the certificate by
 statevector simulation for $N\le14$, and report resources for $N\le48$. The code is the \texttt{sbpipe}
-package in the accompanying repository; every number below is produced by the scripts named in
+package, available with all data at \url{https://github.com/aaronseymour7/FilterPipeline}; every number below is produced by the scripts named in
 Appendix~\ref{app:repro}.
 
 The contribution is methodological and quantitative rather than algorithmic: the filter is SBC's, the
@@ -135,7 +137,12 @@ E_1\ge E_1^{\rm est}-\delta E_1,\qquad E_{\rm top}\le E_{\max},
 \end{gathered}
 \label{eq:assumptions}
 \end{equation}
-where $E_1$ is the lowest level above the ground space that the trial state can overlap with. If no
+where $E_1$ is the lowest level above the ground space that the trial state can overlap with. When the
+trial state's quantum numbers are unknown, as for the DMRG trial states below, which are not
+symmetry-adapted, this is the global first excited level; restricting to the trial state's symmetry
+sector could only raise it. The certificate is a statement about the actual Hamiltonian only if
+\eqref{eq:assumptions} holds for it: with an overestimated $E_1$ a real excitation can sit in the
+filter's transition region, and the bound then says nothing (Sec.~\ref{sec:sens}). If no
 $E_{\max}$ is given, the Weyl bound $E_{\max}=\sum_g\lambda_{\max}(h_g)$ over the term groups $h_g$ is
 used; it is rigorous and, for the antiferromagnetic $J_1$--$J_2$ chain, attained by the ferromagnetic
 state. With $s=E_0^{\rm est}-\delta E_0$ and $W=E_{\max}-s$, the scaled Hamiltonian $H_s=(H-s)/W$ has its
@@ -158,13 +165,13 @@ Two numbers characterize a filter: the pass-band floor $F_{\rm pass}\le\min_{[0,
 suppression ratio $\eta=\sup_{[\Delta,1]}|F|/F_{\rm pass}$. Both are certified, not sampled: since
 $|F'|\le L:=\sum_i|t_i|$ and $|F''|\le L^2$, an interval branch-and-bound gives a rigorous upper bound
 on $\sup|F|$ over the stop band, and $F_{\rm pass}=|F(0)|-Lw_0$ (the certifier is
-\texttt{floor.certify} of the repository; it is used for the optimized schedule, the other two have
+\texttt{sbpipe.floor.certify}; it is used for the optimized schedule, the other two have
 closed-form certificates). Given a target leakage $\epsilon_\ell$ and $\gamma$, the
 design target is $\eta^2\le\gamma\epsilon_\ell/[(1-\epsilon_\ell)(1-\gamma)]$ (Lemma~\ref{lem:leak}).
 We provide three schedules:
 
-\emph{Uniform}: $m$ equal pulses $t=\pi/(1+\Delta)$, $\phi=0$, so $F=\cos^m(Et)$ and
-$\sup_{[\Delta,1]}|\cos Et|=\cos\theta$, $\theta=\pi\Delta/(1+\Delta)$. Then
+\emph{Uniform}: $m$ equal pulses $t=\pi/(1+\Delta)$, $\phi=0$, so $F=\cos^m(Et)$. For $E\in[\Delta,1]$
+we have $Et\in[\theta,\pi-\theta]$, $\theta=\pi\Delta/(1+\Delta)$, hence $\sup_{[\Delta,1]}|\cos Et|=\cos\theta$. Then
 $m\approx2\ln(1/\eta)/\theta^2$ and $T\approx2\ln(1/\eta)/(\pi\Delta^2)$: quadratic in the inverse gap.
 It is the baseline that any design should beat.
 
@@ -175,8 +182,12 @@ projection~\cite{Stetcu2023}, here applied to the energy. One block is a Dirichl
 \prod_{k=0}^{K-1}\cos(2^kE\tau)=\frac{\sin(2^KE\tau)}{2^K\sin(E\tau)},
 \label{eq:dirichlet}
 \end{equation}
-which equals 1 at $E=0$ and is at most $\eta_b=1/(2^K\sin\theta)$ on $[\Delta,1]$ because
-$\sin(E\tau)\ge\sin\theta$ there. With $r=\lceil\ln\eta/\ln\eta_b\rceil$ blocks,
+which equals 1 at $E=0$. The identity is exact for every $E$ (repeated use of $\sin2x=2\sin x\cos x$).
+The suppression bound is a separate step that uses the spectral window: for $E\in[\Delta,1]$,
+$E\tau\in[\theta,\pi-\theta]$, so $\sin(E\tau)\ge\sin\theta$ and, with $|\sin(2^KE\tau)|\le1$, the block
+is at most $\eta_b=1/(2^K\sin\theta)$ in absolute value there. This bound relies on the scaling $H_s$,
+which places every relevant level in $[0,1]$, and on the choice of $\tau$; it does not hold outside
+$[\Delta,1]$. With $r=\lceil\ln\eta/\ln\eta_b\rceil$ blocks,
 $T=r\tau(2^K-1)$; choosing $2^K\sin\theta\approx e$ gives
 \begin{equation}
 T_{\rm dyadic}\approx\frac{e\,\tau}{\sin\theta}\ln\frac1\eta\;\approx\;\frac{e}{\Delta}\ln\frac1\eta ,
@@ -190,7 +201,7 @@ test suite checks them against a $2\times10^6$-point grid.
 \emph{Optimized}: times and phases chosen to maximize $F(0)^2$ subject to the certified constraint on
 $\eta$ at fixed $(T,m)$, over a grid of $x=T\Delta/\pi$ and $m\in\{4,6,8\}$, picking the pair with the
 smallest $T^2/F(0)^2$. This is SBC's recipe for energy filters~\cite{Stetcu2023} with a certified
-constraint in place of a grid objective; it uses the SLSQP designer \texttt{floor.py} of the repository.
+constraint in place of a grid objective; it uses the SLSQP designer \texttt{sbpipe/floor.py}.
 Nonzero phases trade success probability ($F(0)<1$) for a shorter $T$.
 
 For each schedule the leakage share $\epsilon_\ell/\epsilon\in\{0.5,0.25,0.1,0.05\}$ is scanned and the
@@ -208,14 +219,25 @@ becomes a single ancilla $R_z$ per pulse and is exact. For $B_a=\sum_{b>a}H_b$ t
 \norm{S_2(t)-e^{-itH}}&\le t^3\beta_2,&\beta_2&=\textstyle\frac1{12}\sum_a\norm{[B_a,[B_a,H_a]]}\nonumber\\
 &&&\quad+\textstyle\frac1{24}\sum_a\norm{[H_a,[H_a,B_a]]},
 \end{align}
-so $k$ steps over time $t$ cost $\alpha_1t^2/(2k)$ or $\beta_2t^3/k^2$. Tensoring every term with
+so $k$ steps over time $t$ cost $\alpha_1t^2/(2k)$ or $\beta_2t^3/k^2$. The filter times $t_i$ are in
+units of the scaled Hamiltonian, so the constants are evaluated for the terms of $H_s$, i.e.\ for
+coefficients $c_a/W$ (the identity shift does not enter any commutator). Equivalently
+$\alpha_1(H_s)=\alpha_1(H)/W^2$ and $\beta_2(H_s)=\beta_2(H)/W^3$, with physical evolution time
+$t_i/W$; the code uses the first convention, and we checked that it agrees with the second to machine
+precision. Tensoring every term with
 $Z_a$ leaves $\alpha_1$ and $\beta_2$ unchanged because $Z_a^2=1$. For Pauli strings
 $[P_b,P_a]=2P_bP_a$ when they anticommute and 0 otherwise, so each commutator is a short Pauli sum
 supported on a few qubits around term $a$; we evaluate its norm exactly on that support (dense for
 $\le8$ qubits, Lanczos up to 12, triangle inequality beyond, which never occurred here). The
 constants are maximized over the forward and reversed term order, so they hold for either convention.
-A common step size, $k_i=\lceil t_i/\delta t\rceil$, minimizes $\sum_ik_i$ for both orders at a given
-error budget (a Lagrange argument), and leaves the certified times untouched.
+Every pulse evolves under the same $H_s\otimes Z_a$, so the per-pulse bounds
+$\alpha_1t_i^2/(2k_i)$ and $\beta_2|t_i|^3/k_i^2$ share one constant; the phase $\phi_i$ enters only the
+ancilla rotation, and the bound is symmetric in the sign of $t_i$. With equal constants, the continuous
+relaxation of $\min\sum_ik_i$ subject to $\sum_i(\text{bound}_i)\le\epsilon_T$ is solved by
+$k_i\propto|t_i|$ for both orders (Lagrange). We take $k_i=\lceil|t_i|/\delta t\rceil$ with the common
+step $\delta t$ of that solution. Rounding up keeps the bound, costs at most $m$ steps more than the
+continuous optimum and need not be the integer optimum; the budget it frees goes to rotation synthesis.
+The certified times are untouched.
 
 \subsection{The certificate}
 
@@ -227,14 +249,19 @@ rotations of the trial and filter circuits, each synthesized to accuracy $\delta
 \begin{equation}
 \ell=\frac{(1-\gamma)\eta^2}{\gamma+(1-\gamma)\eta^2},\qquad p_g=\gamma F_{\rm pass}^2 .
 \end{equation}
-Then, conditioned on the ancilla outcomes 0, the prepared state $\tilde\rho$ satisfies
+Let $\ket g=\Pi_0\ket\psi/\norm{\Pi_0\ket\psi}$ be the normalized projection of the trial state onto
+the ground space, with $\Pi_0$ the ground-space projector; $\ket g$ is a pure state also when the
+ground space is degenerate. For a noiseless implementation the state $\ket{\tilde\psi_{\rm out}}$
+prepared conditioned on the ancilla outcomes 0 is pure, and
 \begin{equation}
-D(\tilde\rho,\Pi_0)\le\sqrt\ell+\frac{\epsilon_U}{\sqrt{p_g}},\qquad 1-F\le D^2,
+D\le\sqrt\ell+\frac{\epsilon_U}{\sqrt{p_g}},\qquad
+1-\operatorname{Tr}(\Pi_0\tilde\rho)\le1-|\langle g|\tilde\psi_{\rm out}\rangle|^2=D^2,
 \label{eq:cert}
 \end{equation}
-where $D$ is the trace distance to the normalized projection of the trial state on the ground space,
-$\langle H\rangle-E_0\le(E_{\rm top}-E_0)D^2$, and the success probability is at least
-$(\sqrt{p_g}-\epsilon_U)^2$.
+where $D$ is the trace distance between $\tilde\rho=\ket{\tilde\psi_{\rm out}}\bra{\tilde\psi_{\rm out}}$
+and $\ket g$. Moreover $\langle H\rangle-E_0\le(E_{\rm top}-E_0)D^2$, and the success probability is at
+least $(\sqrt{p_g}-\epsilon_U)^2$. Below, $1-F$ denotes $1-|\langle g|\tilde\psi_{\rm out}\rangle|^2$; for
+the nondegenerate ground state of the chains studied here it is the usual infidelity.
 \end{theorem}
 
 The proof (Appendix~\ref{app:proof}) combines a leakage lemma for the exact filter with the
@@ -253,9 +280,15 @@ rotation per term; $k$ Strang steps cost $k(2\Gamma-2)+1$ rotations for $\Gamma$
 middle half-steps and the outer half-steps of adjacent steps merge. Each pulse adds one ancilla $R_z$.
 An arbitrary rotation at accuracy $\delta$ costs $3\log_2(1/\delta)$ $T$ gates, the leading term of
 Ross--Selinger synthesis~\cite{Ross2016}. The cost of one attempt is the trial circuit plus the
-filter, and the expected cost per success is the attempt cost divided by the success probability,
-which we bound below by $p_g$ (repeat-until-success; an early-abort protocol that measures after each
-pulse would be cheaper and is not modeled). The ladder CNOT count is an upper bound: qiskit's
+filter, and the expected cost per success is the attempt cost divided by the certified lower bound
+$(\sqrt{p_g}-\epsilon_U)^2$ on the success probability of the implemented circuit from
+Theorem~\ref{thm:cert} (repeat-until-success; an early-abort protocol that measures after each pulse
+would be cheaper and is not modeled). The pipeline spends the whole budget
+$\epsilon_U=(\sqrt\epsilon-\sqrt\ell)\sqrt{p_g}$, so this denominator is
+$p_g(1-\sqrt\epsilon+\sqrt\ell)^2\ge(1-\sqrt\epsilon)^2p_g$, i.e.\ at least $0.81\,p_g$ at
+$\epsilon=10^{-2}$. Without a filter nothing is post-selected and every attempt succeeds. Alongside
+each $T$ count we report the number of arbitrary rotations per attempt and their common synthesis
+accuracy $\delta$. The ladder CNOT count is an upper bound: qiskit's
 synthesis shares CNOTs between the $XX$, $YY$, $ZZ$ terms of a bond and needs 8 instead of 12 per
 controlled bond per Lie step (checked in the test suite), so CNOT numbers below can be read as upper
 bounds that a compiler lowers by about one third.
@@ -272,16 +305,21 @@ H=J_1\sum_{i=1}^{N-1}\mathbf S_i\cdot\mathbf S_{i+1}+J_2\sum_{i=1}^{N-2}\mathbf 
 \end{equation}
 $J_1=1$, at $J_2=0$ (Heisenberg), $J_2=0.2411$ (close to the critical point of the
 gapless-to-dimerized transition~\cite{Okamoto1992,Eggert1996}) and $J_2=0.4$ (dimerized), for $N=8$ to
-48. Its Pauli form has $3(2N-3)$ terms of weight 2. Terms are ordered by bond: nearest-neighbor bonds
+48. Its Pauli form has $3(N-1)$ terms of weight 2 at $J_2=0$ and $3(2N-3)$ otherwise. Terms are ordered by bond: nearest-neighbor bonds
 with even then odd left site, then next-nearest-neighbor bonds likewise.
 
 The front end (\texttt{sbpipe/frontends/dmrg\_quimb.py}) builds the MPO from the Pauli sum and runs
 two-site DMRG (quimb~\cite{Gray2018}) with bond dimensions up to 256 ($N\le24$) or 128 ($N>24$) and
 truncation cutoff $10^{-12}$. $E_1$ is the lowest state of $H+\mu(S^z_{\rm tot}-1)^2$, $\mu=2$, i.e.\
-the lowest triplet. The error bars $\delta E_0,\delta E_1$ are the energy change between the last two
-bond dimensions, floored at $10^{-10}$; they are convergence heuristics, not bounds. The trial state is
+the lowest triplet, which we use as the global first excitation. The error bars $\delta E_0,\delta E_1$
+are the energy change between the last two bond dimensions, floored at $10^{-10}$; they are
+convergence heuristics, not bounds. Both DMRG energies are variational upper bounds, so a residual
+DMRG error in $E_1$ (or convergence of the penalty run to a higher state) biases the gap upward, which
+is the dangerous direction (Sec.~\ref{sec:sens}); these error bars do not protect against that bias, and
+the certificate for $N>14$ is conditional on the gap. The trial state is
 the variationally optimal MPS at fixed bond dimension $\chi\in\{1,2,4,8\}$, and $\gamma$ is its
-overlap with the reference MPS. An MPS of bond dimension $2^b$ is exactly a staircase of $N-b$ unitaries
+overlap with the reference MPS. This is an estimate of the overlap with the exact ground state, not a
+lower bound on it, so for $N>14$ the certificate is equally conditional on $\gamma$. An MPS of bond dimension $2^b$ is exactly a staircase of $N-b$ unitaries
 on $b+1$ qubits; we cost each with the quantum Shannon decomposition bound
 $\frac{23}{48}4^n-\frac32 2^n+\frac43$ CNOTs (3, 20, 100 for $n=2,3,4$)~\cite{Shende2006} and $4^n-1$
 rotations.
@@ -330,7 +368,7 @@ open squares: first order.}
 The bound is conservative by a median factor \boundRatioMed{} (range \boundRatioMin--$\boundRatioMax$)
 in infidelity. Splitting it shows where: the leakage term $\ell$ overestimates the exact filter's
 infidelity by a median \leakRatioMed$\times$ (range \leakRatioMin--$\leakRatioMax$). By schedule the medians are 1.4 (optimized), 4 (uniform)
-and 56 (dyadic): the optimized design pushes $|F|$ to $\eta F_{\rm pass}$ across the band, whereas the
+and 54 (dyadic): the optimized design pushes $|F|$ to $\eta F_{\rm pass}$ across the band, whereas the
 closed-form dyadic bound $1/(2^K\sin\theta)$ is reached only near the band edge. More generally, $\eta$ is
 a worst case over the whole stop band while the trial state's excited weight sits mostly low in the
 band. The
@@ -357,12 +395,14 @@ $\Delta$ and logarithmic above.}
 
 \begin{table*}[t]
 \caption{Plans for $N=12$, $J_2=0.2411$, $\chi=2$ trial. $T_{\rm phys}=T/W$ in units of $1/J_1$; CNOT and
-$T$ counts per attempt (filter) and expected per success (trial + filter, divided by $p_g$).
-``meas.'': simulated infidelity of the planned circuit. Source: \texttt{results/validate.json}.}
+$T$ counts per attempt (filter) and expected per success (trial + filter, divided by the certified
+success probability $(\sqrt{p_g}-\epsilon_U)^2$). ``rot.'': arbitrary rotations per attempt (trial +
+filter), each synthesized to accuracy $\delta$. ``meas.'': simulated infidelity of the planned circuit.
+Source: \texttt{results/validate.json}.}
 \label{tab:schedules}
 \begin{ruledtabular}
-\begin{tabular}{rlrrrrrrrrr}
-$\epsilon$ & schedule & order & $m$ & $T_{\rm phys}$ & $p_g$ & steps & CNOT (filter) & CNOT/success & $T$/success & meas.\ $1-F$\\
+\begin{tabular}{rlrrrrrrrrrrr}
+$\epsilon$ & schedule & order & $m$ & $T_{\rm phys}$ & $p_g$ & steps & CNOT (filter) & CNOT/success & rot. & $\delta$ & $T$/success & meas.\ $1-F$\\
 \midrule
 \input{generated/tab_schedules.tex}
 \end{tabular}
@@ -404,14 +444,14 @@ of the dyadic second-order plan grows as $N^{\fitADyaTwoCnot}$, $N^{\fitBDyaTwoC
 $N^{\fitCDyaTwoCnot}$ for $J_2=0,0.2411,0.4$, and its step count as $N^{\fitADyaTwoSteps}$,
 $N^{\fitBDyaTwoSteps}$, $N^{\fitCDyaTwoSteps}$. These exponents combine the shrinking gap
 ($T\propto1/\Delta$, and $\Delta=g/W$ with $W\propto N$), the growing commutator constant, the number of
-terms per step and the decaying overlap ($1/p_g$); they are fits over $N=16$--48, not asymptotic
+terms per step and the decaying overlap (through the success probability); they are fits over $N=16$--48, not asymptotic
 statements. At $N=48$, $J_2=0.2411$ the best $\chi=2$ plan (\schedFortyEight) needs
 \cnotFortyEight{} CNOTs per success, which the next section reduces by choosing a better trial.
 
 \begin{figure*}[t]
 \includegraphics[width=\textwidth]{figs/fig_scaling.pdf}
 \caption{Expected CNOTs per successful preparation versus $N$ (trial $\chi=2$, $\epsilon=10^{-2}$),
-including the trial circuit and the $1/p_g$ repetitions. Solid: second order; dashed: first order.
+including the trial circuit and the repetitions (certified success probability). Solid: second order; dashed: first order.
 Missing optimized points: no feasible design (see text). Source: \texttt{results/scaling.json}.}
 \label{fig:scaling}
 \end{figure*}
@@ -419,12 +459,14 @@ Missing optimized points: no feasible design (see text). Source: \texttt{results
 \begin{table*}[t]
 \caption{Cheapest second-order plan (``sch.'': dyadic or optimized) for $\epsilon=10^{-2}$, trial
 $\chi=2$. $\Delta$ is the scaled gap, $T_{\rm phys}=T/W$ in $1/J_1$. Steps for first (1st) and second
-(2nd) order with the same schedule; CNOT and $T$ counts for second order. Source:
+(2nd) order with the same schedule; CNOT and $T$ counts for second order per attempt (att.) and per success (succ.), divided by the
+certified success probability; ``rot.'': arbitrary rotations per attempt, synthesized to accuracy
+$\delta$. Source:
 \texttt{results/scaling.json}.}
 \label{tab:scaling}
 \begin{ruledtabular}
-\begin{tabular}{rrrrlrrrrrrr}
-$N$ & $J_2$ & $\gamma$ & $\Delta$ & sch. & $T_{\rm phys}$ & $p_g$ & steps (1st) & steps (2nd) & CNOT/attempt & CNOT/success & $T$/success\\
+\begin{tabular}{rrrrlrrrrrrrrr}
+$N$ & $J_2$ & $\gamma$ & $\Delta$ & sch. & $T_{\rm phys}$ & $p_g$ & steps (1st) & steps (2nd) & CNOT/att. & CNOT/succ. & rot. & $\delta$ & $T$/succ.\\
 \midrule
 \input{generated/tab_scaling.tex}
 \end{tabular}
@@ -432,6 +474,7 @@ $N$ & $J_2$ & $\gamma$ & $\Delta$ & sch. & $T_{\rm phys}$ & $p_g$ & steps (1st) 
 \end{table*}
 
 \subsection{What if the energy estimates are wrong?}
+\label{sec:sens}
 
 The certificate is only as good as its inputs, so we perturb them for $N=12$, $J_2=0.2411$,
 $\epsilon=10^{-2}$ (optimized, second order) and simulate the resulting circuit on the true trial state
@@ -510,10 +553,12 @@ $N$ & $J_2$ & $\gamma_1$ & CNOT & $\gamma_2$ & CNOT & $\gamma_4$ & CNOT & $\gamm
 spectral upper bound (Weyl), the filter certificate and the Trotter constants are rigorous here. The
 interval for $E_0$, the lower bound on $E_1$ and the overlap $\gamma$ come from DMRG and are
 well-converged estimates, not bounds; for $N\le14$ ED confirms them, beyond that the certificate is
-conditional. The gap is the critical input: an overestimated gap was the only input error that
+conditional on all three: the $E_0$ interval, the gap and the overlap. The gap is the critical input: an overestimated gap was the only input error that
 broke the target in our tests. Rigorous lower bounds on $E_1$ from classical data
-(e.g.\ Temple-type bounds from the energy variance) would make the guarantee unconditional and plug
-into the same interface.
+(e.g.\ Temple-type bounds from the energy variance) would remove the gap condition and plug into the
+same interface. Given such energy bounds, the Eckart inequality
+$1-\gamma\le(\langle H\rangle_\psi-E_0)/(E_1-E_0)$ turns the trial state's energy into a lower bound on
+$\gamma$, which would remove the overlap condition as well.
 
 \emph{Where the cost goes.} The certified cost is dominated by the Trotter term, whose bound is a
 median \trotRatioMed$\times$ the measured Trotter distance; at the level of step counts the certified
@@ -537,6 +582,10 @@ designer can fail for small overlaps; $E_1$ is taken as the lowest $S^z=1$ state
 excitation in every ED case here but is an assumption for larger $N$.
 
 %=====================================================================================================
+\section*{Code and data availability}
+The \texttt{sbpipe} package, the study scripts, all raw results (\texttt{sbpipe\_study/results/*.json}) and
+the sources of this paper are available at \url{https://github.com/aaronseymour7/FilterPipeline}.
+
 \appendix
 
 \section{Proof of Theorem~\ref{thm:cert}}
@@ -578,7 +627,11 @@ unnormalized output is at most $\epsilon_U$.
 
 With $\tilde v=\prod B_i\ket{\tilde\psi}$, $\norm{\tilde v-v}\le\epsilon_U$. The distance from $v$ to the line
 through $\tilde v$ is at most $\norm{v-\tilde v}$, so $\sin\angle(v,\tilde v)\le\epsilon_U/\norm v\le
-\epsilon_U/\sqrt{p_g}$. The triangle inequality for the trace distance gives \eqref{eq:cert}. The
+\epsilon_U/\sqrt{p_g}$. The triangle inequality for the trace distance gives the bound on $D$. The
+states $\hat v$, $\ket g$ and the normalized output are pure, so $D^2=1-|\langle g|\tilde\psi_{\rm out}\rangle|^2$;
+since $\ket g$ lies in the ground space, $\operatorname{Tr}(\Pi_0\tilde\rho)\ge|\langle g|\tilde\psi_{\rm out}\rangle|^2$,
+which gives \eqref{eq:cert}. (For a mixed output, e.g.\ under noise, a trace-distance bound alone would
+not bound the ground-space weight by $D^2$; this case is outside the theorem.) The
 success probability is $\norm{\tilde v}^2\ge(\norm v-\epsilon_U)^2\ge(\sqrt{p_g}-\epsilon_U)^2$. For
 the energy, the normalized state has weight at least $1-D^2$ on the ground space and at most $D^2$ on
 levels $\le E_{\rm top}$, so $\langle H\rangle-E_0\le(E_{\rm top}-E_0)D^2$. \qed
@@ -586,6 +639,8 @@ levels $\le E_{\rm top}$, so $\langle H\rangle-E_0\le(E_{\rm top}-E_0)D^2$. \qed
 \section{Reproducing the results}
 \label{app:repro}
 
+The code, raw results and paper sources are at \url{https://github.com/aaronseymour7/FilterPipeline}. After
+\texttt{pip install -r requirements.txt}, all commands below run from the repository root.
 \texttt{python sbpipe\_study/run\_study.py all} runs the DMRG front end (cached), the validation (A),
 scaling (B), sensitivity (C), ansatz (D) and oracle (E) studies and writes \texttt{results/*.json};
 \texttt{python sbpipe\_study/make\_figures.py} writes every figure, table and the numerical macros used
@@ -629,8 +684,8 @@ qiskit, and an end-to-end certificate check).
   J.\ Open Source Softw.\ \textbf{3}, 819 (2018).
 \bibitem{Sahinoglu2021} B.~\c{S}ahino\u{g}lu and R.~D. Somma, Hamiltonian simulation in the low-energy
   subspace, npj Quantum Inf.\ \textbf{7}, 119 (2021).
-\bibitem{repoWriteup} Earlier analysis of the certified filter for this model in the same repository:
-  \texttt{j1j2\_filter/WRITEUP.md} and \texttt{simple\_paper/paper.md}.
+\bibitem{repoWriteup} Earlier analysis of the certified filter for this model:
+  \url{https://github.com/aaronseymour7/CLAUDE} (\texttt{j1j2\_filter/WRITEUP.md}).
 \end{thebibliography}
 
 \end{document}
