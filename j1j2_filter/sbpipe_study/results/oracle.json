@@ -1,0 +1,362 @@
+[
+ {
+  "N": 8,
+  "J2": 0.0,
+  "eps": 0.01,
+  "schedule": "dyadic",
+  "n_cert": 314,
+  "n_oracle": 22,
+  "m": 8,
+  "ratio": 14.272727272727273
+ },
+ {
+  "N": 8,
+  "J2": 0.0,
+  "eps": 0.01,
+  "schedule": "optimized",
+  "n_cert": 78,
+  "n_oracle": 9,
+  "m": 6,
+  "ratio": 8.666666666666666
+ },
+ {
+  "N": 8,
+  "J2": 0.0,
+  "eps": 0.001,
+  "schedule": "dyadic",
+  "n_cert": 981,
+  "n_oracle": 45,
+  "m": 12,
+  "ratio": 21.8
+ },
+ {
+  "N": 8,
+  "J2": 0.0,
+  "eps": 0.001,
+  "schedule": "optimized",
+  "n_cert": 241,
+  "n_oracle": 20,
+  "m": 8,
+  "ratio": 12.05
+ },
+ {
+  "N": 8,
+  "J2": 0.2411,
+  "eps": 0.01,
+  "schedule": "dyadic",
+  "n_cert": 294,
+  "n_oracle": 12,
+  "m": 9,
+  "ratio": 24.5
+ },
+ {
+  "N": 8,
+  "J2": 0.2411,
+  "eps": 0.01,
+  "schedule": "optimized",
+  "n_cert": 71,
+  "n_oracle": 5,
+  "m": 4,
+  "ratio": 14.2
+ },
+ {
+  "N": 8,
+  "J2": 0.2411,
+  "eps": 0.001,
+  "schedule": "dyadic",
+  "n_cert": 1113,
+  "n_oracle": 36,
+  "m": 12,
+  "ratio": 30.916666666666668
+ },
+ {
+  "N": 8,
+  "J2": 0.2411,
+  "eps": 0.001,
+  "schedule": "optimized",
+  "n_cert": 260,
+  "n_oracle": 11,
+  "m": 6,
+  "ratio": 23.636363636363637
+ },
+ {
+  "N": 8,
+  "J2": 0.4,
+  "eps": 0.01,
+  "schedule": "dyadic",
+  "n_cert": 148,
+  "n_oracle": 8,
+  "m": 6,
+  "ratio": 18.5
+ },
+ {
+  "N": 8,
+  "J2": 0.4,
+  "eps": 0.01,
+  "schedule": "optimized",
+  "n_cert": 53,
+  "n_oracle": 5,
+  "m": 4,
+  "ratio": 10.6
+ },
+ {
+  "N": 8,
+  "J2": 0.4,
+  "eps": 0.001,
+  "schedule": "dyadic",
+  "n_cert": 742,
+  "n_oracle": 38,
+  "m": 8,
+  "ratio": 19.526315789473685
+ },
+ {
+  "N": 8,
+  "J2": 0.4,
+  "eps": 0.001,
+  "schedule": "optimized",
+  "n_cert": 184,
+  "n_oracle": 13,
+  "m": 6,
+  "ratio": 14.153846153846153
+ },
+ {
+  "N": 10,
+  "J2": 0.0,
+  "eps": 0.01,
+  "schedule": "dyadic",
+  "n_cert": 537,
+  "n_oracle": 24,
+  "m": 12,
+  "ratio": 22.375
+ },
+ {
+  "N": 10,
+  "J2": 0.0,
+  "eps": 0.01,
+  "schedule": "optimized",
+  "n_cert": 153,
+  "n_oracle": 13,
+  "m": 6,
+  "ratio": 11.76923076923077
+ },
+ {
+  "N": 10,
+  "J2": 0.0,
+  "eps": 0.001,
+  "schedule": "dyadic",
+  "n_cert": 1690,
+  "n_oracle": 70,
+  "m": 20,
+  "ratio": 24.142857142857142
+ },
+ {
+  "N": 10,
+  "J2": 0.0,
+  "eps": 0.001,
+  "schedule": "optimized",
+  "n_cert": 431,
+  "n_oracle": 26,
+  "m": 8,
+  "ratio": 16.576923076923077
+ },
+ {
+  "N": 10,
+  "J2": 0.2411,
+  "eps": 0.01,
+  "schedule": "dyadic",
+  "n_cert": 573,
+  "n_oracle": 24,
+  "m": 12,
+  "ratio": 23.875
+ },
+ {
+  "N": 10,
+  "J2": 0.2411,
+  "eps": 0.01,
+  "schedule": "optimized",
+  "n_cert": 151,
+  "n_oracle": 10,
+  "m": 6,
+  "ratio": 15.1
+ },
+ {
+  "N": 10,
+  "J2": 0.2411,
+  "eps": 0.001,
+  "schedule": "dyadic",
+  "n_cert": 1728,
+  "n_oracle": 48,
+  "m": 16,
+  "ratio": 36.0
+ },
+ {
+  "N": 10,
+  "J2": 0.2411,
+  "eps": 0.001,
+  "schedule": "optimized",
+  "n_cert": 482,
+  "n_oracle": 22,
+  "m": 8,
+  "ratio": 21.90909090909091
+ },
+ {
+  "N": 10,
+  "J2": 0.4,
+  "eps": 0.01,
+  "schedule": "dyadic",
+  "n_cert": 340,
+  "n_oracle": 22,
+  "m": 8,
+  "ratio": 15.454545454545455
+ },
+ {
+  "N": 10,
+  "J2": 0.4,
+  "eps": 0.01,
+  "schedule": "optimized",
+  "n_cert": 82,
+  "n_oracle": 7,
+  "m": 4,
+  "ratio": 11.714285714285714
+ },
+ {
+  "N": 10,
+  "J2": 0.4,
+  "eps": 0.001,
+  "schedule": "dyadic",
+  "n_cert": 1215,
+  "n_oracle": 45,
+  "m": 12,
+  "ratio": 27.0
+ },
+ {
+  "N": 10,
+  "J2": 0.4,
+  "eps": 0.001,
+  "schedule": "optimized",
+  "n_cert": 357,
+  "n_oracle": 22,
+  "m": 6,
+  "ratio": 16.227272727272727
+ },
+ {
+  "N": 12,
+  "J2": 0.0,
+  "eps": 0.01,
+  "schedule": "dyadic",
+  "n_cert": 976,
+  "n_oracle": 32,
+  "m": 10,
+  "ratio": 30.5
+ },
+ {
+  "N": 12,
+  "J2": 0.0,
+  "eps": 0.01,
+  "schedule": "optimized",
+  "n_cert": 253,
+  "n_oracle": 19,
+  "m": 8,
+  "ratio": 13.31578947368421
+ },
+ {
+  "N": 12,
+  "J2": 0.0,
+  "eps": 0.001,
+  "schedule": "dyadic",
+  "n_cert": 2922,
+  "n_oracle": 75,
+  "m": 15,
+  "ratio": 38.96
+ },
+ {
+  "N": 12,
+  "J2": 0.0,
+  "eps": 0.001,
+  "schedule": "optimized",
+  "n_cert": 635,
+  "n_oracle": 30,
+  "m": 8,
+  "ratio": 21.166666666666668
+ },
+ {
+  "N": 12,
+  "J2": 0.2411,
+  "eps": 0.01,
+  "schedule": "dyadic",
+  "n_cert": 884,
+  "n_oracle": 26,
+  "m": 10,
+  "ratio": 34.0
+ },
+ {
+  "N": 12,
+  "J2": 0.2411,
+  "eps": 0.01,
+  "schedule": "optimized",
+  "n_cert": 226,
+  "n_oracle": 11,
+  "m": 6,
+  "ratio": 20.545454545454547
+ },
+ {
+  "N": 12,
+  "J2": 0.2411,
+  "eps": 0.001,
+  "schedule": "dyadic",
+  "n_cert": 2835,
+  "n_oracle": 72,
+  "m": 15,
+  "ratio": 39.375
+ },
+ {
+  "N": 12,
+  "J2": 0.2411,
+  "eps": 0.001,
+  "schedule": "optimized",
+  "n_cert": 709,
+  "n_oracle": 26,
+  "m": 8,
+  "ratio": 27.26923076923077
+ },
+ {
+  "N": 12,
+  "J2": 0.4,
+  "eps": 0.01,
+  "schedule": "dyadic",
+  "n_cert": 443,
+  "n_oracle": 16,
+  "m": 5,
+  "ratio": 27.6875
+ },
+ {
+  "N": 12,
+  "J2": 0.4,
+  "eps": 0.01,
+  "schedule": "optimized",
+  "n_cert": 125,
+  "n_oracle": 10,
+  "m": 6,
+  "ratio": 12.5
+ },
+ {
+  "N": 12,
+  "J2": 0.4,
+  "eps": 0.001,
+  "schedule": "dyadic",
+  "n_cert": 2040,
+  "n_oracle": 74,
+  "m": 10,
+  "ratio": 27.56756756756757
+ },
+ {
+  "N": 12,
+  "J2": 0.4,
+  "eps": 0.001,
+  "schedule": "optimized",
+  "n_cert": 519,
+  "n_oracle": 30,
+  "m": 8,
+  "ratio": 17.3
+ }
+]
