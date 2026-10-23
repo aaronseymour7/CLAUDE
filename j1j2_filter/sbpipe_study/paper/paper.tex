@@ -365,7 +365,7 @@ open squares: first order.}
 The bound is conservative by a median factor \boundRatioMed{} (range \boundRatioMin--$\boundRatioMax$)
 in infidelity. Splitting it shows where: the leakage term $\ell$ overestimates the exact filter's
 infidelity by a median \leakRatioMed$\times$ (range \leakRatioMin--$\leakRatioMax$). By schedule the medians are 1.4 (optimized), 4 (uniform)
-and 56 (dyadic): the optimized design pushes $|F|$ to $\eta F_{\rm pass}$ across the band, whereas the
+and 54 (dyadic): the optimized design pushes $|F|$ to $\eta F_{\rm pass}$ across the band, whereas the
 closed-form dyadic bound $1/(2^K\sin\theta)$ is reached only near the band edge. More generally, $\eta$ is
 a worst case over the whole stop band while the trial state's excited weight sits mostly low in the
 band. The
@@ -456,14 +456,14 @@ Missing optimized points: no feasible design (see text). Source: \texttt{results
 \begin{table*}[t]
 \caption{Cheapest second-order plan (``sch.'': dyadic or optimized) for $\epsilon=10^{-2}$, trial
 $\chi=2$. $\Delta$ is the scaled gap, $T_{\rm phys}=T/W$ in $1/J_1$. Steps for first (1st) and second
-(2nd) order with the same schedule; CNOT and $T$ counts for second order, per success divided by the
+(2nd) order with the same schedule; CNOT and $T$ counts for second order per attempt (att.) and per success (succ.), divided by the
 certified success probability; ``rot.'': arbitrary rotations per attempt, synthesized to accuracy
 $\delta$. Source:
 \texttt{results/scaling.json}.}
 \label{tab:scaling}
 \begin{ruledtabular}
 \begin{tabular}{rrrrlrrrrrrrrr}
-$N$ & $J_2$ & $\gamma$ & $\Delta$ & sch. & $T_{\rm phys}$ & $p_g$ & steps (1st) & steps (2nd) & CNOT/attempt & CNOT/success & rot. & $\delta$ & $T$/success\\
+$N$ & $J_2$ & $\gamma$ & $\Delta$ & sch. & $T_{\rm phys}$ & $p_g$ & steps (1st) & steps (2nd) & CNOT/att. & CNOT/succ. & rot. & $\delta$ & $T$/succ.\\
 \midrule
 \input{generated/tab_scaling.tex}
 \end{tabular}
