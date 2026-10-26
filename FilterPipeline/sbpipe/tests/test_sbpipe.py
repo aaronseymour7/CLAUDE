@@ -276,3 +276,16 @@ def test_spin_stage_end_to_end_certificate():
     plain = sbpipe.refine(H, sbpipe.EnergyEstimates(E0=E0, E1=np.linalg.eigvalsh(Hd)[1]), ans,
                           sbpipe.Config(eps=1e-2, schedule="dyadic", order=2))
     assert plan.design.T < plain.design.T            # larger gap, shorter energy filter
+
+
+def test_dmrg_trial_energy_is_the_energy_of_the_returned_state():
+    """Regression: the DMRG-reported energy is wrong for chi = 1; E_trial must equal <psi|H|psi>."""
+    from sbpipe.frontends import dmrg_quimb as F
+    N = 6
+    H = sbpipe.j1j2_chain(N, 1.0, 0.2411)
+    Hm = F.pauli_to_mpo(H)
+    g = F.ground_state(Hm, bond_dims=(16, 32))
+    Hs = H.to_sparse()
+    for chi in (1, 2, 4):
+        a = F.ansatz_from_dmrg(Hm, g["psi"], chi, N)
+        assert a.meta["E_trial"] == pytest.approx(float(np.vdot(a.statevector, Hs @ a.statevector).real), abs=1e-10)

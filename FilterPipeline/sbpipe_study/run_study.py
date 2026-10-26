@@ -416,7 +416,8 @@ def run_mps():
     """CNOT counts of one staircase step (a (b+1)-qubit unitary, b = log2 chi): the QSD bound used by the
     pipeline, qiskit's compiled count for a random unitary and for qiskit's generic isometry, and a
     parameter-counting lower bound for any isometry from b to b+1 qubits (Stiefel manifold of real
-    dimension 3 * 4^b; one CNOT plus single-qubit gates adds at most 4 parameters)."""
+    dimension 3 * 4^b, minus 1 for the global phase and 3n for the first single-qubit layer; one CNOT plus
+    single-qubit gates adds at most 4 parameters)."""
     from qiskit import QuantumCircuit, transpile
     from qiskit.circuit.library import Isometry
     from scipy.stats import unitary_group
@@ -435,7 +436,7 @@ def run_mps():
         out.append(dict(chi=2 ** b, n=n, qsd_bound=round((23 / 48) * 4 ** n - 1.5 * 2 ** n + 4 / 3),
                         qiskit_unitary=cx(qu), qiskit_isometry=cx(qi),
                         lb_unitary=math.ceil((4 ** n - 3 * n - 1) / 4),
-                        lb_isometry=math.ceil((3 * 4 ** b - 3 * n) / 4)))
+                        lb_isometry=math.ceil((3 * 4 ** b - 3 * n - 1) / 4)))
         print(f"[I] {out[-1]}", flush=True)
     dump("mps_circuits.json", out)
 

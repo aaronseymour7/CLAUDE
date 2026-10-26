@@ -123,7 +123,10 @@ def mps_overlap(a, b) -> complex:
 
 def ansatz_from_dmrg(H_mpo, psi_ref, chi: int, N: int, dense_max_n: int = 16) -> Ansatz:
     """Optimal bond-dimension-chi MPS as an Ansatz; gamma is its overlap with psi_ref."""
-    E_t, psi_t = trial_mps(H_mpo, chi)
+    _, psi_t = trial_mps(H_mpo, chi)
+    # energy of the MPS actually returned (the DMRG energy is that of the two-site optimum before truncation,
+    # which is wrong for chi = 1); exact up to floating point, and what an Eckart bound needs
+    E_t = float(np.real(mps_overlap(psi_t, H_mpo.apply(psi_t))) / abs(mps_overlap(psi_t, psi_t)))
     gamma = float(abs(mps_overlap(psi_ref, psi_t)) ** 2
                   / (abs(mps_overlap(psi_ref, psi_ref)) * abs(mps_overlap(psi_t, psi_t))))
     sv = np.asarray(psi_t.to_dense()).reshape(-1) if N <= dense_max_n else None
