@@ -1,0 +1,3 @@
+cache/*.npz
+cache/designs/
+log_*.txt
