@@ -41,8 +41,8 @@ factor of \boundRatioMed, mostly through its Trotter term. A second-order produc
 \gainOrderMed$\times$ cheaper than first order, and an optimized filter a median \gainOptMed$\times$
 cheaper than a closed-form halving (``dyadic'') schedule, which however is the only design that stays
 feasible for small overlaps. Near the critical coupling at $N=48$, a $\chi=4$ trial state is refined to
-infidelity $10^{-2}$ for \cnotFortyEightChiFour{} CNOTs per success. Overestimating the gap by
-$50\%$ is the one input error that broke the target; a conservative gap costs at most
+infidelity $10^{-2}$ for \cnotFortyEightChiFour{} CNOTs per success. Overestimating the gap is the one input error
+that broke the target, in some instances by as little as $10\%$; a conservative gap costs at most
 \gapMarginCost$\times$. For this one-dimensional model at $\epsilon=10^{-2}$, however, a $\chi=8$
 matrix-product circuit alone already meets the target with about $10^{3}$--$10^{4}$ CNOTs, so the value of
 the pipeline lies in its conditional certificate and in models where compact trial states are not available.
@@ -552,6 +552,39 @@ cases, $f\ge\gapFailFactor$, with infidelity up to \gapWorstInf{} at $f=\gapWors
 1.25 the looseness of the certificate still covered the error. Underestimating the gap is safe and
 cheap: even $f=\gapMarginF$ costs only \gapMarginCost$\times$. Since DMRG gives an \emph{upper} bound on $E_1$, an explicit margin $\delta E_1$
 is the natural safeguard.
+
+\emph{Gap, all instances.} One instance is a thin basis for the paper's most important caveat, so we repeat the gap test on all
+\nGapInst{} instances with $N\le14$ (three couplings, $\epsilon=10^{-2},10^{-3}$, dyadic and optimized schedules, nine values of $f$ between 0.5
+and 3; \nGapSweep{} plans, Fig.~\ref{fig:gapsweep} and Table~\ref{tab:gapsweep}). Here the exact, un-Trotterized filter is applied to the true trial state, so the
+question is only whether the leakage target survives a wrong $E_1$. No underestimate of the gap ($f\le1$) missed the target (\nGapMissLeOne{} misses). Overestimates did,
+and earlier than the single instance suggested: the first misses occur at $f=\gapFirstMissOptimized$ for the optimized schedule and $f=\gapFirstMissDyadic$ for the
+dyadic one (whose closed-form bound is looser, so it carries more hidden margin). The fraction of plans that miss the target is \gapMissFracOneOne\%, \gapMissFracOneTwoFive\%,
+\gapMissFracOneFive\%, \gapMissFracTwo\% and \gapMissFracThree\% at $f=1.1$, 1.25, 1.5, 2 and 3, and the worst infidelity is \gapSweepWorstRatio{} times the target at
+$f=\gapSweepWorstF$. A safety factor on the gap is cheap: assuming $f=0.7$ costs a median \gapCostMedSev$\times$ (at most \gapCostMaxSev$\times$) and $f=0.5$ a median
+\gapCostMedHalf$\times$ (at most \gapCostMaxHalf$\times$) in expected CNOTs. We therefore recommend assuming a gap well below the DMRG value; the ranges above are for these
+chains and not a general rule.
+
+\begin{figure}[t]
+\includegraphics[width=\columnwidth]{figs/fig_gapsweep.pdf}
+\caption{Gap over- and underestimation on all $N\le14$ instances: infidelity of the exact filter on the true trial state divided by the
+target $\epsilon$, against the assumed gap divided by the true gap. Points above the dashed line miss the target. Source:
+\texttt{results/gapsweep.json}.}
+\label{fig:gapsweep}
+\end{figure}
+
+\begin{table}[t]
+\caption{Plans that miss the target / plans, and the largest infidelity divided by $\epsilon$ in parentheses, for assumed gap $f\times$ true gap.
+Columns: $\epsilon=10^{-2}$ dyadic, optimized; $\epsilon=10^{-3}$ dyadic, optimized. Twelve instances per cell. Source: \texttt{results/gapsweep.json}.}
+\label{tab:gapsweep}
+\begin{ruledtabular}
+\begin{tabular}{rllll}
+$f$ & \multicolumn{2}{c}{$\epsilon=10^{-2}$} & \multicolumn{2}{c}{$\epsilon=10^{-3}$}\\
+ & dyadic & optimized & dyadic & optimized\\
+\midrule
+\input{generated/tab_gapsweep.tex}
+\end{tabular}
+\end{ruledtabular}
+\end{table}
 
 \emph{Ground energy.} An error bar $\delta E_0$ widens the pass band and lowers $F_{\rm pass}$; the
 cost stays flat until $\delta E_0$ is a sizeable fraction of the gap (\eZeroHiCost$\times$ at
