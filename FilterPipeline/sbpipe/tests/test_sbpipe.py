@@ -200,3 +200,79 @@ def test_qsvt_degree_scales_with_inverse_gap():
     b = qsvt_filter_cost(H, 0.1, 0.5, 1e-3, 1e-2, {})
     assert b["degree"] == pytest.approx(2 * a["degree"], rel=0.02)
     assert a["t_success"] > a["t_attempt"] > 0
+
+
+# ----------------------------------------------------------------------------- J^2 projection stage
+def _sa2_dense(N, axis):
+    S = sum(0.5 * kron_label("I" * q + axis + "I" * (N - q - 1)) for q in range(N))
+    return S @ S
+
+
+def test_spin_projection_ladder_is_exact():
+    from sbpipe.symmetry import j2_max, projection_times, projection_values
+    for N in (2, 4, 6, 8, 12, 24, 48):
+        t = projection_times(N)
+        R = len(t)
+        assert 2 ** (R + 1) > j2_max(N) and (R == 1 or 2 ** R <= j2_max(N))
+        v = projection_values(N)
+        assert v[0] == pytest.approx(1.0)
+        assert max(abs(x) for j, x in v.items() if j > 0) < 1e-9
+    assert len(projection_times(48)) == 9
+
+
+def test_spin_matrices_casimir_and_commutator():
+    from sbpipe.symmetry import spin_matrices
+    for j in (0, 1, 2, 5):
+        Sx, Sy, Sz = spin_matrices(j)
+        assert np.allclose(Sx @ Sx + Sy @ Sy + Sz @ Sz, j * (j + 1) * np.eye(2 * j + 1))
+        assert np.allclose(Sx @ Sy - Sy @ Sx, 1j * Sz)
+
+
+def test_evolve_sa2_matches_dense_expm():
+    from sbpipe.symmetry import evolve_sa2
+    rng = np.random.default_rng(11)
+    N = 4
+    psi = rng.normal(size=2 ** N) + 1j * rng.normal(size=2 ** N)
+    for ax in "xyz":
+        M = _sa2_dense(N, ax.upper())
+        assert np.allclose(evolve_sa2(psi, N, ax, 0.37), expm(-0.37j * M) @ psi)
+
+
+@pytest.mark.parametrize("order", [1, 2])
+def test_spin_trotter_constants_bound_the_error(order):
+    from sbpipe.symmetry import spin_product_formula, spin_trotter_constants
+    N = 4
+    a1, b2 = spin_trotter_constants(N)
+    J2 = sum(_sa2_dense(N, a) for a in "XYZ")
+    for t in (0.1, 0.4, 0.8):
+        for k in (1, 3):
+            cols = [spin_product_formula(np.eye(2 ** N)[:, i].astype(complex), N, t, k, order)
+                    for i in range(2 ** N)]
+            err = np.linalg.norm(np.array(cols).T - expm(-1j * t * J2), 2)
+            bound = a1 * t ** 2 / (2 * k) if order == 1 else b2 * t ** 3 / k ** 2
+            assert err <= bound + 1e-12
+
+
+def test_spin_stage_end_to_end_certificate():
+    from sbpipe.symmetry import refine_spin, validate_spin
+    N = 6
+    H = sbpipe.j1j2_chain(N, 1.0, 0.2411)
+    Hd = H.to_sparse().toarray()
+    from sbpipe.symmetry import j2_sparse
+    J2 = j2_sparse(N).toarray()
+    w, v = np.linalg.eigh(Hd + 2.0 * J2)            # singlet excitation = second level of H + 2 J^2
+    E0, E1s = np.linalg.eigvalsh(Hd)[0], w[1]
+    g = v[:, 0]
+    rng = np.random.default_rng(2)
+    psi = g + 0.4 * rng.normal(size=2 ** N)         # contains triplets and higher spin components
+    psi /= np.linalg.norm(psi)
+    gamma = float(abs(np.vdot(g, psi)) ** 2)
+    est = sbpipe.EnergyEstimates(E0=E0, E1=E1s)
+    ans = sbpipe.Ansatz(gamma=gamma, statevector=psi, cost={"cnot": 10, "rotations": 20})
+    plan = refine_spin(H, est, ans, sbpipe.Config(eps=1e-2, schedule="dyadic", order=2))
+    out = validate_spin(plan, H, ans, g)
+    assert out["bound_ok"]
+    assert out["j2_trial"] > 0.5 and out["j2_after_projection"] < 1e-4
+    plain = sbpipe.refine(H, sbpipe.EnergyEstimates(E0=E0, E1=np.linalg.eigvalsh(Hd)[1]), ans,
+                          sbpipe.Config(eps=1e-2, schedule="dyadic", order=2))
+    assert plan.design.T < plain.design.T            # larger gap, shorter energy filter

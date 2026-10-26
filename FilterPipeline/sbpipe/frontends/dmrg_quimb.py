@@ -150,3 +150,68 @@ def dmrg_inputs(H: PauliSum, chi_trial=2, Q: Optional[PauliSum] = None, q: float
     ans = [ansatz_from_dmrg(H_mpo, g["psi"], c, N) for c in chis]
     extras = dict(psi_ref=g["psi"], ref_history=g["history"], E1_history=e["history"], H_mpo=H_mpo)
     return est, (ans[0] if np.isscalar(chi_trial) else ans), extras
+
+
+def total_spin_mpo(N: int, cutoff: float = 1e-13) -> qtn.MatrixProductOperator:
+    """MPO of J^2 = sum_a (sum_i S^a_i)^2, S = sigma/2 (bond dimension <= 12)."""
+    tot = None
+    for a in "XYZ":
+        Sa = pauli_to_mpo(PauliSum(["I" * q + a + "I" * (N - q - 1) for q in range(N)], np.full(N, 0.5)))
+        S2 = Sa.apply(Sa)
+        tot = S2 if tot is None else tot + S2
+    tot.compress(cutoff=cutoff)
+    return tot
+
+
+class _OrthoDMRG2(qtn.DMRG2):
+    """Two-site DMRG for the lowest state orthogonal to ``ref`` (an MPS): the local eigenproblem of H is
+    augmented by w |X><X|, where X is the part of ``ref`` in the local two-site basis (computed from the
+    current environments by contraction), which lifts the reference above the target level. quimb's DMRG
+    has no excited-state option, so this is the minimal extension."""
+
+    def __init__(self, ham, ref, w, **kw):
+        super().__init__(ham, **kw)
+        r = ref.copy()
+        bonds = [ix for ix in r.ind_map if ix not in {r.site_ind(j) for j in range(r.L)}]
+        r.reindex_({ix: "ref_" + ix for ix in bonds})
+        r.reindex_({r.site_ind(j): self._b.site_ind(j) for j in range(r.L)})
+        self._ref_tensors = list(r.tensors)
+        self._w = float(w)
+
+    def form_local_ops(self, i, dims, lix, uix):
+        Heff, Neff = super().form_local_ops(i, dims, lix, uix)
+        others = [self._b[j] for j in range(self.L) if j not in (i, i + 1)]
+        X = qtn.TensorNetwork([*self._ref_tensors, *others]).contract(output_inds=lix, optimize="greedy")
+        x = np.asarray(X.transpose(*lix).data).reshape(-1)
+        if isinstance(Heff, np.ndarray):
+            Heff = Heff + self._w * np.outer(x, x.conj())
+        else:
+            from scipy.sparse.linalg import LinearOperator
+            P = LinearOperator(Heff.shape, matvec=lambda v: self._w * x * (x.conj() @ v), dtype=complex)
+            Heff = Heff + P
+        return Heff, Neff
+
+
+def singlet_excitation(H_mpo, psi_ref, N: int, mu: float = 2.0, bond_dims=(16, 32, 64, 128, 256),
+                       cutoff: float = 1e-12, tol: float = 1e-11, max_sweeps: int = 60, w: float = None):
+    """Lowest level of the J = 0 sector above the ground state: DMRG on H + mu J^2 orthogonal to
+    ``psi_ref`` (projector penalty w, default 2 N). A triplet costs 2 mu extra, so for mu = 2 the singlet
+    excitation is found first as long as it lies below (triplet gap + 4); the expectation of J^2 of
+    the result is returned as a check. The error bar is the energy change between the last two bond
+    dimensions (a heuristic, not a bound)."""
+    J2 = total_spin_mpo(N)
+    Hp = H_mpo + mu * J2
+    Hp.compress(cutoff=1e-13)
+    w = 2.0 * N if w is None else w
+    psi, hist = None, []
+    for chi in bond_dims:
+        d = _OrthoDMRG2(Hp, psi_ref, w, bond_dims=[chi], cutoffs=cutoff, p0=psi)
+        d.solve(tol=tol, max_sweeps=max_sweeps, verbosity=0)
+        psi = d.state.copy()
+        hist.append((chi, float(np.real(d.energy)), int(psi.max_bond())))
+    nrm = abs(mps_overlap(psi, psi))
+    j2 = float(np.real(mps_overlap(psi, J2.apply(psi))) / nrm)
+    E1s = hist[-1][1] - mu * j2 - w * float(abs(mps_overlap(psi_ref, psi)) ** 2 / nrm)
+    err = abs(hist[-1][1] - hist[-2][1]) if len(hist) > 1 else float("nan")
+    return dict(E1=E1s, E1_conv=err, j2=j2, history=hist, psi=psi,
+                overlap_ref=float(abs(mps_overlap(psi_ref, psi)) ** 2 / nrm))

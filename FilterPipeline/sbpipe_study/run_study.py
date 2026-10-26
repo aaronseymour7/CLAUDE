@@ -11,6 +11,7 @@
     python sbpipe_study/run_study.py qsvt        # H: T-count model of a qubitization/QSVT filter
     python sbpipe_study/run_study.py mps         # I: MPS-staircase CNOT costing (QSD bound, qiskit, isometry bound)
     python sbpipe_study/run_study.py ladder      # J: two-leg Heisenberg ladder (inputs, certificate, plans)
+    python sbpipe_study/run_study.py singlet     # K: J = 0 projection stage + energy filter in the singlet sector
     python sbpipe_study/run_study.py all
 
 Every number in the paper is read from results/*.json written here.
@@ -531,11 +532,95 @@ def run_ladder():
     dump("ladder.json", out)
 
 
+# ----------------------------------------------------------------------------- K: J^2 projection
+def _skey(N, J2):
+    return f"N{N}_J2{J2:g}_singlet"
+
+
+def compute_singlet(args):
+    """Lowest singlet-sector excitation by DMRG (cached); ED cross-check for N <= 14."""
+    N, J2 = args
+    from scipy.sparse.linalg import eigsh
+
+    from sbpipe.frontends import dmrg_quimb as FQ
+    from sbpipe.symmetry import j2_sparse
+    t0 = time.time()
+    H = j1j2_chain(N, 1.0, J2)
+    Hm = FQ.pauli_to_mpo(H)
+    bd = (16, 32, 64, 128, 256) if N <= 24 else (16, 32, 64, 128)
+    g = FQ.ground_state(Hm, bond_dims=bd)
+    r = FQ.singlet_excitation(Hm, g["psi"], N, bond_dims=bd)
+    rec = dict(N=N, J2=J2, E0=g["E0"], E0_conv=g["E0_conv"], E1s=r["E1"], E1s_conv=r["E1_conv"],
+               j2=r["j2"], overlap_ref=r["overlap_ref"], history=r["history"], time=time.time() - t0)
+    if N <= ED_MAX_N:
+        w, _ = eigsh(H.to_sparse() + 2.0 * j2_sparse(N), k=3, which="SA", tol=1e-13, v0=np.ones(2 ** N))
+        w = np.sort(w)
+        rec["ed_E0"], rec["ed_E1s"] = float(w[0]), float(w[1])
+    with open(os.path.join(CACHE, _skey(N, J2) + ".json"), "w") as fh:
+        json.dump(rec, fh, default=_f)
+    return _skey(N, J2), time.time() - t0
+
+
+def _singlet_case(args):
+    N, J2, chi, eps = args
+    from sbpipe.symmetry import refine_spin, validate_spin
+    rec, est, ans, g = get_inputs(N, J2, chi)
+    with open(os.path.join(CACHE, _skey(N, J2) + ".json")) as fh:
+        sr = json.load(fh)
+    H = j1j2_chain(N, 1.0, J2)
+    est_s = replace(est, E1=sr["E1s"], E1_err=max(sr["E1s_conv"], 1e-10))
+    sv = ans.statevector
+    ans.statevector = None
+    row = dict(N=N, J2=J2, chi=chi, eps=eps, gamma=ans.gamma, gap_triplet=est.gap,
+               gap_singlet=sr["E1s"] - sr["E0"], j2_conv=sr["j2"])
+    cfg = Config(eps=eps, schedule="auto", order=2)
+    for name, e, fn in (("base", est, lambda: refine(H, est, ans, cfg)),
+                        ("spin", est_s, lambda: refine_spin(H, est_s, ans, cfg, model="pairs")),
+                        ("spin_hamming", est_s, lambda: refine_spin(H, est_s, ans, cfg, model="hamming"))):
+        try:
+            row[name] = fn().summary()
+        except (RuntimeError, ValueError, AssertionError) as err:
+            row[name] = None
+            row[name + "_error"] = str(err)
+    return row
+
+
+def _singlet_val_case(args):
+    N, J2, eps, sched = args
+    from sbpipe.symmetry import refine_spin, validate_spin
+    rec, est, ans, g = get_inputs(N, J2, 2)
+    with open(os.path.join(CACHE, _skey(N, J2) + ".json")) as fh:
+        sr = json.load(fh)
+    H = j1j2_chain(N, 1.0, J2)
+    est_s = replace(est, E1=sr["E1s"], E1_err=max(sr["E1s_conv"], 1e-10))
+    plan = refine_spin(H, est_s, ans, Config(eps=eps, schedule=sched, order=2))
+    t0 = time.time()
+    sim = validate_spin(plan, H, ans, g)
+    return dict(N=N, J2=J2, eps=eps, schedule=sched, plan=plan.summary(), sim=sim, sim_time=time.time() - t0)
+
+
+def run_singlet():
+    todo = [(N, J2) for J2 in J2S for N in sorted(N_INPUTS, reverse=True)]
+    todo = [t for t in todo if not os.path.exists(os.path.join(CACHE, _skey(*t) + ".json"))]
+    with ProcessPoolExecutor(JOBS) as ex:
+        for k, dt in ex.map(compute_singlet, todo):
+            print(f"[singlet gap] {k} {dt:.0f}s", flush=True)
+    cases = [(N, J2, chi, eps) for N in N_INPUTS for J2 in J2S for chi in (2, 4, 8) for eps in (1e-2, 1e-3)]
+    with ProcessPoolExecutor(JOBS) as ex:
+        plans = list(ex.map(_singlet_case, cases))
+    vcases = [(N, J2, eps, s) for N in (8, 10, 12, 14) for J2 in J2S for eps in (1e-2, 1e-3)
+              for s in ("dyadic", "optimized")]
+    with ProcessPoolExecutor(JOBS) as ex:
+        val = list(ex.map(_singlet_val_case, vcases))
+    dump("singlet.json", dict(plans=plans, validate=val))
+
+
 if __name__ == "__main__":
     what = sys.argv[1] if len(sys.argv) > 1 else "all"
     steps = dict(inputs=run_inputs, validate=run_validate, scaling=run_scaling,
                  sensitivity=run_sensitivity, ansatz=run_ansatz, oracle=run_oracle,
-                 gapsweep=run_gapsweep, eckart=run_eckart, qsvt=run_qsvt, mps=run_mps, ladder=run_ladder)
+                 gapsweep=run_gapsweep, eckart=run_eckart, qsvt=run_qsvt, mps=run_mps, ladder=run_ladder,
+                 singlet=run_singlet)
     for k in (steps if what == "all" else what.split(",")):
         t = time.time()
         steps[k]()
