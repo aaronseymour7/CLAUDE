@@ -155,6 +155,21 @@ the \emph{stop band} $[\Delta,1]$, $\Delta=(E_1^{\rm est}-\delta E_1-s)/W$.
 The ansatz enters through $\gamma$, a lower estimate of its weight on the ground space, and through the
 gate cost of the circuit that prepares it. A statevector is needed only for validation.
 
+\emph{Overlap from the trial energy.} The estimate $\gamma$ can be replaced by a lower bound that needs
+only the energy $\langle H\rangle$ of the trial state, which is known exactly for an MPS. If every level
+outside the ground space is at least $E_1$, then $\langle H\rangle\ge\gamma E_0+(1-\gamma)E_1$, hence
+\begin{equation}
+1-\gamma\le\frac{\langle H\rangle-E_0}{E_1-E_0}
+\label{eq:eckart}
+\end{equation}
+(an Eckart-type inequality). The right-hand side decreases in both $E_0$ and $E_1$, so it is evaluated at
+the worst case of the assumed intervals, $E_0-\delta E_0$ and $E_1-\delta E_1$ (\texttt{eckart\_gamma}). The
+result can be zero or negative for a poor trial state, in which case it certifies nothing. Using
+Eq.~\eqref{eq:eckart} removes the overlap condition from the certificate; the conditions on the interval for
+$E_0$ and on the gap remain. It needs $\langle H\rangle$ of the state the circuit actually prepares, so for
+an MPS we recompute it from the returned tensors rather than from the DMRG sweep energy, which refers to the
+two-site optimum before truncation.
+
 \subsection{The filter and three schedules}
 
 One SBC pulse~\cite{Stetcu2023} applies $\mathsf H_a\,e^{-itH_s\otimes Z_a}\,R_z^{(a)}(2\phi)\,\mathsf H_a$
@@ -283,8 +298,8 @@ All-to-all connectivity and the Clifford+$R_z$ gate set are assumed. A term $cP\
 $|P|=w$ is a weight-$(w+1)$ Pauli rotation: $2w$ CNOTs in a ladder and one $R_z$. A Lie step costs one
 rotation per term; $k$ Strang steps cost $k(2\Gamma-2)+1$ rotations for $\Gamma$ terms because the two
 middle half-steps and the outer half-steps of adjacent steps merge. Each pulse adds one ancilla $R_z$.
-An arbitrary rotation at accuracy $\delta$ costs $3\log_2(1/\delta)$ $T$ gates, the leading term of
-Ross--Selinger synthesis~\cite{Ross2016}. The cost of one attempt is the trial circuit plus the
+An arbitrary rotation at accuracy $\delta$ costs $3\log_2(1/\delta)$ $T$ gates, the typical leading term
+of Ross--Selinger synthesis~\cite{Ross2016} (the older Selinger algorithm needs $4\log_2(1/\delta)$). The cost of one attempt is the trial circuit plus the
 filter, and the expected cost per success is the attempt cost divided by the certified lower bound
 $(\sqrt{p_g}-\epsilon_U)^2$ on the success probability of the implemented circuit from
 Theorem~\ref{thm:cert} (repeat-until-success; an early-abort protocol that measures after each pulse
@@ -297,6 +312,40 @@ accuracy $\delta$. The ladder CNOT count is an upper bound: qiskit's
 synthesis shares CNOTs between the $XX$, $YY$, $ZZ$ terms of a bond and needs 8 instead of 12 per
 controlled bond per Lie step (checked in the test suite), so CNOT numbers below can be read as upper
 bounds that a compiler lowers by about one third.
+
+
+\subsection{An optional total-spin projection stage}
+\label{sec:spin}
+
+SBC first remove unwanted quantum numbers and only then filter in energy, because projecting out low-lying
+states of other symmetry enlarges the gap that the energy filter has to resolve~\cite{Stetcu2023}. For an
+SU(2)-symmetric $H$ and an even number $N$ of spins, $J^2=(\sum_i\mathbf S_i)^2$ commutes with $H$ and has the
+eigenvalues $k=j(j+1)$, $j=0,\dots,N/2$. All $k$ are even integers, and for even $k$
+\begin{equation}
+\prod_{r=0}^{R-1}\cos\frac{\pi k}{2^{r+2}}=\frac{\sin(\pi k/2)}{2^R\sin(\pi k/2^{R+1})},
+\label{eq:jladder}
+\end{equation}
+which vanishes unless $2^{R+1}$ divides $k$. With $R$ the smallest integer such that $2^{R+1}>W_O=\tfrac N2(\tfrac N2+1)$,
+only $k=0$ survives, where the product is 1. So $R$ pulses with times $t_r=\pi/2^{r+2}$ (operator $J^2$,
+phases 0) remove every $j>0$ exactly and leave the $j=0$ sector untouched ($R=9$ for $N=48$).
+
+\emph{Certificate.} The two stages act on commuting operators, so the product $F_O(J^2)F_H(H)$ multiplies a
+component $(E,j)$ by $F_O(j(j+1))F_H(E)$. Components with $j>0$ vanish, the ground state keeps $|F_H(E_0)|\ge F_{\rm pass}$
+because $F_O(0)=1$, and the remaining components have energies in the stop band of the singlet sector. Theorem~\ref{thm:cert}
+therefore holds unchanged with $E_1$ the lowest level \emph{of the $J=0$ sector}, $\eta$ and $F_{\rm pass}$ those of the energy
+stage, and $\epsilon_U$ the sum of the implementation errors of both stages. The extra assumptions are that $H$ commutes
+with $J^2$, that the ground space lies in $J=0$, and that the singlet gap is correct.
+
+\emph{Implementation.} $J^2=S_x^2+S_y^2+S_z^2$ with $S_a=\tfrac12\sum_i\sigma^a_i$, and
+$S_a^2=N/4+\tfrac12\sum_{i<j}\sigma^a_i\sigma^a_j$ is a sum of commuting two-body terms, so $e^{-i\tau S_a^2}$ is implemented exactly
+and only the three non-commuting groups are Trotterized. The commutator constants of Sec.~\ref{sec:pipeline}C are evaluated exactly:
+the $S_a$ act block-diagonally on the spin-$j$ irreducible representations, so the norm of any polynomial in them is the maximum over
+$j=0,\dots,N/2$ of the norm of a matrix of dimension $2j+1\le N+1$. We compare two cost models for one controlled layer
+$e^{-i\tau S_a^2\otimes Z_a}$: \emph{pairs}, $N(N-1)/2$ weight-3 Pauli rotations (4 CNOTs and one rotation each, as in the ladder
+model above), and \emph{Hamming}, a Hamming-weight counter into $\lceil\log_2(N+1)\rceil$ ancillas ($2(N-b)$ Toffolis, 6 CNOTs and
+4 $T$ gates each) followed by the phase $e^{-i\tau(N-2w)^2Z_a/4}$, which is quadratic in the bits of the weight $w$. A Lie step has three layers
+and $k$ Strang steps $4k+1$. The Trotter share of the error budget is split between the two stages on a grid and the cheapest split is kept.
+The Hamming model is a transparent but unoptimized estimate; both models count only the layers, not basis changes, which are Clifford.
 
 %=====================================================================================================
 \section{Application: $J_1$--$J_2$ chain with DMRG}
@@ -327,7 +376,9 @@ overlap with the reference MPS. This is an estimate of the overlap with the exac
 lower bound on it, so for $N>14$ the certificate is equally conditional on $\gamma$. An MPS of bond dimension $2^b$ is exactly a staircase of $N-b$ unitaries
 on $b+1$ qubits; we cost each with the quantum Shannon decomposition bound
 $\frac{23}{48}4^n-\frac32 2^n+\frac43$ CNOTs (3, 20, 100 for $n=2,3,4$)~\cite{Shende2006} and $4^n-1$
-rotations.
+rotations. Each staircase step is really an isometry (one of its $b+1$ inputs is a fresh $\ket0$), which could in principle
+be cheaper than a unitary; Appendix~\ref{app:mps} shows that a parameter-count lower bound allows at most a factor
+\mpsMaxSaving{} over this cost and that Qiskit's generic isometry synthesis is not cheaper than its unitary synthesis.
 
 For $N\le14$ we compare with exact diagonalization (ED). DMRG reproduces $E_0$ to $\dmrgEzeroErr$,
 the first excited level of any symmetry to $\dmrgEoneErr$ (so the first excitation is the triplet in
@@ -640,6 +691,31 @@ not bound the ground-space weight by $D^2$; this case is outside the theorem.) T
 success probability is $\norm{\tilde v}^2\ge(\norm v-\epsilon_U)^2\ge(\sqrt{p_g}-\epsilon_U)^2$. For
 the energy, the normalized state has weight at least $1-D^2$ on the ground space and at most $D^2$ on
 levels $\le E_{\rm top}$, so $\langle H\rangle-E_0\le(E_{\rm top}-E_0)D^2$. \qed
+
+\section{Costing the MPS staircase}
+\label{app:mps}
+
+Table~\ref{tab:mps} compares, for one staircase step on $n=b+1$ qubits ($\chi=2^b$), the quantum Shannon decomposition (QSD) bound used in
+the main text, the CNOT count that Qiskit (\texttt{transpile}, basis \texttt{cx},\texttt{u}) compiles for a random $n$-qubit unitary and for its
+generic isometry synthesis of the $b\to n$ qubit isometry, and parameter-counting lower bounds. A circuit with $k$ CNOTs and arbitrary
+single-qubit gates reaches at most $3n+4k$ parameters, so a unitary needs $\lceil(4^n-3n-1)/4\rceil$ CNOTs and an isometry from $b$ to $b+1$ qubits,
+a manifold of real dimension $3\cdot4^b$ (minus one for the global phase), needs $\lceil(3\cdot4^b-3n-1)/4\rceil$. The QSD bound
+overestimates the compiled unitary count by at most \mpsQsdOverQiskit$\times$, and Qiskit's generic isometry needs at least \mpsIsoOverUni$\times$ the CNOTs of the unitary.
+The lower bound leaves room for a factor up to \mpsMaxSaving{} over the cost we use, which would only make direct MPS preparation, the competitor of the filter
+in Sec.~\ref{sec:application}, cheaper; the filtered plans are dominated by the filter, not by the trial circuit.
+
+\begin{table}[t]
+\caption{CNOTs of one MPS-staircase step. ``QSD'': bound used here. ``Qiskit U / iso'': compiled random unitary and generic isometry.
+``LB U / iso'': parameter-count lower bounds. Source: \texttt{results/mps\_circuits.json}.}
+\label{tab:mps}
+\begin{ruledtabular}
+\begin{tabular}{rrrrrrr}
+$\chi$ & $n$ & QSD & Qiskit U & Qiskit iso & LB U & LB iso\\
+\midrule
+\input{generated/tab_mps.tex}
+\end{tabular}
+\end{ruledtabular}
+\end{table}
 
 \section{Reproducing the results}
 \label{app:repro}
