@@ -1,0 +1,38 @@
+[
+ {
+  "chi": 2,
+  "n": 2,
+  "qsd_bound": 3,
+  "qiskit_unitary": 3,
+  "qiskit_isometry": 3,
+  "lb_unitary": 3,
+  "lb_isometry": 2
+ },
+ {
+  "chi": 4,
+  "n": 3,
+  "qsd_bound": 20,
+  "qiskit_unitary": 19,
+  "qiskit_isometry": 24,
+  "lb_unitary": 14,
+  "lb_isometry": 10
+ },
+ {
+  "chi": 8,
+  "n": 4,
+  "qsd_bound": 100,
+  "qiskit_unitary": 95,
+  "qiskit_isometry": 122,
+  "lb_unitary": 61,
+  "lb_isometry": 45
+ },
+ {
+  "chi": 16,
+  "n": 5,
+  "qsd_bound": 444,
+  "qiskit_unitary": 423,
+  "qiskit_isometry": 546,
+  "lb_unitary": 252,
+  "lb_isometry": 189
+ }
+]

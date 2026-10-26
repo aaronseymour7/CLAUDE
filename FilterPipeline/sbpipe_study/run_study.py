@@ -6,6 +6,11 @@
     python sbpipe_study/run_study.py sensitivity # C: wrong / conservative energy estimates
     python sbpipe_study/run_study.py ansatz      # D: trial bond dimension vs total cost
     python sbpipe_study/run_study.py oracle      # E: smallest step count that actually meets eps
+    python sbpipe_study/run_study.py gapsweep    # F: gap over-/under-estimation on all N <= 14 instances
+    python sbpipe_study/run_study.py eckart      # G: overlap lower bound from the trial energy (Eckart)
+    python sbpipe_study/run_study.py qsvt        # H: T-count model of a qubitization/QSVT filter
+    python sbpipe_study/run_study.py mps         # I: MPS-staircase CNOT costing (QSD bound, qiskit, isometry bound)
+    python sbpipe_study/run_study.py ladder      # J: two-leg Heisenberg ladder (inputs, certificate, plans)
     python sbpipe_study/run_study.py all
 
 Every number in the paper is read from results/*.json written here.
@@ -27,7 +32,7 @@ from dataclasses import asdict, replace
 import numpy as np
 
 import sbpipe
-from sbpipe import Ansatz, Config, EnergyEstimates, j1j2_chain, refine, validate
+from sbpipe import Ansatz, Config, EnergyEstimates, eckart_gamma, heisenberg_ladder, j1j2_chain, refine, validate
 from sbpipe.simulate import filter_trotter, state_metrics
 
 RES = os.path.join(HERE, "results")
@@ -313,10 +318,224 @@ def run_oracle():
     dump("oracle.json", out)
 
 
+# ----------------------------------------------------------------------------- F: gap sweep, all instances
+def _gap_case(args):
+    N, J2, eps, sched, f = args
+    from scipy.sparse.linalg import eigsh  # noqa: F401  (ground state comes from the cache)
+
+    from sbpipe.simulate import filter_exact
+    rec, est, ans, g = get_inputs(N, J2)
+    H = j1j2_chain(N, 1.0, J2)
+    e = replace(est, E1=est.E0 + f * est.gap, E1_err=0.0)
+    base = dict(N=N, J2=J2, eps=eps, schedule=sched, f=f)
+    try:
+        plan = refine(H, e, ans, Config(eps=eps, schedule=sched, order=2))
+    except (RuntimeError, ValueError) as err:
+        return dict(base, plan=None, error=str(err))
+    d = plan.design
+    v = filter_exact(plan.H_scaled.to_sparse(), ans.statevector, d.times, d.phases)
+    m = state_metrics(v, g)
+    return dict(base, plan=plan.summary(), infidelity_exact=m["infidelity"], p_succ_exact=m["p_succ"],
+                leak=plan.cert["leak"], expected_cnot=plan.resources["expected_cnot"])
+
+
+def run_gapsweep():
+    """Exact (un-Trotterised) filter on the true trial state with an assumed gap f * true gap. The
+    Trotter error is excluded on purpose: the question is whether the filter's leakage target survives
+    a wrong E1."""
+    fs = (0.5, 0.7, 0.85, 1.0, 1.1, 1.25, 1.5, 2.0, 3.0)
+    cases = [(N, J2, eps, s, f) for N in N_VAL for J2 in J2S for eps in (1e-2, 1e-3)
+             for s in ("dyadic", "optimized") for f in fs]
+    with ProcessPoolExecutor(JOBS) as ex:
+        out = list(ex.map(_gap_case, cases))
+    dump("gapsweep.json", out)
+
+
+# ----------------------------------------------------------------------------- G: Eckart overlap bound
+def _eckart_case(args):
+    N, J2, chi, eps = args
+    rec, est, ans, _ = get_inputs(N, J2, chi)
+    ans.statevector = None
+    g_eck = eckart_gamma(ans.meta["E_trial"], est)
+    out = dict(N=N, J2=J2, chi=chi, eps=eps, gamma_ref=ans.gamma, gamma_eckart=g_eck,
+               E_trial=ans.meta["E_trial"], E0=est.E0, gap=est.gap,
+               trial_cert_alone=bool(1.0 - g_eck <= eps))
+    if g_eck > 0:
+        a = replace(ans, gamma=g_eck)
+        try:
+            plan = refine(j1j2_chain(N, 1.0, J2), est, a, Config(eps=eps, schedule="auto", order=2))
+            out["plan"] = plan.summary()
+        except (RuntimeError, ValueError) as e:
+            out["plan"] = None
+            out["error"] = str(e)
+    else:
+        out["plan"] = None
+        out["error"] = "Eckart bound is not positive"
+    try:        # reference plan with the DMRG overlap estimate
+        plan = refine(j1j2_chain(N, 1.0, J2), est, ans, Config(eps=eps, schedule="auto", order=2))
+        out["plan_ref"] = plan.summary()
+    except (RuntimeError, ValueError):
+        out["plan_ref"] = None
+    return out
+
+
+def run_eckart():
+    cases = [(N, J2, chi, 1e-2) for N in (16, 24, 32, 40, 48) for J2 in J2S for chi in (2, 4, 8)]
+    cases += [(N, J2, chi, 1e-2) for N in (8, 10, 12, 14) for J2 in J2S for chi in (2, 4, 8)]
+    with ProcessPoolExecutor(JOBS) as ex:
+        out = list(ex.map(_eckart_case, cases))
+    dump("eckart.json", out)
+
+
+# ----------------------------------------------------------------------------- H: QSVT / qubitization model
+def _qsvt_case(args):
+    N, J2, chi, eps = args
+    from sbpipe.design import eta_target
+    from sbpipe.qsvt import qsvt_filter_cost
+    rec, est, ans, _ = get_inputs(N, J2, chi)
+    H = j1j2_chain(N, 1.0, J2)
+    ans.statevector = None
+    plan = refine(H, est, ans, Config(eps=eps, schedule="auto", order=2))
+    if plan.design.m == 0:
+        return dict(N=N, J2=J2, chi=chi, eps=eps, sbc=plan.summary(), qsvt=None)
+    eta_q = eta_target(0.5 * eps, ans.gamma)         # same leakage share as the first scanned SBC plan
+    q = qsvt_filter_cost(H, est.gap, ans.gamma, eta_q, eps, ans.cost)
+    return dict(N=N, J2=J2, chi=chi, eps=eps, sbc=plan.summary(), qsvt=q, eta_q=eta_q, gap=est.gap)
+
+
+def run_qsvt():
+    cases = [(N, J2, chi, 1e-2) for N in (16, 32, 48) for J2 in J2S for chi in (2, 4)]
+    with ProcessPoolExecutor(JOBS) as ex:
+        out = list(ex.map(_qsvt_case, cases))
+    dump("qsvt.json", out)
+
+
+# ----------------------------------------------------------------------------- I: MPS circuit costing
+def run_mps():
+    """CNOT counts of one staircase step (a (b+1)-qubit unitary, b = log2 chi): the QSD bound used by the
+    pipeline, qiskit's compiled count for a random unitary and for qiskit's generic isometry, and a
+    parameter-counting lower bound for any isometry from b to b+1 qubits (Stiefel manifold of real
+    dimension 3 * 4^b; one CNOT plus single-qubit gates adds at most 4 parameters)."""
+    from qiskit import QuantumCircuit, transpile
+    from qiskit.circuit.library import Isometry
+    from scipy.stats import unitary_group
+
+    def cx(c):
+        return transpile(c, basis_gates=["cx", "u"], optimization_level=1, seed_transpiler=0).count_ops().get("cx", 0)
+
+    out = []
+    for b in (1, 2, 3, 4):
+        n = b + 1
+        U = unitary_group.rvs(2 ** n, random_state=b)
+        qu = QuantumCircuit(n)
+        qu.unitary(U, list(range(n)))
+        qi = QuantumCircuit(n)
+        qi.append(Isometry(U[:, :2 ** b], 0, 0), list(range(n)))
+        out.append(dict(chi=2 ** b, n=n, qsd_bound=round((23 / 48) * 4 ** n - 1.5 * 2 ** n + 4 / 3),
+                        qiskit_unitary=cx(qu), qiskit_isometry=cx(qi),
+                        lb_unitary=math.ceil((4 ** n - 3 * n - 1) / 4),
+                        lb_isometry=math.ceil((3 * 4 ** b - 3 * n) / 4)))
+        print(f"[I] {out[-1]}", flush=True)
+    dump("mps_circuits.json", out)
+
+
+# ----------------------------------------------------------------------------- J: Heisenberg ladder
+LADDER_L_ED = [4, 5, 6, 7]
+LADDER_L = LADDER_L_ED + [8, 12, 16]
+LADDER_JR = [1.0, 0.5]
+LADDER_CHIS = [1, 2, 4, 8, 16]
+
+
+def _lkey(L, Jr):
+    return f"lad_L{L}_Jr{Jr:g}"
+
+
+def compute_ladder_inputs(args):
+    L, Jr = args
+    from scipy.sparse.linalg import eigsh
+
+    from sbpipe.frontends.dmrg_quimb import dmrg_inputs
+    t0 = time.time()
+    H = heisenberg_ladder(L, 1.0, Jr)
+    N = 2 * L
+    bd = (16, 32, 64, 128, 256) if N <= 24 else (16, 32, 64, 128)
+    est, ans_list, ex = dmrg_inputs(H, chi_trial=LADDER_CHIS, bond_dims=bd)
+    rec = dict(L=L, N=N, Jr=Jr, est=asdict(est), dmrg_time=time.time() - t0,
+               ref_history=ex["ref_history"], E1_history=ex["E1_history"],
+               ansatz={a.meta["chi"]: dict(gamma=a.gamma, cost=a.cost, meta=a.meta) for a in ans_list})
+    if N <= ED_MAX_N:
+        Hsp = H.to_sparse()
+        w, v = eigsh(Hsp, k=8, which="SA", tol=1e-13, v0=np.ones(2 ** N))
+        o = np.argsort(w)
+        w, v = w[o], v[:, o]
+        g = v[:, 0]
+        rec["ed"] = dict(E0=float(w[0]), E1=float(w[np.argmax(w > w[0] + 1e-8)]),
+                         gamma={a.meta["chi"]: float(abs(np.vdot(g, a.statevector)) ** 2) for a in ans_list})
+        np.savez(os.path.join(CACHE, _lkey(L, Jr) + ".npz"), ground=g,
+                 **{f"trial_chi{a.meta['chi']}": a.statevector for a in ans_list})
+    with open(os.path.join(CACHE, _lkey(L, Jr) + ".json"), "w") as fh:
+        json.dump(rec, fh, default=_f)
+    return _lkey(L, Jr), time.time() - t0
+
+
+def get_ladder_inputs(L, Jr, chi):
+    with open(os.path.join(CACHE, _lkey(L, Jr) + ".json")) as fh:
+        rec = json.load(fh)
+    est = EnergyEstimates(**rec["est"])
+    a = rec["ansatz"][str(chi)]
+    sv, g = None, None
+    p = os.path.join(CACHE, _lkey(L, Jr) + ".npz")
+    if os.path.exists(p):
+        z = np.load(p)
+        sv, g = z[f"trial_chi{chi}"], z["ground"]
+    return rec, est, Ansatz(gamma=a["gamma"], statevector=sv, cost=a["cost"], name=f"chi={chi}", meta=a["meta"]), g
+
+
+def _ladder_case(args):
+    L, Jr = args
+    H = heisenberg_ladder(L, 1.0, Jr)
+    rec, est, _, _ = get_ladder_inputs(L, Jr, 1)
+    row = dict(L=L, N=2 * L, Jr=Jr, E0=est.E0, gap=est.gap, plans={}, validate={})
+    if "ed" in rec:
+        row.update(ed_E0=rec["ed"]["E0"], ed_E1=rec["ed"]["E1"])
+    for chi in LADDER_CHIS:
+        _, _, ans, g = get_ladder_inputs(L, Jr, chi)
+        row["plans"][chi] = dict(gamma=ans.gamma)
+        sv = ans.statevector
+        ans.statevector = None
+        try:
+            plan = refine(H, est, ans, Config(eps=1e-2, schedule="auto", order=2))
+            row["plans"][chi]["plan"] = plan.summary()
+        except (RuntimeError, ValueError) as e:
+            row["plans"][chi]["error"] = str(e)
+        if chi == 2 and sv is not None:          # certificate check on the chi=2 trial state
+            ans.statevector = sv
+            for sched in ("dyadic", "optimized"):
+                try:
+                    pl = refine(H, est, ans, Config(eps=1e-2, schedule=sched, order=2))
+                    row["validate"][sched] = dict(plan=pl.summary(), sim=validate(pl, H, ans, g))
+                except (RuntimeError, ValueError) as e:
+                    row["validate"][sched] = dict(error=str(e))
+    return row
+
+
+def run_ladder():
+    todo = [(L, Jr) for Jr in LADDER_JR for L in sorted(LADDER_L, reverse=True)]
+    todo = [t for t in todo if not os.path.exists(os.path.join(CACHE, _lkey(*t) + ".json"))]
+    with ProcessPoolExecutor(JOBS) as ex:
+        for k, dt in ex.map(compute_ladder_inputs, todo):
+            print(f"[ladder inputs] {k} {dt:.0f}s", flush=True)
+    cases = [(L, Jr) for Jr in LADDER_JR for L in LADDER_L]
+    with ProcessPoolExecutor(JOBS) as ex:
+        out = list(ex.map(_ladder_case, cases))
+    dump("ladder.json", out)
+
+
 if __name__ == "__main__":
     what = sys.argv[1] if len(sys.argv) > 1 else "all"
     steps = dict(inputs=run_inputs, validate=run_validate, scaling=run_scaling,
-                 sensitivity=run_sensitivity, ansatz=run_ansatz, oracle=run_oracle)
+                 sensitivity=run_sensitivity, ansatz=run_ansatz, oracle=run_oracle,
+                 gapsweep=run_gapsweep, eckart=run_eckart, qsvt=run_qsvt, mps=run_mps, ladder=run_ladder)
     for k in (steps if what == "all" else what.split(",")):
         t = time.time()
         steps[k]()

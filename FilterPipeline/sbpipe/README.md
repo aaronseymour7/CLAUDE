@@ -45,13 +45,14 @@ ans = sbpipe.Ansatz(gamma=0.9, cost={"cnot": 120, "rotations": 300}, statevector
 
 | module | content |
 |--|--|
-| `pauli.py` | `PauliSum`, Pauli products, local exact operator norms, statevector action |
-| `models.py` | `j1j2_chain`, rigorous Weyl spectral bounds for any grouped `PauliSum` |
-| `inputs.py` | `EnergyEstimates`, `Ansatz` |
+| `pauli.py` | `PauliSum`, Pauli products, operator-norm upper bounds on small supports, statevector action |
+| `models.py` | `j1j2_chain`, `heisenberg_ladder`, rigorous Weyl spectral bounds for any grouped `PauliSum` |
+| `inputs.py` | `EnergyEstimates`, `Ansatz`, `eckart_gamma` (lower bound on the trial overlap from its energy) |
 | `design.py` | filter schedules: `uniform` and `dyadic` (closed-form certificates), `optimized` (SLSQP design + interval certificate from `floor.py`); `Config(schedule="auto")` keeps the cheaper of dyadic and optimized |
-| `trotter.py` | exact local commutator constants α₁ (Childs et al. Prop. 15) and β₂ (Prop. 16), product formulas |
+| `trotter.py` | local commutator constants α₁ (Childs et al. Prop. 15) and β₂ (Prop. 16): dense norms on supports of up to 10 qubits (with a 1e-11 floating-point margin), triangle inequality beyond; product formulas |
 | `pipeline.py` | `Config`, `refine`, `validate`, `certificate` |
 | `resources.py` | gate-count model (`GateModel`) |
+| `qsvt.py` | leading-order T-count model of a qubitization/QSVT filter, for comparison only |
 | `simulate.py` | exact and Trotterized post-selected filter on a statevector |
 | `frontends/dmrg_quimb.py` | DMRG E0, E1 (symmetry-sector penalty), reference MPS, bond-dimension-χ trial |
 
@@ -63,7 +64,9 @@ it is cheaper. Synthesis error of the trial circuit's rotations is included in t
 The certificate is a theorem **given the inputs**: E0 lies in [E0 − dE0, E0 + dE0], every other level the
 trial state touches is ≥ E1 − dE1, the spectrum is ≤ E_max (automatic with the Weyl bound) and the trial
 state's ground-space weight is ≥ gamma. A DMRG front end makes all of these plausible but does not prove
-them (DMRG E1 is an upper bound, and gamma is an overlap with a DMRG reference). The study in
+them (DMRG E1 is an upper bound, and gamma is an overlap with a DMRG reference). `eckart_gamma(E_trial, est)`
+replaces the overlap estimate by a lower bound computed from the trial state's energy and the same E0 and
+E1 assumptions, which leaves only the E0 interval and the gap as assumptions. The study in
 `../sbpipe_study/` measures what happens when they are wrong.
 
 ## Tests

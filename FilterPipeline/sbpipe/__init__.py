@@ -17,11 +17,11 @@ try:                                    # numpy may already be loaded: limit its
 except ImportError:
     pass
 
-from .inputs import Ansatz, EnergyEstimates
-from .models import j1j2_chain, weyl_bounds
+from .inputs import Ansatz, EnergyEstimates, eckart_gamma
+from .models import heisenberg_ladder, j1j2_chain, weyl_bounds
 from .pauli import PauliSum
 from .pipeline import Config, Plan, certificate, refine, validate
 from .resources import GateModel
 
-__all__ = ["Ansatz", "EnergyEstimates", "PauliSum", "j1j2_chain", "weyl_bounds", "Config",
+__all__ = ["Ansatz", "EnergyEstimates", "eckart_gamma", "PauliSum", "j1j2_chain", "heisenberg_ladder", "weyl_bounds", "Config",
            "Plan", "refine", "validate", "certificate", "GateModel"]

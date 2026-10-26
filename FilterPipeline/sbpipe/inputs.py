@@ -77,3 +77,20 @@ class Ansatz:
         if self.statevector is not None:
             v = np.asarray(self.statevector, dtype=complex).reshape(-1)
             self.statevector = v / np.linalg.norm(v)
+
+
+def eckart_gamma(E_trial: float, est: "EnergyEstimates") -> float:
+    """Lower bound on the ground-space weight of a trial state from its energy alone.
+
+    If every level outside the ground space is >= E1 then <H> >= gamma E0 + (1 - gamma) E1, hence
+        1 - gamma <= (<H> - E0) / (E1 - E0)                                    (Eckart / Temple type).
+    The ratio decreases in E0 and in E1, so the bound is evaluated at the worst case of the assumed
+    intervals, E0 = E0 - E0_err and E1 = E1 - E1_err. Needs only <H> of the trial state (known
+    exactly for an MPS), not an overlap with a reference state, so it removes the overlap condition
+    of the certificate (the E0 interval and the gap condition remain). May return <= 0 for a poor
+    trial state, in which case it certifies nothing."""
+    E0 = est.E0 - est.E0_err
+    E1 = est.E1 - est.E1_err
+    if E1 <= E0:
+        return 0.0
+    return 1.0 - (E_trial - E0) / (E1 - E0)

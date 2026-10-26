@@ -11,9 +11,10 @@ so k steps over time t give alpha1 t^2/(2k) and beta2 t^3/k^2. Controlling every
 ancilla Z (H_a -> H_a (x) Z) leaves both constants unchanged because Z^2 = 1. Identity terms
 commute with everything and are dropped.
 
-Every norm is evaluated on the few qubits the commutator acts on: exactly (dense) when that
-support has <= 10 qubits, otherwise by the triangle inequality, so the constants are rigorous
-upper bounds in every case and the cost is linear in the number of terms for local H.
+Every norm is evaluated on the few qubits the commutator acts on: by dense diagonalisation (with a
+relative 1e-11 margin for floating-point error) when that support has <= 10 qubits, otherwise by the
+triangle inequality. No iterative eigenvalue estimate is used, so the constants never underestimate
+and the cost is linear in the number of terms for local H.
 Both term orders are evaluated and the larger value is returned (the bound then holds for
 either order a compiler might realise).
 """

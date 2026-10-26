@@ -423,8 +423,207 @@ def oracle():
         fh.write("\n".join(lines) + "\n")
 
 
+# ----------------------------------------------------------------------------- gap sweep (all instances)
+def gapsweep():
+    G = load("gapsweep.json")
+    if G is None:
+        return
+    inst = sorted({(r["N"], r["J2"]) for r in G})
+    macro("nGapInst", len(inst))
+    macro("nGapSweep", len([r for r in G if r["plan"] is not None]))
+    macro("nGapSweepNoPlan", len([r for r in G if r["plan"] is None]))
+    ok = [r for r in G if r["plan"] is not None]
+    for r in ok:
+        r["ratio"] = r["infidelity_exact"] / r["eps"]
+        r["miss"] = r["infidelity_exact"] > r["eps"]
+        r["leak_violated"] = r["infidelity_exact"] > r["leak"] * (1 + 1e-6) + 1e-14
+    base = {(r["N"], r["J2"], r["eps"], r["schedule"]): r for r in ok if r["f"] == 1.0}
+    for r in ok:
+        b = base.get((r["N"], r["J2"], r["eps"], r["schedule"]))
+        r["cost_ratio"] = r["expected_cnot"] / b["expected_cnot"] if b else float("nan")
+    fs = sorted({r["f"] for r in ok})
+    macro("nGapMissLeOne", sum(r["miss"] for r in ok if r["f"] <= 1.0))
+    macro("nGapLeakViolLeOne", sum(r["leak_violated"] for r in ok if r["f"] <= 1.0))
+    for f, tag in ((1.1, "OneOne"), (1.25, "OneTwoFive"), (1.5, "OneFive"), (2.0, "Two"), (3.0, "Three")):
+        rows = [r for r in ok if r["f"] == f]
+        macro(f"gapMissFrac{tag}", f"{100 * np.mean([r['miss'] for r in rows]):.0f}" if rows else "--")
+    first = {}
+    for s_ in ("dyadic", "optimized"):
+        miss = [r["f"] for r in ok if r["schedule"] == s_ and r["miss"]]
+        first[s_] = min(miss) if miss else None
+        macro(f"gapFirstMiss{s_.capitalize()}", f"{first[s_]:g}" if miss else "none")
+    for f, tag in ((0.5, "Half"), (0.7, "Sev")):
+        c = [r["cost_ratio"] for r in ok if r["f"] == f and np.isfinite(r["cost_ratio"])]
+        macro(f"gapCostMed{tag}", f"{np.median(c):.1f}" if c else "--")
+        macro(f"gapCostMax{tag}", f"{max(c):.1f}" if c else "--")
+    worst = max(ok, key=lambda r: r["ratio"])
+    macro("gapSweepWorstRatio", f"${sci(worst['ratio'])}$")
+    macro("gapSweepWorstF", f"{worst['f']:g}")
+
+    lines = []
+    for f in fs:
+        cells = []
+        for eps in (1e-2, 1e-3):
+            for s_ in ("dyadic", "optimized"):
+                rows = [r for r in ok if r["f"] == f and r["eps"] == eps and r["schedule"] == s_]
+                if not rows:
+                    cells.append("--")
+                    continue
+                k = sum(r["miss"] for r in rows)
+                cells.append(f"{k}/{len(rows)} (${sci(max(r['ratio'] for r in rows))}$)")
+        lines.append(f"{f:g} & " + " & ".join(cells) + " \\\\")
+    with open(os.path.join(GEN, "tab_gapsweep.tex"), "w") as fh:
+        fh.write("\n".join(lines) + "\n")
+
+    fig, ax = plt.subplots(1, 2, figsize=(6.8, 2.6), sharey=True)
+    for k, eps in enumerate((1e-2, 1e-3)):
+        a = ax[k]
+        for s_ in ("dyadic", "optimized"):
+            for r in [r for r in ok if r["eps"] == eps and r["schedule"] == s_]:
+                x = r["f"] * (1.012 if s_ == "optimized" else 0.988)
+                a.plot(x, max(r["ratio"], 1e-6), ls="none", marker="o" if s_ == "optimized" else "s",
+                       mfc=SCHED_COL[s_] if s_ == "optimized" else "white", mew=0.9, ms=3.5,
+                       color=SCHED_COL[s_], alpha=0.75)
+        a.axhline(1.0, color=INK2, lw=0.8, ls="--")
+        a.axvline(1.0, color=INK2, lw=0.6, ls=":")
+        a.set_xscale("log"); a.set_yscale("log")
+        a.set_xticks([0.5, 1, 2, 3]); a.set_xticklabels(["0.5", "1", "2", "3"]); a.minorticks_off()
+        a.set_xlabel("assumed gap / true gap")
+        a.set_title(rf"$\epsilon={sci(eps, 0)}$".replace("\\times10^{", "\\times10^{"), loc="left")
+    ax[0].set_ylabel(r"exact-filter infidelity / $\epsilon$")
+    ax[0].text(0.52, 1.5, "target", color=INK2, fontsize=7)
+    from matplotlib.lines import Line2D
+    ax[1].legend(handles=[Line2D([], [], ls="none", marker="o", color=SCHED_COL["optimized"], label="optimized"),
+                          Line2D([], [], ls="none", marker="s", mfc="white", color=SCHED_COL["dyadic"], label="dyadic")],
+                 loc="lower right")
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIG, "fig_gapsweep.pdf"))
+    plt.close(fig)
+
+
+# ----------------------------------------------------------------------------- Eckart overlap bound
+def eckart():
+    E = load("eckart.json")
+    if E is None:
+        return
+    viol = [r for r in E if r["gamma_eckart"] > r["gamma_ref"] + 1e-6]
+    macro("nEckartViol", len(viol))
+    macro("nEckartCases", len(E))
+    pos = [r for r in E if r["gamma_eckart"] > 0]
+    macro("nEckartPos", len(pos))
+    c8 = [r for r in E if r["chi"] == 8 and r["N"] >= 16]
+    macro("nEckartAloneEight", sum(r["trial_cert_alone"] for r in c8))
+    macro("nEckartEight", len(c8))
+    both = [r for r in E if r["plan"] and r["plan_ref"]]
+    ratio = [r["plan"]["res_expected_cnot"] / r["plan_ref"]["res_expected_cnot"] for r in both
+             if r["plan_ref"]["res_expected_cnot"] > 0]
+    macro("eckartCostMed", f"{np.median(ratio):.1f}")
+    macro("eckartCostMax", f"{max(ratio):.0f}")
+    r = [x for x in E if x["N"] == 48 and x["J2"] == 0.2411 and x["chi"] == 8][0]
+    macro("eckartGammaFortyEightChiEight", f"{r['gamma_eckart']:.3f}")
+    macro("eckartCnotFortyEightChiEight", f"${sci(r['plan']['res_expected_cnot'])}$" if r["plan"] else "--")
+    r4 = [x for x in E if x["N"] == 48 and x["J2"] == 0.2411 and x["chi"] == 4][0]
+    macro("eckartGammaFortyEightChiFour", f"{r4['gamma_eckart']:.3f}")
+    macro("eckartCnotFortyEightChiFour", f"${sci(r4['plan']['res_expected_cnot'])}$" if r4["plan"] else "--")
+    lines = []
+    for N in (16, 32, 48):
+        for J2 in J2S:
+            cells = []
+            for chi in (4, 8):
+                x = [e for e in E if e["N"] == N and e["J2"] == J2 and e["chi"] == chi][0]
+                cnot = ("--" if not x["plan"] else
+                        (f"${sci(x['plan']['res_expected_cnot'])}$" + ("$^*$" if x["plan"]["m"] == 0 else "")))
+                cells.append(f"{x['gamma_ref']:.4f} & {x['gamma_eckart']:.4f} & {cnot}")
+            lines.append(f"{N} & {J2:g} & " + " & ".join(cells) + " \\\\")
+    with open(os.path.join(GEN, "tab_eckart.tex"), "w") as fh:
+        fh.write("\n".join(lines) + "\n")
+
+
+# ----------------------------------------------------------------------------- QSVT / qubitization model
+def qsvt():
+    Q = load("qsvt.json")
+    if Q is None:
+        return
+    Q = [q for q in Q if q["qsvt"] is not None]
+    ratio = [q["sbc"]["res_expected_t"] / q["qsvt"]["t_success"] for q in Q]
+    macro("qsvtRatioMin", f"{min(ratio):.0f}"); macro("qsvtRatioMax", f"{max(ratio):.0f}")
+    macro("qsvtRatioMed", f"{np.median(ratio):.0f}")
+    lines = []
+    for q in sorted(Q, key=lambda q: (q["N"], q["J2"], q["chi"])):
+        if q["chi"] != 2:
+            continue
+        lines.append(f"{q['N']} & {q['J2']:g} & {q['qsvt']['lam'] / q['gap']:.0f} & {num(q['qsvt']['degree'])} & "
+                     f"${sci(q['qsvt']['t_success'])}$ & ${sci(q['sbc']['res_expected_t'])}$ & "
+                     f"{q['sbc']['res_expected_t'] / q['qsvt']['t_success']:.0f} & "
+                     f"{q['qsvt']['qubits']} & {q['sbc']['res_qubits']} \\\\")
+    with open(os.path.join(GEN, "tab_qsvt.tex"), "w") as fh:
+        fh.write("\n".join(lines) + "\n")
+    r = [q for q in Q if q["N"] == 48 and q["J2"] == 0.2411 and q["chi"] == 2][0]
+    macro("qsvtTFortyEight", f"${sci(r['qsvt']['t_success'])}$")
+    macro("qsvtDegFortyEight", num(r["qsvt"]["degree"]))
+    macro("qsvtRatioFortyEight", f"{r['sbc']['res_expected_t'] / r['qsvt']['t_success']:.0f}")
+
+
+# ----------------------------------------------------------------------------- MPS circuit costing
+def mps():
+    M = load("mps_circuits.json")
+    if M is None:
+        return
+    lines = [f"{m['chi']} & {m['n']} & {m['qsd_bound']} & {m['qiskit_unitary']} & {m['qiskit_isometry']} & "
+             f"{m['lb_unitary']} & {m['lb_isometry']} \\\\" for m in M]
+    with open(os.path.join(GEN, "tab_mps.tex"), "w") as fh:
+        fh.write("\n".join(lines) + "\n")
+    macro("mpsMaxSaving", f"{max(m['qsd_bound'] / m['lb_isometry'] for m in M):.1f}")
+    macro("mpsQsdOverQiskit", f"{max(m['qsd_bound'] / m['qiskit_unitary'] for m in M):.2f}")
+    macro("mpsIsoOverUni", f"{min(m['qiskit_isometry'] / m['qiskit_unitary'] for m in M):.2f}")
+
+
+# ----------------------------------------------------------------------------- ladder
+def ladder():
+    R = load("ladder.json")
+    if R is None:
+        return
+    ed = [r for r in R if "ed_E0" in r]
+    macro("ladDEzero", sci(max(abs(r["E0"] - r["ed_E0"]) for r in ed)))
+    macro("ladDEone", sci(max(abs((r["E0"] + r["gap"]) - r["ed_E1"]) for r in ed)))
+    sims = [(r, s, v) for r in R for s, v in r["validate"].items() if "sim" in v]
+    macro("nLadSim", len(sims))
+    macro("nLadSimOK", sum(bool(v["sim"]["bound_ok"]) for _, _, v in sims))
+    rr = [v["plan"]["infidelity_bound"] / max(v["sim"]["infidelity_trotter"], 1e-300) for _, _, v in sims]
+    macro("ladBoundRatioMed", f"{np.median(rr):.0f}" if rr else "--")
+    macro("ladGapMin", f"{min(r['gap'] for r in R):.3f}")
+    macro("ladGapMax", f"{max(r['gap'] for r in R):.3f}")
+    lines = []
+    for Jr in (1.0, 0.5):
+        for L in (4, 6, 8, 12, 16):
+            q = [r for r in R if r["L"] == L and r["Jr"] == Jr]
+            if not q:
+                continue
+            q = q[0]
+            cells = []
+            for chi in (2, 4, 8, 16):
+                p = q["plans"][str(chi)]
+                if "plan" in p:
+                    c = f"${sci(p['plan']['res_expected_cnot'])}$" + ("$^*$" if p["plan"]["m"] == 0 else "")
+                else:
+                    c = "--"
+                cells.append(f"{p['gamma']:.3f} & {c}")
+            lines.append(f"{Jr:g} & {2 * L} & {q['gap']:.3f} & " + " & ".join(cells) + " \\\\")
+    with open(os.path.join(GEN, "tab_ladder.tex"), "w") as fh:
+        fh.write("\n".join(lines) + "\n")
+    big = [r for r in R if r["L"] == 16 and r["Jr"] == 1.0]
+    if big:
+        b = big[0]["plans"]
+        macro("ladGammaThirtyTwoEight", f"{b['8']['gamma']:.3f}")
+        macro("ladGammaThirtyTwoSixteen", f"{b['16']['gamma']:.3f}")
+        for chi, tag in ((4, "Four"), (16, "Sixteen")):
+            p = b[str(chi)].get("plan")
+            macro(f"ladCnotThirtyTwoChi{tag}", f"${sci(p['res_expected_cnot'])}$" if p else "--")
+    macro("nLadNoFilter", sum(1 for r in R for p in r["plans"].values() if "plan" in p and p["plan"]["m"] == 0))
+
+
 if __name__ == "__main__":
-    for f in (inputs_table, validation, scaling, sensitivity, ansatz, oracle):
+    for f in (inputs_table, validation, scaling, sensitivity, ansatz, oracle, gapsweep, eckart, qsvt, mps, ladder):
         f()
     with open(os.path.join(GEN, "macros.tex"), "w") as fh:
         fh.write("% generated by sbpipe_study/make_figures.py -- do not edit\n" + "\n".join(MACROS) + "\n")

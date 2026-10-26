@@ -120,10 +120,13 @@ def local_matrix(terms: Dict[str, complex], qubits: Sequence[int], sparse: bool 
     return M.tocsr() if sparse else M.toarray()
 
 
-def operator_norm(terms: Dict[str, complex], max_exact_qubits: int = 12) -> Tuple[float, bool]:
-    """Spectral norm of a Hermitian Pauli sum (real coefficients). Exact on its support when the
-    support has at most `max_exact_qubits` qubits (dense eigvalsh up to 8 qubits, Lanczos above),
-    otherwise the triangle-inequality bound sum |c|. Returns (norm, exact)."""
+def operator_norm(terms: Dict[str, complex], max_exact_qubits: int = 10) -> Tuple[float, bool]:
+    """Upper bound on the spectral norm of a Hermitian Pauli sum (real coefficients). When the support
+    has at most `max_exact_qubits` qubits the matrix is diagonalised densely and the largest |eigenvalue|
+    is returned, inflated by a relative 1e-11 that covers the backward error of eigvalsh (about
+    n * 2e-16 for an n x n matrix, n <= 1024); otherwise the triangle-inequality bound sum |c| is
+    returned, which is rigorous. No iterative (Lanczos) estimate is used, so the result never
+    underestimates the norm. Returns (bound, exact)."""
     terms = {l: c for l, c in terms.items() if abs(c) > 1e-14}
     if not terms:
         return 0.0, True
@@ -131,12 +134,8 @@ def operator_norm(terms: Dict[str, complex], max_exact_qubits: int = 12) -> Tupl
     tri = float(sum(abs(c) for c in terms.values()))
     if len(qs) > max_exact_qubits:
         return tri, False
-    if len(qs) <= 8:
-        return float(np.max(np.abs(np.linalg.eigvalsh(local_matrix(terms, qs))))), True
-    from scipy.sparse.linalg import eigsh
-    M = local_matrix(terms, qs, sparse=True)
-    lam = abs(eigsh(M, k=1, which="LM", return_eigenvectors=False, tol=1e-12)[0])
-    return float(min(tri, lam * (1 + 1e-9))), True
+    lam = float(np.max(np.abs(np.linalg.eigvalsh(local_matrix(terms, qs)))))
+    return float(min(tri, lam * (1 + 1e-11))), True
 
 
 # ----------------------------------------------------------------------------- statevector action

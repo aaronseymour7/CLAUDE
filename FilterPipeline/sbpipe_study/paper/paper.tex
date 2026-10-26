@@ -92,10 +92,13 @@ Appendix~\ref{app:repro}.
 
 The contribution is methodological and quantitative rather than algorithmic: the filter is SBC's, the
 Trotter bounds are those of Childs \emph{et al.}~\cite{Childs2021}, and the certificate follows the
-standard triangle-inequality argument. What is new is a generic interface whose guarantees are stated
-in terms of the inputs, a closed-form ``dyadic'' energy schedule with $O(\Delta^{-1}\log\eta^{-1})$
-total time, and a calibrated account of what this costs and where the bound is loose for a concrete,
-physically relevant model.
+standard triangle-inequality argument. SBC already use halving time ladders for quantum-number
+projection and examine exponentially spaced times for the energy filter in their supplement; we do not
+claim that schedule as new. What is new is a generic interface whose guarantees are stated in terms of
+the inputs, a closed-form certificate for the ``dyadic'' energy schedule, with an explicit constant in its
+$O(\Delta^{-1}\log\eta^{-1})$ total time, a way to remove the overlap condition from the energy of the
+trial state, and a calibrated account of what the filter costs and where the bound is loose for concrete,
+physically relevant models.
 
 %=====================================================================================================
 \section{The pipeline}
@@ -227,8 +230,10 @@ $t_i/W$; the code uses the first convention, and we checked that it agrees with 
 precision. Tensoring every term with
 $Z_a$ leaves $\alpha_1$ and $\beta_2$ unchanged because $Z_a^2=1$. For Pauli strings
 $[P_b,P_a]=2P_bP_a$ when they anticommute and 0 otherwise, so each commutator is a short Pauli sum
-supported on a few qubits around term $a$; we evaluate its norm exactly on that support (dense for
-$\le8$ qubits, Lanczos up to 12, triangle inequality beyond, which never occurred here). The
+supported on a few qubits around term $a$; we bound its norm on that support by dense diagonalization
+for supports of up to 10 qubits (the largest support that occurs for these chains), inflated by a relative
+$10^{-11}$ that covers the floating-point error of the eigensolver, and by the triangle inequality
+beyond that. No iterative eigenvalue estimate is used, so no constant is underestimated. The
 constants are maximized over the forward and reversed term order, so they hold for either convention.
 Every pulse evolves under the same $H_s\otimes Z_a$, so the per-pulse bounds
 $\alpha_1t_i^2/(2k_i)$ and $\beta_2|t_i|^3/k_i^2$ share one constant; the phase $\phi_i$ enters only the
@@ -326,7 +331,7 @@ rotations.
 
 For $N\le14$ we compare with exact diagonalization (ED). DMRG reproduces $E_0$ to $\dmrgEzeroErr$,
 the first excited level of any symmetry to $\dmrgEoneErr$ (so the first excitation is the triplet in
-every ED case, as also found for $N\le16$ in Ref.~\cite{repoWriteup}), and the trial overlaps to
+every ED case), and the trial overlaps to
 $\dmrgGammaErr$ (largest difference, for a $\chi=1$ trial). The Weyl bound equals the exact top of the spectrum to $\weylErr$.
 Table~\ref{tab:inputs} lists the inputs. The trial overlap decays roughly exponentially with $N$ at
 fixed $\chi$, the familiar orthogonality catastrophe, so the filter has more to do at larger $N$.
@@ -373,7 +378,7 @@ closed-form dyadic bound $1/(2^K\sin\theta)$ is reached only near the band edge.
 a worst case over the whole stop band while the trial state's excited weight sits mostly low in the
 band. The
 Trotter term overestimates the measured Trotter distance by a median \trotRatioMed$\times$ (range
-\trotRatioMin--$\trotRatioMax$), consistent with earlier findings for this model~\cite{repoWriteup}:
+\trotRatioMin--$\trotRatioMax$):
 commutator bounds are worst-case over all states, while the filtered state lives in the low-energy
 subspace, where Trotter errors are much smaller~\cite{Sahinoglu2021}. The measured success probability
 equals $p_g$ to two digits in every case, because after filtering almost all of the surviving norm is
@@ -520,7 +525,7 @@ state alone satisfies $1-\gamma\le10^{-2}$ in \nNoFilterChiEight{} of \nChiEight
 ($\gamma=\gammaFortyEightChiEight$ at $N=48$, $J_2=0.2411$), and the pipeline returns the empty filter:
 \cnotFortyEightChiEight{} CNOTs. For this gapless-to-weakly-gapped one-dimensional chain at
 $\epsilon=10^{-2}$, directly compiling a better MPS is therefore much cheaper than filtering a worse
-one, in agreement with earlier analyses of this model~\cite{repoWriteup}. The filter becomes the better
+one. The filter becomes the better
 tool when the target is tighter than what a compilable MPS reaches, when a certificate on the output
 is required, or when the classical method cannot provide a compact high-overlap trial circuit, as for
 two-dimensional lattices.
@@ -684,8 +689,6 @@ qiskit, and an end-to-end certificate check).
   J.\ Open Source Softw.\ \textbf{3}, 819 (2018).
 \bibitem{Sahinoglu2021} B.~\c{S}ahino\u{g}lu and R.~D. Somma, Hamiltonian simulation in the low-energy
   subspace, npj Quantum Inf.\ \textbf{7}, 119 (2021).
-\bibitem{repoWriteup} Earlier analysis of the certified filter for this model:
-  \url{https://github.com/aaronseymour7/CLAUDE} (\texttt{j1j2\_filter/WRITEUP.md}).
 \end{thebibliography}
 
 \end{document}

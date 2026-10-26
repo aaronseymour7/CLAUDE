@@ -139,3 +139,64 @@ def test_end_to_end_certificate_holds():
         val = sbpipe.validate(plan, H, sbpipe.Ansatz(gam, psi), g)
         assert val["bound_ok"]
         assert val["infidelity_trotter"] <= 1e-2
+
+
+def test_operator_norm_never_underestimates_up_to_10_qubits():
+    """Dense bound (with its 1e-11 margin) for supports of 9 and 10 qubits against sparse Lanczos on the
+    same matrix, and the triangle fallback beyond the limit."""
+    from scipy.sparse.linalg import eigsh
+
+    from sbpipe.pauli import local_matrix, operator_norm
+    rng = np.random.default_rng(3)
+    for nq in (9, 10):
+        terms = {}
+        while len({q for l in terms for q, c in enumerate(l) if c != "I"}) < nq:
+            lab = "".join(rng.choice(list("IXYZ"), nq))
+            if set(lab) != {"I"}:
+                terms[lab] = float(rng.normal())
+        qs = list(range(nq))
+        lam = abs(eigsh(local_matrix(terms, qs, sparse=True), k=1, which="LM",
+                        return_eigenvectors=False, tol=1e-13)[0])
+        b, exact = operator_norm(terms)
+        assert exact and lam <= b <= lam * (1 + 1e-9)
+    big = {"X" * 11: 1.0, "Z" * 11: 0.5}
+    b, exact = operator_norm(big)
+    assert not exact and b == pytest.approx(1.5)
+
+
+def test_eckart_gamma_is_a_lower_bound():
+    H = sbpipe.j1j2_chain(8, 1.0, 0.2411)
+    w, v = np.linalg.eigh(H.to_sparse().toarray())
+    est = sbpipe.EnergyEstimates(E0=w[0], E1=w[np.argmax(w > w[0] + 1e-8)])
+    rng = np.random.default_rng(5)
+    for mix in (0.02, 0.1, 0.3):
+        psi = v[:, 0] + mix * (v[:, 1:9] @ rng.normal(size=8))
+        psi /= np.linalg.norm(psi)
+        g_true = abs(np.vdot(v[:, 0], psi)) ** 2
+        E_t = float(np.vdot(psi, H.to_sparse() @ psi).real)
+        g_eck = sbpipe.eckart_gamma(E_t, est)
+        assert g_eck <= g_true + 1e-12
+        assert g_eck > 0.0
+    # a margin on the gap lowers the bound further
+    est2 = sbpipe.EnergyEstimates(E0=est.E0, E1=est.E1, E0_err=1e-3, E1_err=1e-3)
+    assert sbpipe.eckart_gamma(E_t, est2) < g_eck
+
+
+def test_heisenberg_ladder_spectrum_and_weyl():
+    H = sbpipe.heisenberg_ladder(3, 1.0, 0.7)
+    w = np.linalg.eigvalsh(H.to_sparse().toarray())
+    lo, hi = sbpipe.weyl_bounds(H)
+    assert lo <= w[0] + 1e-12 and abs(hi - w[-1]) < 1e-9
+    # a 2-rung ladder is a 4-site ring, E0 = -(2 J_leg + ...) check against dense diagonalisation of S.S terms
+    H2 = sbpipe.heisenberg_ladder(2, 1.0, 1.0)
+    w2 = np.linalg.eigvalsh(H2.to_sparse().toarray())
+    assert w2[0] == pytest.approx(-2.0)          # 4-site Heisenberg ring: E0 = -2 J
+
+
+def test_qsvt_degree_scales_with_inverse_gap():
+    from sbpipe.qsvt import qsvt_filter_cost
+    H = sbpipe.j1j2_chain(8, 1.0, 0.2411)
+    a = qsvt_filter_cost(H, 0.2, 0.5, 1e-3, 1e-2, {})
+    b = qsvt_filter_cost(H, 0.1, 0.5, 1e-3, 1e-2, {})
+    assert b["degree"] == pytest.approx(2 * a["degree"], rel=0.02)
+    assert a["t_success"] > a["t_attempt"] > 0
