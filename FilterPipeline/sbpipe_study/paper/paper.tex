@@ -635,6 +635,36 @@ $N$ & $J_2$ & $\gamma_1$ & CNOT & $\gamma_2$ & CNOT & $\gamma_4$ & CNOT & $\gamm
 \end{ruledtabular}
 \end{table*}
 
+
+\subsection{Removing the overlap assumption}
+\label{sec:eckart}
+
+Equation~\eqref{eq:eckart} replaces the DMRG overlap by a lower bound computed from the energy of the trial state
+(Table~\ref{tab:eckart}). Over the \nEckartCases{} trial states with $\chi\ge2$ (all sizes, couplings and bond dimensions) the bound never exceeded the
+DMRG overlap estimate (\nEckartViol{} violations), as it must if the reference overlap is accurate. It is, however, much weaker. It is positive in \nEckartPos{}
+of \nEckartCases{} cases. It is non-positive for $\chi=2$ at the larger sizes (from $N=16$ at $J_2=0$ and 0.2411, from $N=40$ at $J_2=0.4$) and for the $\chi=4$ trial of the
+Heisenberg chain at $N=48$, and positive for every $\chi=8$ trial. Where it is positive the plan is dearer. At $N=48$, $J_2=0.2411$ the $\chi=4$ trial has $\gamma=0.920$ from DMRG but only \eckartGammaFortyEightChiFour{} from the energy, and the plan costs
+\eckartCnotFortyEightChiFour{} CNOTs per success instead of \cnotFortyEightChiFour; over all cases where both plans exist the median increase is \eckartCostMed$\times$
+(at most \eckartCostMax$\times$). The effect on the choice between filtering and direct preparation is larger. The $\chi=8$ trial meets $1-\gamma\le10^{-2}$ by the DMRG overlap, so the
+uncertified direct circuit costs \cnotFortyEightChiEight{} CNOTs. With the energy bound, $\gamma\ge\eckartGammaFortyEightChiEight$, and the trial state alone is
+certified in only \nEckartAloneEight{} of \nEckartEight{} cases with $\chi=8$, $N\ge16$. The certified plan then needs a filter and \eckartCnotFortyEightChiEight{} CNOTs. Removing the overlap condition thus makes the
+certificate rigorous in one more input, at a price of one to three orders of magnitude in this regime. A tighter lower bound on the overlap, for example from the energy variance, would reduce that price.
+
+\begin{table*}[t]
+\caption{Overlap $\gamma_{\rm ref}$ from the DMRG reference, lower bound $\gamma_E$ from the trial energy (Eq.~\eqref{eq:eckart}) and expected CNOTs per success of the
+resulting plan ($\epsilon=10^{-2}$, second order, cheaper schedule) for $\chi=4$ and 8. ``--'': $\gamma_E\le0$ or no feasible plan; $^*$: the trial alone is certified, no filter. Source:
+\texttt{results/eckart.json}.}
+\label{tab:eckart}
+\begin{ruledtabular}
+\begin{tabular}{rrrrrrrr}
+ & & \multicolumn{3}{c}{$\chi=4$} & \multicolumn{3}{c}{$\chi=8$}\\
+$N$ & $J_2$ & $\gamma_{\rm ref}$ & $\gamma_E$ & CNOT & $\gamma_{\rm ref}$ & $\gamma_E$ & CNOT\\
+\midrule
+\input{generated/tab_eckart.tex}
+\end{tabular}
+\end{ruledtabular}
+\end{table*}
+
 %=====================================================================================================
 \section{Discussion}
 
