@@ -665,6 +665,35 @@ $N$ & $J_2$ & $\gamma_{\rm ref}$ & $\gamma_E$ & CNOT & $\gamma_{\rm ref}$ & $\ga
 \end{ruledtabular}
 \end{table*}
 
+
+\subsection{Comparison with a qubitization filter}
+\label{sec:qsvt}
+
+The Trotterized filter pays for its single ancilla with product-formula steps. To see how much, we compare its $T$-count with a leading-order model of a
+qubitization or quantum-singular-value-transformation (QSVT) ground-state filter (\texttt{sbpipe/qsvt.py}). The model is deliberately favourable to QSVT. $H$ is block-encoded by a Pauli LCU with
+1-norm $\lambda=\sum_a|c_a|$; the filter has degree $d=(\lambda/g)\ln(2/\eta)$ with unit constant, where $g$ is the gap and $\eta$ the suppression ratio that gives the same leakage as the SBC plan;
+each query costs $4(\Gamma-1)$ $T$ gates for the select oracle by unary iteration, $2(\Gamma-1)$ arbitrary rotations for the state preparation and its inverse, and $4\lceil\log_2\Gamma\rceil$ $T$ gates for the reflection,
+plus one phase rotation; rotations cost $3\log_2(1/\delta)$ $T$ gates with the same error budget as above; each attempt succeeds with probability $\gamma$ and neither method uses amplitude amplification.
+Only $T$ gates are counted. Parity and normalization overheads of the polynomial, and the larger constants of known constructions, are ignored.
+
+Table~\ref{tab:qsvt} gives the result for the $\chi=2$ trial at $\epsilon=10^{-2}$. Even under these assumptions the SBC filter needs \qsvtRatioMin--\qsvtRatioMax$\times$ (median \qsvtRatioMed) more $T$ gates, and the ratio grows with $N$
+and with a smaller trial overlap, because the Trotter step count then dominates: at $N=48$, $J_2=0.2411$ the SBC plan needs \tFortyEight{} $T$ gates against \qsvtTFortyEight{} (degree \qsvtDegFortyEight, ratio \qsvtRatioFortyEight). For the better $\chi=4$ trial the ratio falls to
+2--4 over the same sizes. In exchange, the SBC filter uses $N+1$ qubits against $N+\lceil\log_2\Gamma\rceil+3$, eight to eleven more for the qubitization circuit here, and needs no block encoding. The comparison is therefore a statement about early fault-tolerant hardware
+with few logical qubits, not a claim that Trotterization is the cheaper algorithm. Because the model's constants are not those of a compiled circuit, the ratios should be read as indicative to within a factor of a few.
+
+\begin{table}[t]
+\caption{$T$ gates per success of the SBC filter and of the modelled QSVT filter ($\chi=2$ trial, $\epsilon=10^{-2}$), the ratio, and qubit counts. $\lambda/g$: 1-norm of the Pauli coefficients over the gap.
+$d$: modelled QSVT degree. Source: \texttt{results/qsvt.json}.}
+\label{tab:qsvt}
+\begin{ruledtabular}
+\begin{tabular}{rrrrrrrrr}
+$N$ & $J_2$ & $\lambda/g$ & $d$ & $T$ (QSVT) & $T$ (SBC) & ratio & qubits Q. & qubits S.\\
+\midrule
+\input{generated/tab_qsvt.tex}
+\end{tabular}
+\end{ruledtabular}
+\end{table}
+
 %=====================================================================================================
 \section{Discussion}
 
