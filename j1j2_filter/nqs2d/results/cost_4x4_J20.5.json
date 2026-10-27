@@ -1,0 +1,181 @@
+{
+ "W": 4,
+ "L": 4,
+ "N": 16,
+ "J2": 0.5,
+ "eps": 0.01,
+ "delta": null,
+ "plans": [
+  {
+   "trial": "MPS chi=1",
+   "gamma": 0.032108167558055095,
+   "trial_cnot": 0,
+   "m": 8,
+   "schedule": "optimized",
+   "filter_cnot": 1996032,
+   "p_succ": 0.017974284334592923,
+   "expected_cnot": 111049317.06006673,
+   "expected_t": 2507430996.490885
+  },
+  {
+   "trial": "MPS chi=2",
+   "gamma": 0.26078754793384284,
+   "trial_cnot": 45,
+   "m": 8,
+   "schedule": "optimized",
+   "filter_cnot": 731032,
+   "p_succ": 0.18216394253835,
+   "expected_cnot": 4013291.4879468544,
+   "expected_t": 77298587.92313257
+  },
+  {
+   "trial": "MPS chi=4",
+   "gamma": 0.5057211245787732,
+   "trial_cnot": 280,
+   "m": 8,
+   "schedule": "optimized",
+   "filter_cnot": 514032,
+   "p_succ": 0.3822152094859149,
+   "expected_cnot": 1345608.4091780577,
+   "expected_t": 25351076.01584762
+  },
+  {
+   "trial": "MPS chi=8",
+   "gamma": 0.829087111727695,
+   "trial_cnot": 1300,
+   "m": 6,
+   "schedule": "optimized",
+   "filter_cnot": 300024,
+   "p_succ": 0.5759481899031511,
+   "expected_cnot": 523179.003393811,
+   "expected_t": 9785176.898419237
+  },
+  {
+   "trial": "MPS chi=16",
+   "gamma": 0.9632941741632589,
+   "trial_cnot": 5328,
+   "m": 4,
+   "schedule": "optimized",
+   "filter_cnot": 150016,
+   "p_succ": 0.6170680192406947,
+   "expected_cnot": 251745.34274382197,
+   "expected_t": 5807139.534618535
+  },
+  {
+   "trial": "MPS chi=32",
+   "gamma": 0.9970801222079275,
+   "trial_cnot": 20548,
+   "m": 0,
+   "schedule": "none",
+   "filter_cnot": 0,
+   "p_succ": 1.0,
+   "expected_cnot": 20548.0,
+   "expected_t": 2689514.5875628493
+  },
+  {
+   "trial": "RBM alpha=1 (loading not counted)",
+   "gamma": 0.9918160908698825,
+   "trial_cnot": 0,
+   "m": 0,
+   "schedule": "none",
+   "filter_cnot": 0,
+   "p_succ": 1.0,
+   "expected_cnot": 0.0,
+   "expected_t": 0.0,
+   "breakeven_loading_cnot": 20548.0
+  },
+  {
+   "trial": "RBM alpha=2 (loading not counted)",
+   "gamma": 0.9962872432588471,
+   "trial_cnot": 0,
+   "m": 0,
+   "schedule": "none",
+   "filter_cnot": 0,
+   "p_succ": 1.0,
+   "expected_cnot": 0.0,
+   "expected_t": 0.0,
+   "breakeven_loading_cnot": 20548.0
+  },
+  {
+   "trial": "RBM alpha=4 (loading not counted)",
+   "gamma": 0.9984072687335922,
+   "trial_cnot": 0,
+   "m": 0,
+   "schedule": "none",
+   "filter_cnot": 0,
+   "p_succ": 1.0,
+   "expected_cnot": 0.0,
+   "expected_t": 0.0,
+   "breakeven_loading_cnot": 20548.0
+  }
+ ],
+ "gamma_scan": [
+  {
+   "trial": "free trial gamma=0.05",
+   "gamma": 0.05,
+   "trial_cnot": 0,
+   "m": 8,
+   "schedule": "optimized",
+   "filter_cnot": 1704032,
+   "p_succ": 0.033906461083998744,
+   "expected_cnot": 50256852.10197807,
+   "expected_t": 1108190173.0018394
+  },
+  {
+   "trial": "free trial gamma=0.1",
+   "gamma": 0.1,
+   "trial_cnot": 0,
+   "m": 8,
+   "schedule": "optimized",
+   "filter_cnot": 1364032,
+   "p_succ": 0.082587049297992,
+   "expected_cnot": 16516294.159854004,
+   "expected_t": 352296077.11605847
+  },
+  {
+   "trial": "free trial gamma=0.2",
+   "gamma": 0.2,
+   "trial_cnot": 0,
+   "m": 8,
+   "schedule": "optimized",
+   "filter_cnot": 886032,
+   "p_succ": 0.1607637524700474,
+   "expected_cnot": 5511391.631425626,
+   "expected_t": 109542607.7396791
+  },
+  {
+   "trial": "free trial gamma=0.5",
+   "gamma": 0.5,
+   "trial_cnot": 0,
+   "m": 8,
+   "schedule": "optimized",
+   "filter_cnot": 516032,
+   "p_succ": 0.3724208261515802,
+   "expected_cnot": 1385615.3140854915,
+   "expected_t": 26015469.98838999
+  },
+  {
+   "trial": "free trial gamma=0.8",
+   "gamma": 0.8,
+   "trial_cnot": 0,
+   "m": 6,
+   "schedule": "optimized",
+   "filter_cnot": 308024,
+   "p_succ": 0.5145170422328017,
+   "expected_cnot": 598666.2728668752,
+   "expected_t": 10815573.443916818
+  },
+  {
+   "trial": "free trial gamma=0.95",
+   "gamma": 0.95,
+   "trial_cnot": 0,
+   "m": 4,
+   "schedule": "optimized",
+   "filter_cnot": 155016,
+   "p_succ": 0.5481076996902928,
+   "expected_cnot": 282820.3290842137,
+   "expected_t": 5014248.605134976
+  }
+ ],
+ "best_mps": "MPS chi=32"
+}
