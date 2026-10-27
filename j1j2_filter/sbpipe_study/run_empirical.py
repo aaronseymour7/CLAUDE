@@ -1,0 +1,363 @@
+"""Empirical filter behaviour on the exact spectrum (N <= 16): how the gap and the trial overlap set
+what the filter actually needs, as opposed to what the a-priori certificate asks for.
+
+For each chain the trial state is decomposed on the exact eigenbasis (block-diagonal in S^z, dense
+diagonalisation per block). Any filter p(H_s) then acts on the weights w_k analytically, so the
+smallest filter that reaches a target infidelity can be found exactly. Trotter steps are found by
+statevector simulation (N <= 12), as in run_study's oracle.
+
+Families
+  fixedJ2  : J2 = 0.2411 for every N (the gap shrinks with N)
+  matched  : J2 chosen per N so that the true gap E1 - E0 equals GAP_TARGET (ED, triplet checked)
+Trial states: the variationally optimal MPS at chi = 1, 2, 4, and synthetic states
+sqrt(gamma)|E0> + sqrt(1-gamma)|xi>, xi the excited part of the chi = 2 MPS (fixed spectral shape).
+
+    python sbpipe_study/run_empirical.py match     # J2(N) with a fixed gap
+    python sbpipe_study/run_empirical.py spectra   # eigen-decomposition of every trial state (cached)
+    python sbpipe_study/run_empirical.py filters   # smallest QETU / dyadic filter that reaches eps
+    python sbpipe_study/run_empirical.py trotter   # smallest Trotter step count at that filter, and the certified plan
+"""
+import os
+import sys
+
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(HERE))
+sys.path.insert(0, HERE)
+
+import gc
+import json
+import math
+
+import scipy.linalg
+import time
+from concurrent.futures import ProcessPoolExecutor
+
+import numpy as np
+from scipy.sparse.linalg import eigsh
+
+import sbpipe
+from sbpipe import j1j2_chain
+from sbpipe import design as D
+
+import run_study as RS
+
+RES = RS.RES
+CACHEE = os.path.join(RES, "cache_emp")
+os.makedirs(CACHEE, exist_ok=True)
+JOBS = RS.JOBS
+dump, load = RS.dump, RS.load
+
+N_EMP = [8, 10, 12, 14, 16]
+GAP_TARGET = 0.40
+J2_FIXED = 0.2411
+CHIS = [1, 2, 4]
+GAMMAS = [0.03, 0.1, 0.3, 0.5, 0.7, 0.9]
+EPSS = [1e-2, 1e-3, 1e-4]
+
+
+def _gap(N, J2):
+    w = eigsh(j1j2_chain(N, 1.0, J2).to_sparse(), k=4, which="SA", tol=1e-11,
+              return_eigenvectors=False)
+    w = np.sort(w)
+    return float(w[np.argmax(w > w[0] + 1e-8)] - w[0])
+
+
+def _match(N):
+    lo, hi = 0.0, 0.65
+    if _gap(N, lo) > GAP_TARGET:            # already above the target at J2 = 0: bisect on [0, 0.3]
+        lo, hi = 0.25, 0.0
+    for _ in range(30):
+        mid = 0.5 * (lo + hi)
+        if (_gap(N, mid) < GAP_TARGET) == (lo < hi):
+            lo = mid
+        else:
+            hi = mid
+    return N, round(0.5 * (lo + hi), 6)
+
+
+def run_match():
+    with ProcessPoolExecutor(JOBS) as ex:
+        out = {N: J2 for N, J2 in ex.map(_match, N_EMP)}
+    for N, J2 in out.items():
+        print(f"[match] N={N} J2={J2} gap={_gap(N, J2):.5f}", flush=True)
+    dump("emp_match.json", out)
+
+
+N_SCAN = [10, 12, 14]
+GAP_SCAN = [0.30, 0.35, 0.40, 0.45, 0.50, 0.55]
+
+
+def _scan(args):
+    """J2 in [0.25, 0.7] with gap = target (the gap is flat below J2 ~ 0.3 and rises above it)."""
+    N, target = args
+    lo, hi = 0.25, 0.7
+    if not _gap(N, lo) < target < _gap(N, hi):
+        return N, target, None
+    for _ in range(30):
+        mid = 0.5 * (lo + hi)
+        if _gap(N, mid) < target:
+            lo = mid
+        else:
+            hi = mid
+    return N, target, round(0.5 * (lo + hi), 6)
+
+
+def run_gapscan():
+    """Physical gap scan at fixed N: J2 chosen for each target gap, then spectra as for the families."""
+    with ProcessPoolExecutor(JOBS) as ex:
+        out = [dict(N=N, gap=g, J2=J2) for N, g, J2 in ex.map(_scan, [(N, g) for N in N_SCAN for g in GAP_SCAN])]
+    for r in out:
+        print(f"[gapscan] N={r['N']} gap={r['gap']} J2={r['J2']}", flush=True)
+    dump("emp_gapscan.json", out)
+
+
+def families():
+    m = load("emp_match.json")
+    out = [("fixedJ2", N, J2_FIXED) for N in N_EMP] + [("matched", N, float(m[str(N)])) for N in N_EMP]
+    out += [("gapscan", r["N"], r["J2"]) for r in (load("emp_gapscan.json") if os.path.exists(os.path.join(RES, "emp_gapscan.json")) else [])
+            if r["J2"] is not None]
+    return out
+
+
+# ----------------------------------------------------------------------------- spectra
+def _key(N, J2):
+    return f"N{N}_J2{J2:.6g}"
+
+
+def _spectrum(args):
+    """Exact eigen-decomposition of H in every S^z block, projected on the trial states."""
+    fam, N, J2 = args
+    from sbpipe.frontends.dmrg_quimb import pauli_to_mpo, trial_mps
+    p = os.path.join(CACHEE, _key(N, J2) + ".npz")
+    if os.path.exists(p):
+        return fam, N, J2, 0.0
+    t0 = time.time()
+    H = j1j2_chain(N, 1.0, J2)
+    Hsp = H.to_sparse().tocsr()
+    mpo = pauli_to_mpo(H)
+    trials = {}
+    for chi in CHIS:
+        _, psi = trial_mps(mpo, chi)
+        v = np.asarray(psi.to_dense()).reshape(-1)
+        trials[chi] = v / np.linalg.norm(v)
+    idx = np.arange(2 ** N)
+    pop = np.array([bin(i).count("1") for i in idx])
+    E, W = [], {c: [] for c in CHIS}
+    vecs_low = []                                   # keep the ground state
+    for n_up in range(N + 1):
+        b = idx[pop == n_up]
+        Hb = Hsp[b][:, b].toarray()
+        if np.abs(Hb.imag).max() < 1e-12 if np.iscomplexobj(Hb) else True:
+            Hb = np.ascontiguousarray(Hb.real)
+        e, U = scipy.linalg.eigh(Hb, overwrite_a=True, check_finite=False, driver="evr")
+        del Hb
+        E.append(e)
+        for c in CHIS:
+            W[c].append(np.abs(U.T.conj() @ trials[c][b]) ** 2)
+        vecs_low.append((e[0], b, U[:, 0].copy()))
+        del U
+        gc.collect()
+    E = np.concatenate(E)
+    o = np.argsort(E)
+    out = dict(E=E[o])
+    for c in CHIS:
+        out[f"w{c}"] = np.concatenate(W[c])[o]
+    e0, b, u = min(vecs_low, key=lambda t: t[0])
+    g = np.zeros(2 ** N, complex)
+    g[b] = u
+    out["ground"] = g
+    for c in CHIS:
+        out[f"trial{c}"] = trials[c]
+    np.savez(p, **out)
+    return fam, N, J2, time.time() - t0
+
+
+def run_spectra():
+    with ProcessPoolExecutor(JOBS) as ex:
+        for fam, N, J2, dt in ex.map(_spectrum, families()):
+            print(f"[spectra] {fam} N={N} J2={J2:g} {dt:.0f}s", flush=True)
+
+
+def spectral_weights(N, J2, trial):
+    """(E, w) for trial = chi (int) or ('synthetic', gamma): weights on the exact eigenstates."""
+    z = np.load(os.path.join(CACHEE, _key(N, J2) + ".npz"))
+    E = z["E"]
+    if isinstance(trial, tuple):
+        gamma = trial[1]
+        w2 = z["w2"].copy()
+        exc = w2.copy()
+        exc[0] = 0.0
+        exc /= exc.sum()                            # excited part of the chi = 2 MPS, normalised
+        w = (1 - gamma) * exc
+        w[0] = gamma
+        return E, w
+    return E, z[f"w{trial}"]
+
+
+# ----------------------------------------------------------------------------- filters on the exact spectrum
+def _infid(w, f):
+    a = w * f ** 2
+    return 1.0 - a[0] / a.sum(), a.sum()
+
+
+def _qetu_vals(d, x_s, Es):
+    return D.qetu_values(d, math.pi / 2, x_s, Es)
+
+
+def _min_qetu(Es, w, delta, eps):
+    """Smallest even degree with the Chebyshev filter designed for the TRUE scaled gap reaching eps."""
+    x_s = math.cos(math.pi / 2 * delta)
+    d = 0
+    while d < 200000:
+        d += 2
+        inf, p = _infid(w, _qetu_vals(d, x_s, Es))
+        if inf <= eps:
+            return d, p
+    return None, None
+
+
+def _min_dyadic(Es, w, delta, eps):
+    """Smallest total time over (K, r) of the dyadic ladder reaching eps."""
+    tau = math.pi / (1 + delta)
+    best = None
+    for K in range(1, 30):
+        blk = np.ones_like(Es)
+        for k in range(K):
+            blk = blk * np.cos(2 ** k * Es * tau)
+        for r in range(1, 400):
+            inf, p = _infid(w, blk ** r)
+            if inf <= eps:
+                T = r * tau * (2 ** K - 1)
+                if best is None or T < best[0]:
+                    best = (T, K, r, p)
+                break
+            if best is not None and r * tau * (2 ** K - 1) > best[0]:
+                break
+    return best
+
+
+def _filter_case(args):
+    fam, N, J2, trial, eps = args
+    E, w = spectral_weights(N, J2, trial)
+    lo, hi = sbpipe.weyl_bounds(j1j2_chain(N, 1.0, J2))
+    Wr = hi - E[0]
+    Es = (E - E[0]) / Wr
+    gap = float(E[np.argmax(E > E[0] + 1e-8)] - E[0])
+    delta = gap / Wr
+    gamma = float(w[0])
+    # where the excited weight sits: weight-averaged excitation energy and weight within 2x the gap
+    exc = w[1:] / max(w[1:].sum(), 1e-300)
+    e_mean = float(np.sum(exc * (E[1:] - E[0])))
+    near = float(np.sum(exc[(E[1:] - E[0]) <= 2 * gap]))
+    out = dict(family=fam, N=N, J2=J2, trial=trial if isinstance(trial, int) else f"g{trial[1]}",
+               eps=eps, gamma=gamma, gap=gap, W=Wr, delta=delta, e_mean_exc=e_mean, weight_near_gap=near)
+    if 1 - gamma <= eps:
+        return dict(out, d_min=0, d_cert=0)
+    d, p = _min_qetu(Es, w, delta, eps)
+    eta_t = D.eta_target(eps, gamma)
+    dc = D.qetu(delta, 0.0, eta_t)
+    dy = _min_dyadic(Es, w, delta, eps)
+    dyc = D.dyadic(delta, 0.0, eta_t)
+    return dict(out, d_min=d, p_succ_min=p, d_cert=dc.m if dc else None,
+                T_min_qetu=d * math.pi / 2 if d else None, T_cert_qetu=dc.T if dc else None,
+                T_min_dyadic=dy[0] if dy else None, T_cert_dyadic=dyc.T if dyc else None)
+
+
+def run_filters():
+    cases = []
+    for fam, N, J2 in families():
+        for eps in EPSS:
+            cases += [(fam, N, J2, chi, eps) for chi in CHIS]
+            cases += [(fam, N, J2, ("synthetic", g), eps) for g in GAMMAS]
+    with ProcessPoolExecutor(JOBS) as ex:
+        out = list(ex.map(_filter_case, cases, chunksize=4))
+    dump("emp_filters.json", out)
+
+
+# ----------------------------------------------------------------------------- Trotter steps actually needed (N <= 12)
+def _trotter_case(args):
+    fam, N, J2, trial, eps = args
+    from sbpipe.pauli import PauliSum
+    from sbpipe.simulate import qetu_trotter, state_metrics
+    from sbpipe.resources import filter_counts
+    from sbpipe.trotter import beta2, steps_for_budget
+    r = _filter_case(args)
+    if not r.get("d_min"):
+        return dict(r, k_min=0)
+    z = np.load(os.path.join(CACHEE, _key(N, J2) + ".npz"))
+    g = z["ground"]
+    if isinstance(trial, tuple):
+        t = z["trial2"]
+        xi = t - np.vdot(g, t) * g
+        xi /= np.linalg.norm(xi)
+        ph = np.vdot(g, t) / abs(np.vdot(g, t))
+        psi = np.sqrt(trial[1]) * g * ph + np.sqrt(1 - trial[1]) * xi
+    else:
+        psi = z[f"trial{trial}"]
+    H = j1j2_chain(N, 1.0, J2)
+    E0 = z["E"][0]
+    Hs = H.shifted_scaled(E0, r["W"])
+    d, x_s = r["d_min"], math.cos(math.pi / 2 * r["delta"])
+    # the target is met by the exact filter with slack (inf_exact <= eps); find the smallest common k
+    # per query with the Trotterised filter still at <= eps
+    def inf_k(k):
+        v = qetu_trotter(Hs, psi, d, math.pi / 2, x_s, [k] * d)
+        return state_metrics(v, g)["infidelity"], float(np.vdot(v, v).real)
+    k = 1
+    inf, p = inf_k(k)
+    while inf > eps and k < 64:                     # k is small in practice: plain upward search
+        k += 1
+        inf, p = inf_k(k)
+    # a slightly higher degree at one step per query can be cheaper than d_min at k > 1
+    d0 = d
+    for dd in range(d0 + 2, int(d0 * k) + 1, 2):
+        if dd * 1 >= d0 * k:
+            break
+        def inf_k(kk, dd=dd):
+            v = qetu_trotter(Hs, psi, dd, math.pi / 2, x_s, [kk] * dd)
+            return state_metrics(v, g)["infidelity"], float(np.vdot(v, v).real)
+        i1, p1 = inf_k(1)
+        if i1 <= eps:
+            d, k, inf, p = dd, 1, i1, p1
+            break
+    cnot = filter_counts(Hs, [k] * d, 2, anc_rot_per_pulse=2)["cnot"]
+    # what the certificate asks for on the same input (true gap, true overlap, QETU, order 2)
+    from sbpipe.pipeline import Config, _plan_for, trotter_constant
+    # the pipeline's own choice: best split of eps between leakage and Trotter/synthesis
+    cfg = Config(eps=eps, schedule="qetu", order=2)
+    cert, const = {}, trotter_constant(Hs, 2)
+    for f in cfg.leak_fracs:
+        des = D.design_filter("qetu", r["delta"], 0.0, f * eps, r["gamma"])
+        pc = _plan_for(H, Hs, None, des, r["gamma"], cfg, const, {}) if des else None
+        if pc and (not cert or pc[2]["expected_cnot"] < cert["cert_cnot_per_success"]):
+            st, ce, res = pc
+            cert = dict(cert_d=des.m, cert_steps=int(np.sum(st)), cert_k_per_query=float(np.mean(st)),
+                        cert_cnot_per_success=res["expected_cnot"], cert_p_succ=ce["p_succ_bound"],
+                        cert_leak_frac=f)
+    return dict(r, d_trot=d, k_min=k, steps_min=k * d, inf_trotter=inf, p_succ_trotter=p,
+                cnot_filter=cnot, cnot_per_success=cnot / p, **cert)
+
+
+def run_trotter():
+    cases = []
+    for fam, N, J2 in families():
+        for eps in EPSS:
+            cases += [(fam, N, J2, chi, eps) for chi in CHIS]
+            cases += [(fam, N, J2, ("synthetic", g), eps) for g in GAMMAS]
+    out = []
+    with ProcessPoolExecutor(JOBS) as ex:
+        for r in ex.map(_trotter_case, cases):
+            print(f"[trotter] {r['family']} N={r['N']} {r['trial']} eps={r['eps']:g} d={r.get('d_min')} "
+                  f"k={r.get('k_min')} cnot/succ={r.get('cnot_per_success', float('nan')):.2e}", flush=True)
+            out.append(r)
+    dump("emp_trotter.json", out)
+
+
+if __name__ == "__main__":
+    what = sys.argv[1] if len(sys.argv) > 1 else "match,spectra,filters,trotter"
+    steps = dict(match=run_match, gapscan=run_gapscan, spectra=run_spectra, filters=run_filters, trotter=run_trotter)
+    for k in what.split(","):
+        t = time.time()
+        steps[k]()
+        print(f"== {k} done in {time.time() - t:.0f}s", flush=True)

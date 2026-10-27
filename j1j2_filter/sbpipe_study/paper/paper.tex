@@ -657,7 +657,9 @@ gap $\Delta$ for a given $N$ (Fig.~\ref{fig:drivers}b), with cost $\propto\Delta
 \drvGapExpMin--\drvGapExpMax), the $3/2$ of Eq.~\eqref{eq:costmodel}. The gap enters with a larger power
 than the overlap, but the overlap varies over a much wider range in practice: going from $\chi=2$ to
 $\chi=8$ at $N=48$ moves $\gamma$ by a factor of up to 8 (1.6--8), while all couplings together move the gap by a
-factor of 3.4.
+factor of 3.4. To check that the knobs keep the certificate valid we simulated \drvValN{} of these plans
+($N\le\drvValNmax$; $\gamma=0.03$, 0.3, 0.9 at the true gap, and the true gap and half of it at $\gamma=0.5$): all \drvValOk{} reach the
+target, with measured infidelity a median \drvValMed{} (at most \drvValMax) of the certified bound.
 
 \begin{figure*}[t]
 \includegraphics[width=0.8\textwidth]{figs/fig_drivers.pdf}

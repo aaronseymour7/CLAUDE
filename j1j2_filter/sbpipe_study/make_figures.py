@@ -370,6 +370,13 @@ def drivers():
     macro("drvGamRaw", f"{np.median(craw):.2f}")
     macro("drvNExp", f"{np.median(nN):.1f}")
     macro("drvNExpMin", f"{min(nN):.1f}"); macro("drvNExpMax", f"{max(nN):.1f}")
+    V = load("ext_drivers_validate.json")
+    if V:
+        ok = [r for r in V if r["sim"] and r["sim"]["bound_ok"]]
+        ratio = [r["sim"]["infidelity_trotter"] / r["plan"]["infidelity_bound"] for r in V if r["sim"]]
+        macro("drvValN", str(len(V))); macro("drvValOk", str(len(ok)))
+        macro("drvValMed", f"{np.median(ratio):.2f}"); macro("drvValMax", f"{max(ratio):.2f}")
+        macro("drvValNmax", str(max(r["N"] for r in V)))
     macro("drvNPlans", len(D))
     sel = lambda r, N: r["N"] == N and r["J2"] == 0.2411 and r["eps"] == 1e-2 and r["schedule"] == "qetu"
     lo = [r for r in ov if sel(r, 48) and r["gapmode"] == "true"]
@@ -406,6 +413,108 @@ def drivers():
     ax[1].legend(handles=h, fontsize=6, loc="upper right", ncol=2)
     fig.tight_layout()
     fig.savefig(os.path.join(FIG, "fig_drivers.pdf"))
+    plt.close(fig)
+
+
+# ----------------------------------------------------------------------------- what the filter actually needs
+def empirical():
+    T = load("emp_trotter.json")
+    if T is None:
+        return
+    from collections import defaultdict
+    T = [r for r in T if r.get("d_min")]
+    syn = [r for r in T if str(r["trial"]).startswith("g")]
+    act, cer = (lambda r: r["cnot_per_success"]), (lambda r: r["cert_cnot_per_success"])
+    macro("empN", len(T))
+    macro("empKone", sum(r["k_min"] == 1 for r in T))
+    macro("empDegRatio", f"{np.median([r['d_cert'] / r['d_min'] for r in T]):.2f}")
+    macro("empDegRatioMax", f"{max(r['d_cert'] / r['d_min'] for r in T):.1f}")
+    rat = [cer(r) / act(r) for r in T]
+    macro("empCertRatio", f"{np.median(rat):.0f}")
+    macro("empCertRatioMin", f"{min(rat):.0f}"); macro("empCertRatioMax", sci(max(rat), 0))
+    macro("empCertK", f"{np.median([r['cert_k_per_query'] for r in T]):.0f}")
+    # overlap exponent at fixed gap (matched family), with and without the logarithm
+    g = defaultdict(list)
+    for r in syn:
+        if r["family"] == "matched":
+            g[(r["N"], r["eps"])].append(r)
+    ex, exl, exc = [], [], []
+    for (N, eps), v in g.items():
+        G = np.array([r["gamma"] for r in v])
+        L = np.log((1 - G) / (G * eps))
+        ex.append(-np.polyfit(np.log(G), np.log([act(r) for r in v]), 1)[0])
+        exl.append(-np.polyfit(np.log(G), np.log([act(r) for r in v] / L), 1)[0])
+        exc.append(-np.polyfit(np.log(G), np.log([cer(r) for r in v]), 1)[0])
+    macro("empGamRaw", f"{np.median(ex):.2f}"); macro("empGamLog", f"{np.median(exl):.2f}")
+    macro("empGamCert", f"{np.median(exc):.2f}")
+    # gap exponent at fixed N and overlap (gap scan)
+    g = defaultdict(list)
+    for r in syn:
+        if r["family"] == "gapscan":
+            g[(r["N"], r["trial"], r["eps"])].append(r)
+    eg, ed, ec = [], [], []
+    for v in g.values():
+        if len(v) < 3:
+            continue
+        x = np.log([r["delta"] for r in v])
+        eg.append(-np.polyfit(x, np.log([act(r) for r in v]), 1)[0])
+        ed.append(-np.polyfit(x, np.log([r["d_min"] for r in v]), 1)[0])
+        ec.append(-np.polyfit(x, np.log([cer(r) for r in v]), 1)[0])
+    macro("empGapExp", f"{np.median(eg):.2f}"); macro("empGapDeg", f"{np.median(ed):.2f}")
+    macro("empGapCert", f"{np.median(ec):.2f}")
+    # N at fixed physical gap (matched) and at fixed J2
+    for fam, nm in (("matched", "Match"), ("fixedJ2", "Fixed")):
+        g = defaultdict(list)
+        for r in syn:
+            if r["family"] == fam:
+                g[(r["trial"], r["eps"])].append(r)
+        fit = lambda f: np.median([np.polyfit(np.log([r["N"] for r in v]), np.log([f(r) for r in v]), 1)[0]
+                                   for v in g.values()])
+        macro(f"empN{nm}", f"{fit(act):.1f}"); macro(f"empN{nm}Cert", f"{fit(cer):.1f}")
+        macro(f"empN{nm}Deg", f"{fit(lambda r: r['d_min']):.1f}")
+    M = load("emp_match.json")
+    macro("empMatchJ", ", ".join(f"{float(M[str(N)]):.3f}" for N in (8, 10, 12, 14, 16)))
+    # figure: (a) overlap at fixed gap, (b) gap at fixed overlap, (c) N at fixed gap vs fixed J2
+    fig, ax = plt.subplots(1, 3, figsize=(7.0, 2.5))
+    cols = {8: "#9aa0a6", 10: "#1baf7a", 12: "#eb6834", 14: "#2a78d6", 16: "#0b0b0b"}
+    for N in (8, 12, 16):
+        v = sorted([r for r in syn if r["family"] == "matched" and r["N"] == N and r["eps"] == 1e-3],
+                   key=lambda r: r["gamma"])
+        ax[0].plot([r["gamma"] for r in v], [act(r) for r in v], "o-", color=cols[N], ms=3.5, label=f"$N={N}$")
+        ax[0].plot([r["gamma"] for r in v], [cer(r) for r in v], "o--", color=cols[N], ms=3, mfc="white", lw=0.9)
+    ax[0].set_xscale("log"); ax[0].set_yscale("log")
+    ax[0].set_xlabel(r"trial overlap $\gamma$"); ax[0].set_ylabel("filter CNOTs per success")
+    ax[0].set_title(r"(a) overlap, gap $=0.40$", loc="left"); ax[0].legend(fontsize=6.5, loc="lower left")
+    from sbpipe.design import eta_target
+    fam_col = {"matched": QETU_COL, "fixedJ2": SCHED_COL["dyadic"], "gapscan": SCHED_COL["uniform"]}
+    fam_lab = {"matched": "gap 0.40", "fixedJ2": r"$J_2=0.2411$", "gapscan": "gap scan"}
+    xs = []
+    for fam in ("fixedJ2", "matched", "gapscan"):
+        v = [r for r in T if r["family"] == fam and r["gamma"] < 1 - r["eps"]]
+        x = [np.arccosh(1 / eta_target(r["eps"], r["gamma"])) for r in v]
+        xs += x
+        ax[1].plot(x, [r["d_min"] * r["delta"] for r in v], "o", color=fam_col[fam], ms=2.5, alpha=0.7,
+                   mew=0, label=fam_lab[fam])
+    x = np.array([min(xs), max(xs)])
+    ax[1].plot(x, 2 / np.pi * x, color=INK2, ls="--", lw=0.8)
+    ax[1].text(0.6 * x[1], 2 / np.pi * 0.6 * x[1] - 1.2, r"$d\,\Delta=\frac{2}{\pi}\cosh^{-1}\frac{1}{\eta}$",
+               color=INK2, fontsize=7)
+    ax[1].set_xlabel(r"$\cosh^{-1}(1/\eta)$,  $\eta^2=\gamma\epsilon/(1-\gamma)$")
+    ax[1].set_ylabel(r"degree $\times$ scaled gap, $d_{\min}\Delta$")
+    ax[1].set_title("(b) degree, all cases", loc="left"); ax[1].legend(fontsize=6.5, loc="upper left")
+    for fam, col, lab in (("matched", QETU_COL, "gap 0.40"), ("fixedJ2", SCHED_COL["dyadic"], r"$J_2=0.2411$")):
+        v = sorted([r for r in syn if r["family"] == fam and r["eps"] == 1e-3 and r["trial"] == "g0.3"],
+                   key=lambda r: r["N"])
+        ax[2].plot([r["N"] for r in v], [act(r) for r in v], "o-", color=col, ms=3.5, label=lab)
+        ax[2].plot([r["N"] for r in v], [cer(r) for r in v], "o--", color=col, ms=3, mfc="white", lw=0.9)
+    ax[2].set_xscale("log"); ax[2].set_yscale("log")
+    ax[2].set_xticks([8, 10, 12, 14, 16]); ax[2].set_xticklabels(["8", "10", "12", "14", "16"])
+    ax[2].minorticks_off()
+    ax[2].set_xlabel(r"$N$"); ax[2].set_title(r"(c) size, $\gamma=0.3$", loc="left")
+    ax[2].legend(fontsize=6.5, loc="upper left")
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIG, "fig_empirical.pdf"))
+    fig.savefig(os.path.join(FIG, "fig_empirical.png"), dpi=200)
     plt.close(fig)
 
 
@@ -579,7 +688,7 @@ def oracle():
 
 
 if __name__ == "__main__":
-    for f in (inputs_table, validation, scaling, qetu, drivers, sens_wide, sensitivity, ansatz, oracle):
+    for f in (inputs_table, validation, scaling, qetu, drivers, empirical, sens_wide, sensitivity, ansatz, oracle):
         f()
     with open(os.path.join(GEN, "macros.tex"), "w") as fh:
         fh.write("% generated by sbpipe_study/make_figures.py -- do not edit\n" + "\n".join(MACROS) + "\n")
