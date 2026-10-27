@@ -22,6 +22,7 @@ os.makedirs(GEN, exist_ok=True)
 
 # reference categorical slots 1-3 (validated all-pairs, light surface); text in neutral ink
 SCHED_COL = {"optimized": "#2a78d6", "dyadic": "#eb6834", "uniform": "#1baf7a"}
+QETU_COL = "#7a5af0"
 INK, INK2, GRID = "#0b0b0b", "#52514e", "#e4e3df"
 J2_NAME = {0.0: r"$J_2=0$", 0.2411: r"$J_2=0.2411$", 0.4: r"$J_2=0.4$"}
 J2S = [0.0, 0.2411, 0.4]
@@ -112,12 +113,12 @@ def validation():
     macro("nSimOK", n_ok)
     macro("nPlans", len(V))
     ratios = [v["plan"]["infidelity_bound"] / max(v["sim"]["infidelity_trotter"], 1e-300) for v in sims]
-    macro("boundRatioMin", f"{min(ratios):.0f}")
+    macro("boundRatioMin", f"{min(ratios):.1f}")
     macro("boundRatioMax", sci(max(ratios)))
     macro("boundRatioMed", f"{np.median(ratios):.0f}")
     lr = [v["plan"]["leak"] / max(v["sim"]["infidelity_exact"], 1e-300) for v in sims]
     macro("leakRatioMin", f"{min(lr):.1f}")
-    macro("leakRatioMax", f"{max(lr):.0f}")
+    macro("leakRatioMax", sci(max(lr)))
     macro("leakRatioMed", f"{np.median(lr):.1f}")
     tr = [v["sim"]["trotter_dist_bound"] / max(v["sim"]["trotter_state_dist"], 1e-300) for v in sims]
     macro("trotRatioMin", f"{min(tr):.0f}")
@@ -134,16 +135,16 @@ def validation():
         kw = dict(color=SCHED_COL[s], marker="o" if o == 2 else "s",
                   mfc=SCHED_COL[s] if o == 2 else "white", mew=1.0, ls="none", ms=4)
         x = v["N"] + off[s] + (0.12 if o == 1 else -0.12)
-        ax[0].plot(x, v["sim"]["infidelity_trotter"] / v["eps"], **kw)
+        ax[0].plot(x, v["sim"]["infidelity_trotter"] / v["plan"]["infidelity_bound"], **kw)
         ax[1].plot(v["sim"]["trotter_dist_bound"], max(v["sim"]["trotter_state_dist"], 1e-9), **kw)
     ax[0].axhline(1.0, color=INK2, lw=0.8, ls="--")
-    ax[0].text(7.4, 1.25, "target / bound", color=INK2, fontsize=7)
+    ax[0].text(7.2, 1.3, "bound", color=INK2, fontsize=7)
     ax[0].set_yscale("log"); ax[0].set_ylim(1e-6, 3)
     ax[0].set_xticks([8, 10, 12, 14]); ax[0].set_xlim(7, 15)
-    ax[0].set_xlabel("$N$"); ax[0].set_ylabel(r"measured $1-F$ / target $\epsilon$")
+    ax[0].set_xlabel("$N$"); ax[0].set_ylabel(r"measured $1-F$ / certified bound")
     lim = np.array([1e-9, 1])
     ax[1].plot(lim, lim, color=INK2, lw=0.8, ls="--")
-    ax[1].text(4e-3, 6e-3, "bound = measured", rotation=28, color=INK2, fontsize=7)
+    ax[1].text(2.2e-2, 6e-3, "bound = measured", rotation=28, color=INK2, fontsize=7)
     ax[1].set_xscale("log"); ax[1].set_yscale("log")
     ax[1].set_xlim(3e-3, 0.2); ax[1].set_ylim(1e-9, 0.2)
     ax[1].set_xlabel(r"bound on Trotter distance $\epsilon_T/\sqrt{p_g}$")
@@ -227,6 +228,12 @@ def scaling():
                 fits[(J2, s, o, "cnot")] = fit_power([N[i] for i in big], [y[i] for i in big])
                 fits[(J2, s, o, "steps")] = fit_power([N[i] for i in big],
                                                       [rows[i]["plan"]["res_steps"] for i in big])
+        Q = load("ext_qetu_scaling.json") or []
+        rows = sorted([r for r in Q if r["J2"] == J2 and r["eps"] == eps and r["order"] == 2 and r["plan"]],
+                      key=lambda r: r["N"])
+        if rows:
+            a.plot([r["N"] for r in rows], [r["plan"]["res_expected_cnot"] for r in rows], color=QETU_COL,
+                   ls=":", marker="^", ms=4, label="QETU, order 2")
         a.set_xscale("log"); a.set_yscale("log")
         a.set_xticks([8, 16, 32, 48]); a.set_xticklabels(["8", "16", "32", "48"])
         a.minorticks_off()
@@ -285,6 +292,45 @@ def scaling():
     macro("gainOptMed", f"{np.median(gdo):.1f}")
     macro("nDyaWins", sum(g < 1 for g in gdo))
     macro("nOptCmp", len(gdo))
+
+
+# ----------------------------------------------------------------------------- QETU baseline
+def qetu():
+    Q, S = load("ext_qetu_scaling.json"), load("scaling.json")
+    if Q is None or S is None:
+        return
+    best = {}
+    for r in S:
+        if r["plan"] and r["order"] == 2:
+            best[(r["N"], r["J2"], r["eps"], r["schedule"])] = r["plan"]["res_expected_cnot"]
+    rd, ro, rb, tr = [], [], [], []
+    for r in Q:
+        if r["order"] != 2 or not r["plan"]:
+            continue
+        k = (r["N"], r["J2"], r["eps"])
+        c = r["plan"]["res_expected_cnot"]
+        d, o = best.get(k + ("dyadic",)), best.get(k + ("optimized",))
+        rd.append(d / c)
+        if o:
+            ro.append(o / c)
+        rb.append(min(x for x in (d, o) if x) / c)
+    macro("qetuFail", sum(1 for r in Q if not r["plan"]))
+    macro("qetuN", sum(1 for r in Q if r["order"] == 2))
+    macro("qetuDyaMed", f"{np.median(rd):.1f}")
+    macro("qetuDyaMin", f"{min(rd):.1f}"); macro("qetuDyaMax", f"{max(rd):.1f}")
+    macro("qetuOptMed", f"{np.median(ro):.2f}")
+    macro("qetuOptMin", f"{min(ro):.2f}"); macro("qetuOptMax", f"{max(ro):.1f}")
+    macro("qetuOptN", len(ro))
+    macro("qetuBestMed", f"{np.median(rb):.2f}")
+    q48 = [r for r in Q if r["N"] == 48 and r["J2"] == 0.2411 and r["eps"] == 1e-2 and r["order"] == 2][0]
+    macro("qetuFortyEight", f"${sci(q48['plan']['res_expected_cnot'])}$")
+    V = load("ext_qetu_validate_chain.json") or []
+    sims = [v for v in V if "sim" in v]
+    macro("qetuNSim", len(sims))
+    macro("qetuNSimOK", sum(bool(v["sim"]["bound_ok"]) for v in sims))
+    if sims:
+        macro("qetuBoundMed", f"{np.median([v['plan']['infidelity_bound'] / v['sim']['infidelity_trotter'] for v in sims]):.1f}")
+        macro("qetuLeakMed", f"{np.median([v['plan']['leak'] / v['sim']['infidelity_exact'] for v in sims]):.1f}")
 
 
 # ----------------------------------------------------------------------------- sensitivity
@@ -424,7 +470,7 @@ def oracle():
 
 
 if __name__ == "__main__":
-    for f in (inputs_table, validation, scaling, sensitivity, ansatz, oracle):
+    for f in (inputs_table, validation, scaling, qetu, sensitivity, ansatz, oracle):
         f()
     with open(os.path.join(GEN, "macros.tex"), "w") as fh:
         fh.write("% generated by sbpipe_study/make_figures.py -- do not edit\n" + "\n".join(MACROS) + "\n")

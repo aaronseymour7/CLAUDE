@@ -62,9 +62,11 @@ exactly into staircase circuits~\cite{Ran2020}. The quantum step can be phase es
 a polynomial filter implemented by quantum singular-value
 transformation~\cite{Lin2020,Gilyen2019,Dong2022}, or a product of cosine filters implemented with a
 single ancilla~\cite{Stetcu2023,Choi2021}. The last option, the projection algorithm of Stetcu, Baroni
-and Carlson (SBC)~\cite{Stetcu2023}, is attractive for early fault-tolerant hardware: each step is one
+and Carlson (SBC)~\cite{Stetcu2023}, needs little beyond time evolution: each step is one
 controlled time evolution sandwiched between ancilla rotations and a measurement, the filter is
-designed classically, and the success probability is known in advance.
+designed classically, and the success probability is known in advance. The gate counts we find
+($10^{5}$--$10^{9}$ CNOTs per success) place it on fault-tolerant hardware rather than on noisy
+devices.
 
 To use such a filter one has to answer three practical questions: which times and phases, how many
 Trotter steps, and how good the result is. SBC optimize the times and phases numerically for a model
@@ -92,7 +94,10 @@ Appendix~\ref{app:repro}.
 
 The contribution is methodological and quantitative rather than algorithmic: the filter is SBC's, the
 Trotter bounds are those of Childs \emph{et al.}~\cite{Childs2021}, and the certificate follows the
-standard triangle-inequality argument. What is new is a generic interface whose guarantees are stated
+standard triangle-inequality argument also used for polynomial filters~\cite{Lin2020,Dong2022}. End-to-end
+resource studies that compile a classical (often MPS) trial state and then filter or project it exist
+for quantum chemistry~\cite{Fomichev2024,Berry2025}; here the classical inputs enter only through
+explicit, typed conditions, and the same accounting is applied to SBC's cosine filters and to QETU. What is new is a generic interface whose guarantees are stated
 in terms of the inputs, a closed-form ``dyadic'' energy schedule with $O(\Delta^{-1}\log\eta^{-1})$
 total time, and a calibrated account of what this costs and where the bound is loose for a concrete,
 physically relevant model.
@@ -204,6 +209,27 @@ smallest $T^2/F(0)^2$. This is SBC's recipe for energy filters~\cite{Stetcu2023}
 constraint in place of a grid objective; it uses the SLSQP designer \texttt{sbpipe/floor.py}.
 Nonzero phases trade success probability ($F(0)<1$) for a shorter $T$.
 
+\emph{QETU baseline.} To compare with a polynomial filter under the same accounting, the pipeline also
+designs the quantum eigenvalue transformation of unitaries (QETU) of Dong, Lin and Tong~\cite{Dong2022}.
+It uses the same primitive, $d$ queries of $e^{-i\tau H_s\otimes Z_a}$, the controlled-reversal form
+also used by the rodeo algorithm~\cite{BeeLindgren2025}, but interleaves them with ancilla rotations
+and post-selects only once. On every eigenvector the ancilla then undergoes quantum signal processing in
+$x=\cos(\tau E)$, so the ancilla-0 block is $p(\cos\tau H_s)$ for any real even polynomial $p$ of degree
+$d$ with $|p|\le1$ on $[-1,1]$~\cite{Dong2022}. With $\tau=\pi/2$ the scaled spectrum maps to $x\in[0,1]$
+and the stop band to $[0,x_s]$, $x_s=\cos(\pi\Delta/2)$. We take the Chebyshev filter
+\begin{equation}
+p(x)=\frac{T_d(x/x_s)}{T_d(1/x_s)},\qquad \eta=\frac1{T_d(\cos(\tau w_0)/x_s)},
+\end{equation}
+which is extremal: no polynomial of degree $d$ bounded by 1 is smaller on the stop band relative to its
+value at the pass band. It is certified in closed form ($p$ is monotone on $[x_s,1]$ and equioscillates
+on $[-x_s,x_s]$), has $p(0)=1$ so $p_g=\gamma F_{\rm pass}^2\approx\gamma$, and needs
+$T=d\tau\approx\Delta^{-1}\ln(2/\eta)$, two to three times less than the dyadic ladder. The Trotter bound,
+step allocation and Theorem~\ref{thm:cert} carry over unchanged, with one pulse per query and two ancilla
+rotations per query (the phase and the identity term). The QSP phases are computed classically; our
+cost model does not include that step. For second-order formulas $S_2(-\tau)=S_2(\tau)^\dagger$, so the
+Trotterized circuit implements exactly $p(\tilde X)$ with $\tilde X=\frac12(S_2(\tau)+S_2(-\tau))$, which is
+how we simulate it; the test suite checks this against an explicit ancilla circuit with QSP phases.
+
 For each schedule the leakage share $\epsilon_\ell/\epsilon\in\{0.5,0.25,0.1,0.05\}$ is scanned and the
 plan with the smallest expected CNOT count per success is kept. An ``auto'' mode does the same over the dyadic and optimized
 schedules together.
@@ -228,7 +254,10 @@ precision. Tensoring every term with
 $Z_a$ leaves $\alpha_1$ and $\beta_2$ unchanged because $Z_a^2=1$. For Pauli strings
 $[P_b,P_a]=2P_bP_a$ when they anticommute and 0 otherwise, so each commutator is a short Pauli sum
 supported on a few qubits around term $a$; we evaluate its norm exactly on that support (dense for
-$\le8$ qubits, Lanczos up to 12, triangle inequality beyond, which never occurred here). The
+$\le8$ qubits, Lanczos to a relative tolerance of $10^{-12}$ up to 12 with a $10^{-9}$ safety factor,
+triangle inequality beyond, which never occurred here). The Lanczos values are numerically exact but
+not certified upper bounds; replacing them by the triangle inequality would make every constant
+rigorous at a higher cost. The
 constants are maximized over the forward and reversed term order, so they hold for either convention.
 Every pulse evolves under the same $H_s\otimes Z_a$, so the per-pulse bounds
 $\alpha_1t_i^2/(2k_i)$ and $\beta_2|t_i|^3/k_i^2$ share one constant; the phase $\phi_i$ enters only the
@@ -326,10 +355,11 @@ rotations.
 
 For $N\le14$ we compare with exact diagonalization (ED). DMRG reproduces $E_0$ to $\dmrgEzeroErr$,
 the first excited level of any symmetry to $\dmrgEoneErr$ (so the first excitation is the triplet in
-every ED case, as also found for $N\le16$ in Ref.~\cite{repoWriteup}), and the trial overlaps to
+every ED case), and the trial overlaps to
 $\dmrgGammaErr$ (largest difference, for a $\chi=1$ trial). The Weyl bound equals the exact top of the spectrum to $\weylErr$.
 Table~\ref{tab:inputs} lists the inputs. The trial overlap decays roughly exponentially with $N$ at
-fixed $\chi$, the familiar orthogonality catastrophe, so the filter has more to do at larger $N$.
+fixed $\chi$, because a fixed bond dimension captures a fixed amount of entanglement per bond while
+the truncation error accumulates over $N$ bonds, so the filter has more to do at larger $N$.
 
 \begin{table}[t]
 \caption{DMRG inputs: ground energy, gap $E_1-E_0$ and trial overlap $\gamma$ of the optimal
@@ -357,9 +387,9 @@ with $10^{4}$--$10^{8}$ steps, exceed our simulation budget), and the certificat
 
 \begin{figure}[t]
 \includegraphics[width=\columnwidth]{figs/fig_validation.pdf}
-\caption{All simulated plans. (a) Measured infidelity of the planned circuit divided by the target
-$\epsilon$ (the certified bound is $\le\epsilon$ by construction); points are offset horizontally by
-schedule and order. (b) Measured distance between the Trotterized and the exact filtered state against
+\caption{All simulated plans. (a) Measured infidelity of the planned circuit divided by its certified
+bound; points below the dashed line respect the bound and are offset horizontally by schedule and
+order. (b) Measured distance between the Trotterized and the exact filtered state against
 its certified bound. Points below the dashed lines respect the bound. Filled circles: second order;
 open squares: first order.}
 \label{fig:validation}
@@ -373,8 +403,7 @@ closed-form dyadic bound $1/(2^K\sin\theta)$ is reached only near the band edge.
 a worst case over the whole stop band while the trial state's excited weight sits mostly low in the
 band. The
 Trotter term overestimates the measured Trotter distance by a median \trotRatioMed$\times$ (range
-\trotRatioMin--$\trotRatioMax$), consistent with earlier findings for this model~\cite{repoWriteup}:
-commutator bounds are worst-case over all states, while the filtered state lives in the low-energy
+\trotRatioMin--$\trotRatioMax$): commutator bounds are worst-case over all states, while the filtered state lives in the low-energy
 subspace, where Trotter errors are much smaller~\cite{Sahinoglu2021}. The measured success probability
 equals $p_g$ to two digits in every case, because after filtering almost all of the surviving norm is
 ground-state weight.
@@ -448,11 +477,27 @@ terms per step and the decaying overlap (through the success probability); they 
 statements. At $N=48$, $J_2=0.2411$ the best $\chi=2$ plan (\schedFortyEight) needs
 \cnotFortyEight{} CNOTs per success, which the next section reduces by choosing a better trial.
 
+\emph{Comparison with QETU.} The Chebyshev QETU filter, planned with the same Trotter, synthesis and
+cost model, is feasible in all \qetuN{} second-order cases (\qetuFail{} failures) and is a median
+\qetuDyaMed$\times$ (range \qetuDyaMin--\qetuDyaMax) cheaper than the dyadic schedule. Against the
+optimized SBC design, where that design exists, the ratio is a median \qetuOptMed{} (range
+\qetuOptMin--\qetuOptMax, \qetuOptN{} cases): the two cost the same to within the spread, because both
+reach $T\approx\Delta^{-1}\ln(1/\eta)$ up to a constant and the Trotter cost depends only on $T$. At
+$N=48$, $J_2=0.2411$ QETU needs \qetuFortyEight{} CNOTs per success against \cnotFortyEight{} for the
+dyadic plan (Fig.~\ref{fig:scaling}). Simulated as in Sec.~\ref{sec:validation}, the certificate held in
+\qetuNSimOK{} of \qetuNSim{} QETU plans ($N\le14$, both targets), with a median looseness of
+\qetuBoundMed$\times$; its leakage term is tight (median \qetuLeakMed$\times$) because the Chebyshev
+filter equioscillates across the stop band. The SBC filter therefore offers no cost advantage over a
+polynomial filter; what it offers is the absence of a phase-finding step and a measurement after every
+pulse, which an early-abort protocol (not modeled here) could exploit. The pipeline treats both as
+interchangeable back ends.
+
 \begin{figure*}[t]
 \includegraphics[width=\textwidth]{figs/fig_scaling.pdf}
 \caption{Expected CNOTs per successful preparation versus $N$ (trial $\chi=2$, $\epsilon=10^{-2}$),
 including the trial circuit and the repetitions (certified success probability). Solid: second order; dashed: first order.
-Missing optimized points: no feasible design (see text). Source: \texttt{results/scaling.json}.}
+Missing optimized points: no feasible design (see text). Dotted triangles: QETU, second order.
+Sources: \texttt{results/scaling.json}, \texttt{results/ext\_qetu\_scaling.json}.}
 \label{fig:scaling}
 \end{figure*}
 
@@ -520,7 +565,7 @@ state alone satisfies $1-\gamma\le10^{-2}$ in \nNoFilterChiEight{} of \nChiEight
 ($\gamma=\gammaFortyEightChiEight$ at $N=48$, $J_2=0.2411$), and the pipeline returns the empty filter:
 \cnotFortyEightChiEight{} CNOTs. For this gapless-to-weakly-gapped one-dimensional chain at
 $\epsilon=10^{-2}$, directly compiling a better MPS is therefore much cheaper than filtering a worse
-one, in agreement with earlier analyses of this model~\cite{repoWriteup}. The filter becomes the better
+one. The filter becomes the better
 tool when the target is tighter than what a compilable MPS reaches, when a certificate on the output
 is required, or when the classical method cannot provide a compact high-overlap trial circuit, as for
 two-dimensional lattices.
@@ -550,7 +595,8 @@ $N$ & $J_2$ & $\gamma_1$ & CNOT & $\gamma_2$ & CNOT & $\gamma_4$ & CNOT & $\gamm
 \section{Discussion}
 
 \emph{What is guaranteed.} Theorem~\ref{thm:cert} holds whenever its inputs are right. Of these, the
-spectral upper bound (Weyl), the filter certificate and the Trotter constants are rigorous here. The
+spectral upper bound (Weyl) and the filter certificate are rigorous, and the Trotter constants are
+exact up to the Lanczos tolerance of their largest local norms. The
 interval for $E_0$, the lower bound on $E_1$ and the overlap $\gamma$ come from DMRG and are
 well-converged estimates, not bounds; for $N\le14$ ED confirms them, beyond that the certificate is
 conditional on all three: the $E_0$ interval, the gap and the overlap. The gap is the critical input: an overestimated gap was the only input error that
@@ -670,6 +716,15 @@ qiskit, and an end-to-end certificate check).
 \bibitem{Dong2022} Y.~Dong, L.~Lin, and Y.~Tong, Ground-state preparation and energy estimation on
   early fault-tolerant quantum computers via quantum eigenvalue transformation of unitary matrices,
   PRX Quantum \textbf{3}, 040305 (2022).
+\bibitem{BeeLindgren2025} M.~Bee-Lindgren, Z.~Qian, M.~DeCross, N.~C. Brown, C.~N. Gilbreth, J.~Watkins,
+  X.~Zhang, and D.~Lee, Controlled gate networks: theory and application to eigenvalue estimation,
+  Eur.\ Phys.\ J.\ A (2025), doi:10.1140/epja/s10050-025-01750-y, arXiv:2208.13557.
+\bibitem{Fomichev2024} S.~Fomichev, K.~Hejazi, M.~S. Zini, M.~Kiser, J.~Fraxanet, P.~A.~M. Casares,
+  A.~Delgado, J.~Huh, A.-C. Voigt, J.~E. Mueller, and J.~M. Arrazola, Initial state preparation for
+  quantum chemistry on quantum computers, PRX Quantum \textbf{5}, 040339 (2024).
+\bibitem{Berry2025} D.~W. Berry, Y.~Tong, T.~Khattar, A.~White, T.~I. Kim, G.~H. Low, S.~Boixo, Z.~Ding,
+  L.~Lin, S.~Lee, G.~K.-L. Chan, R.~Babbush, and N.~C. Rubin, Rapid initial-state preparation for the
+  quantum simulation of strongly correlated molecules, PRX Quantum \textbf{6}, 020327 (2025).
 \bibitem{Choi2021} K.~Choi, D.~Lee, J.~Bonitati, Z.~Qian, and J.~Watkins, Rodeo algorithm for quantum
   computing, Phys.\ Rev.\ Lett.\ \textbf{127}, 040505 (2021).
 \bibitem{Ross2016} N.~J. Ross and P.~Selinger, Optimal ancilla-free Clifford+$T$ approximation of
@@ -684,8 +739,6 @@ qiskit, and an end-to-end certificate check).
   J.\ Open Source Softw.\ \textbf{3}, 819 (2018).
 \bibitem{Sahinoglu2021} B.~\c{S}ahino\u{g}lu and R.~D. Somma, Hamiltonian simulation in the low-energy
   subspace, npj Quantum Inf.\ \textbf{7}, 119 (2021).
-\bibitem{repoWriteup} Earlier analysis of the certified filter for this model:
-  \url{https://github.com/aaronseymour7/CLAUDE} (\texttt{j1j2\_filter/WRITEUP.md}).
 \end{thebibliography}
 
 \end{document}

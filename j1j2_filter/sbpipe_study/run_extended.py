@@ -275,10 +275,43 @@ def run_regime():
     dump("ext_regime.json", out)
 
 
+# ----------------------------------------------------------------------------- wider sensitivity study
+def _sens_wide_case(args):
+    kind, f, N, J2, sched = args
+    from dataclasses import replace
+    rec, est, ans, g = get_case("chain", N, J2, 2)
+    H = j1j2_chain(N, 1.0, J2)
+    e = replace(est, E1=est.E0 + f * est.gap, E1_err=0.0) if kind == "gap" else est
+    a = replace(ans, gamma=min(1.0, f * ans.gamma)) if kind == "gamma" else ans
+    try:
+        plan = refine(H, e, a, Config(eps=1e-2, schedule=sched, order=2))
+    except (RuntimeError, ValueError) as err:
+        return dict(kind=kind, f=f, N=N, J2=J2, schedule=sched, plan=None, error=str(err))
+    sim = validate(plan, H, ans, g)            # always the TRUE trial state and ground state
+    return dict(kind=kind, f=f, N=N, J2=J2, schedule=sched, plan=plan.summary(), sim=sim)
+
+
+def run_sens_wide():
+    """Gap and overlap overestimation for every N <= 14, coupling and second-order schedule."""
+    cases = [("gap", f, N, J2, s) for f in (1.0, 1.1, 1.25, 1.5, 2.0, 3.0)
+             for N in RS.N_VAL for J2 in RS.J2S for s in ("dyadic", "optimized", "qetu")]
+    cases += [("gamma", f, N, J2, s) for f in (1.02, 1.05)
+              for N in RS.N_VAL for J2 in RS.J2S for s in ("dyadic", "optimized", "qetu")]
+    out = []
+    with ProcessPoolExecutor(JOBS) as ex:
+        for r in ex.map(_sens_wide_case, cases):
+            sm = r.get("sim") or {}
+            print(f"[sens] {r['kind']} f={r['f']} N={r['N']} J2={r['J2']} {r['schedule']:9s} "
+                  f"meas={sm.get('infidelity_trotter', float('nan')):.2e}", flush=True)
+            out.append(r)
+    dump("ext_sensitivity.json", out)
+
+
 if __name__ == "__main__":
     what = sys.argv[1] if len(sys.argv) > 1 else "all"
     steps = dict(inputs2d=run_inputs2d, chi_chain=run_chi_chain, chain_small=run_chain_small,
-                 qetu_val=run_qetu_val, qetu_scale=run_qetu_scale, regime=run_regime)
+                 qetu_val=run_qetu_val, qetu_scale=run_qetu_scale, regime=run_regime,
+                 sens_wide=run_sens_wide)
     for k in (steps if what == "all" else what.split(",")):
         t = time.time()
         steps[k]()
