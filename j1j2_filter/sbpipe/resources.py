@@ -43,8 +43,9 @@ def per_step_counts(H: PauliSum):
                 cnot_per_term=2 * w)
 
 
-def filter_counts(H: PauliSum, steps, order: int, phases=None):
-    """CNOTs and arbitrary rotations of the filter (no trial circuit)."""
+def filter_counts(H: PauliSum, steps, order: int, phases=None, anc_rot_per_pulse: int = 1):
+    """CNOTs and arbitrary rotations of the filter (no trial circuit). A Stetcu-Baroni pulse has one
+    merged ancilla Rz; a QETU query has two (the identity term's Z rotation and the X-rotation phase)."""
     s = per_step_counts(H)
     G, cw = s["terms"], s["cnot_per_term"]
     k = np.asarray(steps, int)
@@ -56,13 +57,14 @@ def filter_counts(H: PauliSum, steps, order: int, phases=None):
         rot = int(np.sum(k * (2 * G - 2) + 1))
         inner = cw[1:-1].sum() if G > 2 else 0
         cnot = int(np.sum(2 * k * inner + (k + 1) * cw[0] + k * cw[-1])) if G > 1 else int(np.sum(k) * cw.sum())
-    rot += len(k)                                    # one merged ancilla Rz per pulse
+    rot += anc_rot_per_pulse * len(k)                # ancilla rotations per pulse / query
     return dict(cnot=cnot, rotations=rot, steps=int(np.sum(k)),
                 qubits=H.num_qubits + (1 if len(k) else 0))
 
 
-def total_costs(H, steps, order, trial_cost, p_succ, synth_delta, model: GateModel = GateModel()):
-    f = filter_counts(H, steps, order)
+def total_costs(H, steps, order, trial_cost, p_succ, synth_delta, model: GateModel = GateModel(),
+                anc_rot_per_pulse: int = 1):
+    f = filter_counts(H, steps, order, anc_rot_per_pulse=anc_rot_per_pulse)
     t_rot = model.t_per_rotation(synth_delta) if synth_delta > 0 else 0.0
     tc = dict(cnot=trial_cost.get("cnot", 0), rotations=trial_cost.get("rotations", 0))
     attempt_cnot = f["cnot"] + tc["cnot"]

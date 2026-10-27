@@ -29,7 +29,7 @@ from .trotter import alpha1, beta2, steps_for_budget, trotter_error
 @dataclass
 class Config:
     eps: float = 1e-2                       # target infidelity 1 - F
-    schedule: str = "optimized"             # uniform | dyadic | optimized | auto (cheaper of the last two)
+    schedule: str = "optimized"             # uniform | dyadic | optimized | qetu | auto (cheaper of dyadic, optimized)
     order: int = 2                          # Trotter order (1 or 2)
     leak_fracs: Sequence[float] = (0.5, 0.25, 0.1, 0.05)   # leakage share of eps to scan
     synth_frac: float = 0.1                 # share of the unitary-error budget for Rz synthesis
@@ -83,7 +83,8 @@ def _plan_for(H, Hs, win, des, gamma, cfg, const, trial_cost):
     else:
         steps = steps_for_budget(cfg.order, const, des.times, (1 - cfg.synth_frac) * budget)
         eps_T = trotter_error(cfg.order, const, des.times, steps)
-    R = filter_counts(Hs, steps, cfg.order)["rotations"] + R_trial
+    anc = 2 if des.schedule == "qetu" else 1
+    R = filter_counts(Hs, steps, cfg.order, anc_rot_per_pulse=anc)["rotations"] + R_trial
     delta_syn = (budget - eps_T) / R if R else 0.0   # all remaining budget to synthesis
     eps_U = eps_T + R * delta_syn
     cert = certificate(gamma, eta, fp, 0.0)
@@ -96,7 +97,7 @@ def _plan_for(H, Hs, win, des, gamma, cfg, const, trial_cost):
     # with no filter nothing is post-selected and every attempt succeeds
     p_succ = (math.sqrt(p_eff) - eps_U) ** 2 if des.m else 1.0
     cert["p_succ_bound"] = p_succ
-    res = total_costs(Hs, steps, cfg.order, trial_cost, p_succ, delta_syn, cfg.gate_model)
+    res = total_costs(Hs, steps, cfg.order, trial_cost, p_succ, delta_syn, cfg.gate_model, anc)
     return steps, cert, res
 
 
@@ -155,7 +156,8 @@ def validate(plan: Plan, H: PauliSum, ansatz: Ansatz, ground: Optional[np.ndarra
     and compare with the certificate. Dense; intended for N <= ~14."""
     from scipy.sparse.linalg import eigsh
 
-    from .simulate import filter_exact, filter_trotter, state_metrics, trace_distance_pure
+    from .simulate import (filter_exact, filter_trotter, qetu_exact, qetu_trotter, state_metrics,
+                           trace_distance_pure)
 
     if ansatz.statevector is None:
         raise ValueError("ansatz has no statevector")
@@ -166,8 +168,15 @@ def validate(plan: Plan, H: PauliSum, ansatz: Ansatz, ground: Optional[np.ndarra
     Hs_sp = plan.H_scaled.to_sparse()
     d = plan.design
     psi = ansatz.statevector
-    ve = filter_exact(Hs_sp, psi, d.times, d.phases)
-    vt = filter_trotter(plan.H_scaled, psi, d.times, d.phases, plan.steps, plan.config.order)
+    if d.schedule == "qetu":
+        if plan.config.order != 2:
+            raise ValueError("QETU is simulated through p(X), which needs S(-t) = S(t)^dagger (order 2)")
+        dm = d.meta
+        ve = qetu_exact(Hs_sp, psi, dm["degree"], dm["tau"], dm["x_s"])
+        vt = qetu_trotter(plan.H_scaled, psi, dm["degree"], dm["tau"], dm["x_s"], plan.steps)
+    else:
+        ve = filter_exact(Hs_sp, psi, d.times, d.phases)
+        vt = filter_trotter(plan.H_scaled, psi, d.times, d.phases, plan.steps, plan.config.order)
     me, mt = state_metrics(ve, ground, Hsp), state_metrics(vt, ground, Hsp)
     trot_dist = trace_distance_pure(ve, vt)
     out = dict(

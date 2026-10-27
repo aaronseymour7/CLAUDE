@@ -54,6 +54,8 @@ class FilterDesign:
         return len(self.times)
 
     def values(self, E):
+        if self.schedule == "qetu":
+            return qetu_values(self.meta["degree"], self.meta["tau"], self.meta["x_s"], E)
         return filter_values(self.times, self.phases, E)
 
 
@@ -144,7 +146,51 @@ def optimized(delta, w0, eps_leak, gamma, m_list=(4, 6, 8), x_list=None, seed=0)
     return _make("optimized", r["times"], r["phases"], delta, w0, x=r["x"])
 
 
-SCHEDULES = ("uniform", "dyadic", "optimized")
+def _cheb(d, x):
+    """T_d(x) for real x, stable for |x| > 1 (where it grows like cosh)."""
+    x = np.asarray(x, float)
+    out = np.empty_like(x)
+    inside = np.abs(x) <= 1.0
+    out[inside] = np.cos(d * np.arccos(x[inside]))
+    xo = x[~inside]
+    out[~inside] = np.sign(xo) ** d * np.cosh(d * np.arccosh(np.abs(xo)))
+    return out
+
+
+def qetu_values(d, tau, x_s, E):
+    """QETU filter p(cos(tau E)) with p(x) = T_d(x / x_s) / T_d(1 / x_s)."""
+    return _cheb(d, np.cos(tau * np.asarray(E, float)) / x_s) / _cheb(d, np.array([1.0 / x_s]))[0]
+
+
+def qetu(delta, w0, eta_t, d_max=10_000_000):
+    """QETU baseline (Dong, Lin, Tong, PRX Quantum 3, 040305 (2022)): d queries of the same
+    ancilla-Z evolution e^{-i tau H_s (x) Z_a}, tau = pi/2, interleaved with ancilla rotations and
+    a single post-selection at the end. On each eigenvector the ancilla sees a quantum-signal-
+    processing sequence in x = cos(tau E), so the ancilla-0 block is p(cos(tau H_s)) for any real even
+    polynomial p of degree d with |p| <= 1 on [-1, 1] (QETU Theorem 1; phases are found classically).
+
+    p(x) = T_d(x / x_s) / T_d(1 / x_s), x_s = cos(tau delta): the Chebyshev polynomial is the extremal
+    choice (smallest sup on [-x_s, x_s] for a given value outside). Certified in closed form: on the
+    stop band x = cos(tau E) lies in [0, x_s], so |p| <= 1 / T_d(1 / x_s); p increases on [x_s, 1], so
+    on the pass band p >= p(cos(tau w0)) = F_pass, and eta = 1 / T_d(cos(tau w0) / x_s).
+    Total evolution time T = d tau, with T ~ ln(2/eta) / delta for small delta."""
+    tau = math.pi / 2
+    x_s = math.cos(tau * delta)
+    x_p = math.cos(tau * w0)
+    if x_p <= x_s:
+        return None
+    a = math.acosh(x_p / x_s)
+    d = math.ceil(math.acosh(1.0 / eta_t) / a)
+    d += d % 2                                        # even polynomial
+    if d > d_max:
+        return None
+    eta = 1.0 / math.cosh(d * a)
+    f_pass = math.cosh(d * a) / math.cosh(d * math.acosh(1.0 / x_s))
+    return FilterDesign("qetu", np.full(d, tau), np.zeros(d), delta, w0, eta, f_pass,
+                        dict(degree=d, tau=tau, x_s=x_s, certificate="closed form"))
+
+
+SCHEDULES = ("uniform", "dyadic", "optimized", "qetu")
 
 
 def no_filter(delta, w0):
@@ -166,4 +212,6 @@ def design_filter(schedule: str, delta: float, w0: float, eps_leak: float, gamma
         return dyadic(delta, w0, eta_t, **kw)
     if schedule == "optimized":
         return optimized(delta, w0, eps_leak, gamma, **kw)
+    if schedule == "qetu":
+        return qetu(delta, w0, eta_t, **kw)
     raise ValueError(f"unknown schedule {schedule!r}; choose from {SCHEDULES}")
