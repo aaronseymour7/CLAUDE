@@ -41,9 +41,9 @@ factor of \boundRatioMed, mostly through its Trotter term. A second-order produc
 \gainOrderMed$\times$ cheaper than first order, and an optimized filter a median \gainOptMed$\times$
 cheaper than a closed-form halving (``dyadic'') schedule, which however is the only design that stays
 feasible for small overlaps. Near the critical coupling at $N=48$, a $\chi=4$ trial state is refined to
-infidelity $10^{-2}$ for \cnotFortyEightChiFour{} CNOTs per success. Overestimating the gap by
-$50\%$ is the one input error that broke the target; a conservative gap costs at most
-\gapMarginCost$\times$. For this one-dimensional model at $\epsilon=10^{-2}$, however, a $\chi=8$
+infidelity $10^{-2}$ for \cnotFortyEightChiFour{} CNOTs per success. Across all small instances,
+overestimating the gap by 10--25\% or inflating the overlap past $1-\epsilon$ can break the target, while a
+conservative gap costs at most \gapMarginCost$\times$. For this one-dimensional model at $\epsilon=10^{-2}$, however, a $\chi=8$
 matrix-product circuit alone already meets the target with about $10^{3}$--$10^{4}$ CNOTs, so the value of
 the pipeline lies in its conditional certificate and in models where compact trial states are not available.
 \end{abstract}
@@ -550,8 +550,37 @@ limiting input here.
 \emph{Overlap.} Underestimating $\gamma$ is safe (a stricter $\eta$); the planned cost rises
 \gammaLowCost$\times$ at $f=0.25$, mostly because the planned success probability $p_g=\gamma F_{\rm
 pass}^2$ uses the pessimistic $\gamma$, while the actual success rate does not change. Overestimating
-it by 2\% did not break the target here (\nGammaFail{} failures), because the leakage term is itself
-loose.
+it by 2\% did not break the target in this instance (\nGammaFail{} failures), because the leakage term
+is itself loose.
+
+\emph{All instances.} To see whether this one instance is typical we repeated the gap and overlap
+perturbations for every $N\le14$, all three couplings and the dyadic, optimized and QETU schedules
+(second order, $\epsilon=10^{-2}$; Table~\ref{tab:senswide}). With exact inputs all \sensGapN{} plans
+meet the target. An overestimate of the gap by 10\% already breaks it in \sensGapOneTenMiss{} of
+\sensGapN{} plans (marginally, worst \sensGapOneTenWorst), by 25\% in \sensGapOneQuarterMiss{} and by
+50\% in \sensGapOneHalfMiss. The closed-form dyadic schedule is the most tolerant
+(\sensDyaQuarterMiss{} misses at 25\%), because its bound is the loosest; the optimized and Chebyshev
+filters, whose leakage terms are nearly tight, have no slack to absorb a wrong gap. Overestimating
+$\gamma$ broke the target in \sensGammaMiss{} of \sensGammaN{} plans, all of them through the same
+mechanism: the inflated $\gamma$ crossed $1-\epsilon$, so the pipeline dropped the filter altogether
+(\sensGammaNoFilter{} of \sensGammaMiss). A margin on both inputs is therefore not optional: $\delta E_1$
+should be a sizeable fraction of the gap when $E_1$ is not certified, and the empty filter should be
+accepted only on a certified (for example Eckart) lower bound on $\gamma$.
+
+\begin{table}[t]
+\caption{Gap and overlap overestimation for every $N\in\{8,10,12,14\}$ and $J_2$ (12 instances),
+$\epsilon=10^{-2}$, second order: number of plans that miss the target and the worst measured
+infidelity. $f$: assumed over true gap or $\gamma$. Source: \texttt{results/ext\_sensitivity.json}.}
+\label{tab:senswide}
+\begin{ruledtabular}
+\begin{tabular}{lrrrrrrr}
+ & & \multicolumn{2}{c}{dyadic} & \multicolumn{2}{c}{optimized} & \multicolumn{2}{c}{QETU}\\
+input & $f$ & miss & worst & miss & worst & miss & worst\\
+\midrule
+\input{generated/tab_sens_wide.tex}
+\end{tabular}
+\end{ruledtabular}
+\end{table}
 
 \subsection{Choosing the ansatz}
 
@@ -599,8 +628,9 @@ spectral upper bound (Weyl) and the filter certificate are rigorous, and the Tro
 exact up to the Lanczos tolerance of their largest local norms. The
 interval for $E_0$, the lower bound on $E_1$ and the overlap $\gamma$ come from DMRG and are
 well-converged estimates, not bounds; for $N\le14$ ED confirms them, beyond that the certificate is
-conditional on all three: the $E_0$ interval, the gap and the overlap. The gap is the critical input: an overestimated gap was the only input error that
-broke the target in our tests. Rigorous lower bounds on $E_1$ from classical data
+conditional on all three: the $E_0$ interval, the gap and the overlap. The gap is the critical input: an overestimate of 10--25\% already broke the target for the
+optimized and Chebyshev filters (Table~\ref{tab:senswide}), and an overestimated overlap did so whenever it
+led the pipeline to skip the filter. Rigorous lower bounds on $E_1$ from classical data
 (e.g.\ Temple-type bounds from the energy variance) would remove the gap condition and plug into the
 same interface. Given such energy bounds, the Eckart inequality
 $1-\gamma\le(\langle H\rangle_\psi-E_0)/(E_1-E_0)$ turns the trial state's energy into a lower bound on

@@ -263,7 +263,11 @@ def run_regime():
     cases = [("chain", N, J2, eps, chi, s) for N in (16, 32, 48) for J2 in RS.J2S
              for chi in (2, 4, 8, 16, 32) for eps in EPS_REGIME for s in ("auto", "qetu")]
     cases += [("cyl", Lx, J2, eps, chi, s) for Lx in LX for J2 in J2S_2D
-              for chi in CHIS_2D for eps in EPS_REGIME for s in ("auto", "qetu")]
+              for chi in CHIS_2D for eps in EPS_REGIME for s in ("auto", "qetu")
+              if os.path.exists(os.path.join(CACHE2D, _k2(Lx, J2) + ".json"))]
+    kinds = os.environ.get("KINDS", "chain,cyl").split(",")
+    cases = [c for c in cases if c[0] in kinds]
+    name = "ext_regime.json" if len(kinds) == 2 else f"ext_regime_{kinds[0]}.json"
     out = []
     with ProcessPoolExecutor(JOBS) as ex:
         for r in ex.map(_regime_case, cases):
@@ -272,7 +276,7 @@ def run_regime():
                   f"{r['schedule']:5s} gamma={r['gamma']:.4f} "
                   f"cnot={pl['res_expected_cnot'] if pl else float('nan'):.2e} ({r['time']:.0f}s)", flush=True)
             out.append(r)
-    dump("ext_regime.json", out)
+    dump(name, out)
 
 
 # ----------------------------------------------------------------------------- wider sensitivity study

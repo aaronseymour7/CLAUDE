@@ -174,6 +174,8 @@ def qetu(delta, w0, eta_t, d_max=10_000_000):
     stop band x = cos(tau E) lies in [0, x_s], so |p| <= 1 / T_d(1 / x_s); p increases on [x_s, 1], so
     on the pass band p >= p(cos(tau w0)) = F_pass, and eta = 1 / T_d(cos(tau w0) / x_s).
     Total evolution time T = d tau, with T ~ ln(2/eta) / delta for small delta."""
+    if eta_t >= 1.0:                                  # the trial state needs no suppression
+        return no_filter(delta, w0)
     tau = math.pi / 2
     x_s = math.cos(tau * delta)
     x_p = math.cos(tau * w0)
