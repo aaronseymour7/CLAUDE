@@ -620,6 +620,55 @@ $N$ & $J_2$ & $\gamma_1$ & CNOT & $\gamma_2$ & CNOT & $\gamma_4$ & CNOT & $\gamm
 \end{ruledtabular}
 \end{table*}
 
+\subsection{What sets the cost: gap and overlap}
+\label{sec:drivers}
+
+The costs above mix three effects that change together with $N$: the gap shrinks, the energy scale $W$
+grows, and the trial overlap decays. To separate them we hold one input fixed and vary the other
+(\drvNPlans{} plans, QETU and dyadic, second order, $\epsilon\in\{10^{-2},10^{-3}\}$, $N=8$--48, filter
+cost only so that the trial circuit does not enter). Both knobs are legitimate inputs to the pipeline:
+a gap smaller than the true one and an overlap smaller than the true one keep the certificate valid.
+
+\emph{Overlap at fixed gap.} For each $N$ we give the pipeline an overlap $\gamma$ from 0.01 to 0.97,
+either with the true gap of that chain or with one common gap for all $N$ (the smallest true gap of
+the set, at $N=48$). Between $\gamma=0.01$ and 0.97 the cost changes by a factor of about
+$\drvGamSpread$ at every $N$ (Fig.~\ref{fig:drivers}a). The dependence follows from the design rules:
+$\eta^2\propto\gamma\epsilon/(1-\gamma)$ sets $T\propto\Delta^{-1}\ln[(1-\gamma)/(\gamma\epsilon)]$; the
+second-order step count grows as $T^{3/2}\epsilon_T^{-1/2}$ with $\epsilon_T\propto\sqrt{\gamma\epsilon}$; and the
+repetitions add $1/p_g\approx1/\gamma$. Together,
+\begin{equation}
+\text{cost}\;\propto\;\Delta^{-3/2}\,\gamma^{-5/4}\,\ln^{3/2}\frac{1-\gamma}{\gamma\epsilon}\;\epsilon^{-1/4}.
+\label{eq:costmodel}
+\end{equation}
+Fitting the planned costs gives $\gamma^{-\drvGamExp}$ (range \drvGamExpMin--\drvGamExpMax) once the
+logarithm is divided out, close to the predicted $5/4$; as a plain power law over this range the
+cost goes as $\gamma^{-\drvGamRaw}$. With the gap held at one common value, the remaining $N$
+dependence is $N^{\drvNExp}$ (range \drvNExpMin--\drvNExpMax): the scaled gap $\Delta=g/W$ falls as
+$1/N$ because $W\propto N$, which alone gives $N^{3/2}$, and the commutator constant and the number of
+terms per step add a little.
+
+\emph{Gap at fixed overlap.} We vary the gap in two ways at $\gamma=0.1$ and 0.5: physically, by
+scanning $J_2\in\{0,0.1,0.2,0.2411,0.3,0.4,0.5\}$ at each $N$ (new DMRG and, for $N\le14$, ED inputs; ED
+confirms the triplet as first excitation at every coupling), and at fixed $H$ by handing the pipeline
+25--100\% of the true gap. The physical scan spans less than one might expect: for $J_2\le0.3$ the
+finite-size gap barely depends on $J_2$, and only the dimerized couplings open it at large $N$ (from
+0.074 at $J_2=0.2411$ to 0.249 at $J_2=0.5$ for $N=48$). All points collapse onto one line in the scaled
+gap $\Delta$ for a given $N$ (Fig.~\ref{fig:drivers}b), with cost $\propto\Delta^{-\drvGapExp}$ (range
+\drvGapExpMin--\drvGapExpMax), the $3/2$ of Eq.~\eqref{eq:costmodel}. The gap enters with a larger power
+than the overlap, but the overlap varies over a much wider range in practice: going from $\chi=2$ to
+$\chi=8$ at $N=48$ moves $\gamma$ by a factor of up to 8 (1.6--8), while all couplings together move the gap by a
+factor of 3.4.
+
+\begin{figure*}[t]
+\includegraphics[width=0.8\textwidth]{figs/fig_drivers.pdf}
+\caption{What sets the filter cost (QETU, second order, $\epsilon=10^{-2}$, filter only). (a) Expected
+CNOTs per success versus the trial overlap at one common gap for all $N$ ($J_2=0.2411$); dashed: the
+model of Eq.~\eqref{eq:costmodel} through the $N=48$ curve. (b) Versus the scaled gap at $\gamma=0.5$;
+each $N$ and $J_2$ contributes the true gap and 25, 50 and 75\% of it. Dashed: $\Delta^{-3/2}$. Source:
+\texttt{results/ext\_drivers.json}.}
+\label{fig:drivers}
+\end{figure*}
+
 %=====================================================================================================
 \section{Discussion}
 

@@ -333,6 +333,82 @@ def qetu():
         macro("qetuLeakMed", f"{np.median([v['plan']['leak'] / v['sim']['infidelity_exact'] for v in sims]):.1f}")
 
 
+# ----------------------------------------------------------------------------- what drives the cost
+def drivers():
+    D = load("ext_drivers.json")
+    if D is None:
+        return
+    from collections import defaultdict
+    ov = [r for r in D if r["study"] == "overlap" and r["plan"]]
+    gp = [r for r in D if r["study"] == "gap" and r["plan"]]
+    cost = lambda r: r["plan"]["res_expected_cnot"]
+    # exponents: gap (within fixed N, J2, eps, schedule, gamma), overlap (within fixed gap), N (common gap)
+    grp = defaultdict(list)
+    for r in gp:
+        grp[(r["N"], r["J2"], r["eps"], r["schedule"], r["gamma"])].append(r)
+    ag = [-np.polyfit(np.log([r["plan"]["delta"] for r in v]), np.log([cost(r) for r in v]), 1)[0]
+          for v in grp.values()]
+    grp = defaultdict(list)
+    for r in ov:
+        if r["gapmode"] == "true":
+            grp[(r["N"], r["J2"], r["eps"], r["schedule"])].append(r)
+    cg, craw = [], []
+    for (N, J2, eps, s), v in grp.items():
+        g = np.array([r["gamma"] for r in v]); c = np.array([cost(r) for r in v])
+        L = np.log((1 - g) / (g * eps))
+        cg.append(-np.polyfit(np.log(g), np.log(c / L ** 1.5), 1)[0])
+        craw.append(-np.polyfit(np.log(g), np.log(c), 1)[0])
+    grp = defaultdict(list)
+    for r in ov:
+        if r["gapmode"] == "common" and r["N"] >= 16:
+            grp[(r["J2"], r["eps"], r["schedule"], r["gamma"])].append(r)
+    nN = [np.polyfit(np.log([r["N"] for r in v]), np.log([cost(r) for r in v]), 1)[0] for v in grp.values()]
+    macro("drvGapExp", f"{np.median(ag):.2f}")
+    macro("drvGapExpMin", f"{min(ag):.2f}"); macro("drvGapExpMax", f"{max(ag):.2f}")
+    macro("drvGamExp", f"{np.median(cg):.2f}")
+    macro("drvGamExpMin", f"{min(cg):.2f}"); macro("drvGamExpMax", f"{max(cg):.2f}")
+    macro("drvGamRaw", f"{np.median(craw):.2f}")
+    macro("drvNExp", f"{np.median(nN):.1f}")
+    macro("drvNExpMin", f"{min(nN):.1f}"); macro("drvNExpMax", f"{max(nN):.1f}")
+    macro("drvNPlans", len(D))
+    sel = lambda r, N: r["N"] == N and r["J2"] == 0.2411 and r["eps"] == 1e-2 and r["schedule"] == "qetu"
+    lo = [r for r in ov if sel(r, 48) and r["gapmode"] == "true"]
+    macro("drvGamSpread", sci(max(map(cost, lo)) / min(map(cost, lo)), 0))
+    # figure
+    fig, ax = plt.subplots(1, 2, figsize=(6.8, 2.7))
+    cols = {8: "#9aa0a6", 16: "#1baf7a", 24: "#eb6834", 32: "#2a78d6", 48: "#0b0b0b"}
+    for N, col in cols.items():
+        v = sorted([r for r in ov if sel(r, N) and r["gapmode"] == "common"], key=lambda r: r["gamma"])
+        ax[0].plot([r["gamma"] for r in v], [cost(r) for r in v], "o-", color=col, ms=3.5, label=f"$N={N}$")
+    g = np.logspace(-2, np.log10(0.97), 100)
+    v48 = sorted([r for r in ov if sel(r, 48) and r["gapmode"] == "common"], key=lambda r: r["gamma"])
+    m = lambda g: g ** (-1.25) * np.log((1 - g) / (g * 1e-2)) ** 1.5
+    ax[0].plot(g, m(g) * cost(v48[3]) / m(v48[3]["gamma"]), color=INK2, ls="--", lw=0.8)
+    ax[0].text(0.011, 3.5e5, r"$\gamma^{-5/4}\ln^{3/2}\frac{1-\gamma}{\gamma\epsilon}$", color=INK2, fontsize=7)
+    ax[0].set_xscale("log"); ax[0].set_yscale("log")
+    ax[0].set_xlabel(r"trial overlap $\gamma$"); ax[0].set_ylabel("filter CNOTs per success")
+    ax[0].set_title("(a) overlap, common gap", loc="left"); ax[0].legend(fontsize=6.5, loc="upper right")
+    mk = {0.0: "o", 0.2411: "s", 0.4: "^", 0.5: "D"}
+    for N, col in ((16, cols[16]), (32, cols[32]), (48, cols[48])):
+        for J2 in (0.0, 0.2411, 0.4, 0.5):
+            v = sorted([r for r in gp if r["N"] == N and r["J2"] == J2 and r["eps"] == 1e-2 and r["gamma"] == 0.5
+                        and r["schedule"] == "qetu"], key=lambda r: r["f"])
+            ax[1].plot([r["plan"]["delta"] for r in v], [cost(r) for r in v], marker=mk[J2], color=col,
+                       ms=3.5, lw=0.8, mfc="white" if J2 in (0.4, 0.5) else col)
+    x = np.array([5e-4, 3e-2])
+    ax[1].plot(x, 2e5 * (x / 1e-2) ** -1.5, color=INK2, ls="--", lw=0.8)
+    ax[1].text(1.2e-2, 1.6e5, r"$\Delta^{-3/2}$", color=INK2, fontsize=7)
+    ax[1].set_xscale("log"); ax[1].set_yscale("log")
+    ax[1].set_xlabel(r"scaled gap $\Delta$"); ax[1].set_title(r"(b) gap, $\gamma=0.5$", loc="left")
+    h = [plt.Line2D([], [], color=INK2, marker=mk[j], ls="none", mfc="white" if j in (0.4, 0.5) else INK2,
+                    label=f"$J_2={j:g}$") for j in mk]
+    h += [plt.Line2D([], [], color=cols[n], lw=1.5, label=f"$N={n}$") for n in (16, 32, 48)]
+    ax[1].legend(handles=h, fontsize=6, loc="upper right", ncol=2)
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIG, "fig_drivers.pdf"))
+    plt.close(fig)
+
+
 # ----------------------------------------------------------------------------- wider sensitivity
 def sens_wide():
     C = load("ext_sensitivity.json")
@@ -503,7 +579,7 @@ def oracle():
 
 
 if __name__ == "__main__":
-    for f in (inputs_table, validation, scaling, qetu, sens_wide, sensitivity, ansatz, oracle):
+    for f in (inputs_table, validation, scaling, qetu, drivers, sens_wide, sensitivity, ansatz, oracle):
         f()
     with open(os.path.join(GEN, "macros.tex"), "w") as fh:
         fh.write("% generated by sbpipe_study/make_figures.py -- do not edit\n" + "\n".join(MACROS) + "\n")

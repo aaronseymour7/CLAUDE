@@ -311,11 +311,121 @@ def run_sens_wide():
     dump("ext_sensitivity.json", out)
 
 
+# ----------------------------------------------------------------------------- what drives the cost: gap and overlap
+J2S_GAP = [0.0, 0.1, 0.2, 0.2411, 0.3, 0.4, 0.5]
+N_DRIVE = [8, 10, 12, 14, 16, 24, 32, 48]
+GAMMAS = [0.01, 0.03, 0.1, 0.3, 0.5, 0.7, 0.9, 0.97]
+SCHED_DRIVE = ("qetu", "dyadic")
+
+
+def run_inputs_j2():
+    """DMRG (+ ED for N <= 14) inputs for the extra couplings of the gap study, in run_study's cache."""
+    todo = [(N, J2) for J2 in J2S_GAP for N in sorted(N_DRIVE, reverse=True)]
+    todo = [t for t in todo if not os.path.exists(os.path.join(CACHE, RS._key(*t) + ".json"))]
+    with ProcessPoolExecutor(JOBS) as ex:
+        for k, dt in ex.map(RS.compute_inputs, todo):
+            print(f"[inputs_j2] {k} {dt:.0f}s", flush=True)
+
+
+def _chain_est(N, J2):
+    rec = json.load(open(os.path.join(CACHE, RS._key(N, J2) + ".json")))
+    return rec, EnergyEstimates(**rec["est"])
+
+
+def _drive_plan(N, J2, est, gamma, eps, sched):
+    """Filter-only plan (no trial-circuit cost) for an assumed overlap gamma."""
+    from dataclasses import replace
+    H = j1j2_chain(N, 1.0, J2)
+    ans = Ansatz(gamma=gamma, cost={}, name=f"gamma={gamma:g}")
+    try:
+        plan = refine(H, est, ans, Config(eps=eps, schedule=sched, order=2))
+    except (RuntimeError, ValueError) as err:
+        return None, str(err)
+    return plan, None
+
+
+def _overlap_case(args):
+    N, J2, eps, sched, gamma, gapmode = args
+    from dataclasses import replace
+    rec, est = _chain_est(N, J2)
+    if gapmode == "common":                    # one gap for every N: the smallest true gap of this J2
+        g = min(_chain_est(n, J2)[1].gap for n in N_DRIVE)
+        est = replace(est, E1=est.E0 + g, E1_err=0.0)
+    plan, err = _drive_plan(N, J2, est, gamma, eps, sched)
+    return dict(study="overlap", N=N, J2=J2, eps=eps, schedule=sched, gamma=gamma, gapmode=gapmode,
+                gap=est.E1 - est.E0 - est.E1_err, plan=plan.summary() if plan else None, error=err)
+
+
+def _gap_case(args):
+    N, J2, eps, sched, gamma, f = args
+    from dataclasses import replace
+    rec, est = _chain_est(N, J2)
+    true_gap = est.gap
+    est = replace(est, E1=est.E0 + f * true_gap, E1_err=0.0)
+    plan, err = _drive_plan(N, J2, est, gamma, eps, sched)
+    return dict(study="gap", N=N, J2=J2, eps=eps, schedule=sched, gamma=gamma, f=f, true_gap=true_gap,
+                gap=f * true_gap, plan=plan.summary() if plan else None, error=err)
+
+
+def run_drivers():
+    """Study 1: overlap scan at fixed gap (true gap per N, or one common gap for all N).
+    Study 2: gap scan at fixed overlap (J2 scan, and a fraction f of the true gap at fixed H)."""
+    c1 = [(N, J2, eps, s, g, gm) for N in N_DRIVE for J2 in RS.J2S for eps in (1e-2, 1e-3)
+          for s in SCHED_DRIVE for g in GAMMAS for gm in ("true", "common")]
+    c2 = [(N, J2, eps, s, g, f) for N in N_DRIVE for J2 in J2S_GAP for eps in (1e-2, 1e-3)
+          for s in SCHED_DRIVE for g in (0.1, 0.5) for f in (0.25, 0.5, 0.75, 1.0)]
+    with ProcessPoolExecutor(JOBS) as ex:
+        o1 = list(ex.map(_overlap_case, c1, chunksize=8))
+        o2 = list(ex.map(_gap_case, c2, chunksize=8))
+    dump("ext_drivers.json", o1 + o2)
+
+
+def _synthetic_trial(N, J2, gamma):
+    """sqrt(gamma) |E0> + sqrt(1-gamma) |xi>, |xi> the normalised excited part of the chi = 2 MPS."""
+    rec, est, ans, g = get_case("chain", N, J2, 2)
+    t = ans.statevector
+    xi = t - np.vdot(g, t) * g
+    xi /= np.linalg.norm(xi)
+    ph = np.vdot(g, t) / abs(np.vdot(g, t))
+    return est, np.sqrt(gamma) * g * ph + np.sqrt(1 - gamma) * xi, g
+
+
+def _drive_val_case(args):
+    study, N, J2, eps, sched, gamma, knob = args
+    from dataclasses import replace
+    est, psi, g = _synthetic_trial(N, J2, gamma)
+    if study == "gap":
+        est = replace(est, E1=est.E0 + knob * est.gap, E1_err=0.0)
+    H = j1j2_chain(N, 1.0, J2)
+    ans = Ansatz(gamma=gamma, statevector=psi, cost={})
+    plan = refine(H, est, ans, Config(eps=eps, schedule=sched, order=2))
+    sim = validate(plan, H, ans, g)
+    return dict(study=study, N=N, J2=J2, eps=eps, schedule=sched, gamma=gamma, knob=knob,
+                plan=plan.summary(), sim=sim)
+
+
+def run_drive_val():
+    """Simulate a subset of both studies with synthetic trial states of exactly the stated overlap."""
+    c = [("overlap", N, J2, 1e-2, s, g, None) for N in RS.N_VAL for J2 in RS.J2S
+         for s in SCHED_DRIVE for g in (0.03, 0.3, 0.9)]
+    c += [("gap", N, J2, 1e-2, s, 0.5, f) for N in RS.N_VAL for J2 in RS.J2S
+          for s in SCHED_DRIVE for f in (0.5, 1.0)]
+    out = []
+    with ProcessPoolExecutor(JOBS) as ex:
+        for r in ex.map(_drive_val_case, c):
+            print(f"[drive_val] {r['study']} N={r['N']} J2={r['J2']} {r['schedule']} gamma={r['gamma']} "
+                  f"knob={r['knob']} bound={r['plan']['infidelity_bound']:.2e} "
+                  f"meas={r['sim']['infidelity_trotter']:.2e} ok={r['sim']['bound_ok']}", flush=True)
+            out.append(r)
+    dump("ext_drivers_validate.json", out)
+
+
 if __name__ == "__main__":
     what = sys.argv[1] if len(sys.argv) > 1 else "all"
     steps = dict(inputs2d=run_inputs2d, chi_chain=run_chi_chain, chain_small=run_chain_small,
                  qetu_val=run_qetu_val, qetu_scale=run_qetu_scale, regime=run_regime,
-                 sens_wide=run_sens_wide)
+                 sens_wide=run_sens_wide, inputs_j2=run_inputs_j2, drivers=run_drivers,
+                 drive_val=run_drive_val)
     for k in (steps if what == "all" else what.split(",")):
         t = time.time()
         steps[k]()
