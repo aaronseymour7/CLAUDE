@@ -835,6 +835,89 @@ def ansatz():
     macro("gammaFortyEightChiEight", f"{r8['gamma']:.4f}")
 
 
+# ----------------------------------------------------------------------------- measured-only crossover
+def _actual_rows(A, sys_):
+    R = [r for r in A if (r["kind"], r["size"], r["J2"]) == sys_]
+    eps = np.array(sorted({r["eps"] for r in R}, reverse=True))
+    out = dict(eps=eps)
+    for m in ("mps", "dyadic", "optimized", "qetu"):
+        c, chi = [], []
+        for e in eps:
+            Q = [r for r in R if r["eps"] == e]
+            if m == "mps":
+                q = [(r["trial_cnot"], r["chi"]) for r in Q if r["mps_alone"]]
+            else:
+                q = [(r[m]["cnot"], r["chi"]) for r in Q if not r["mps_alone"] and r.get(m)]
+            b = min(q) if q else (np.nan, None)
+            c.append(b[0]); chi.append(b[1])
+        out[m] = (np.array(c, float), chi)
+    return out
+
+
+def actual_crossover():
+    A = load("emp_actual.json")
+    if A is None:
+        return
+    systems = [("chain", 16, 0.2411, "chain $N=16$, $J_2=0.2411$"), ("cyl", 3, 0.0, "cylinder $4\\times3$, $J_2=0$"),
+               ("cyl", 3, 0.3, "cylinder $4\\times3$, $J_2=0.3$"), ("cyl", 4, 0.0, "cylinder $4\\times4$, $J_2=0$"),
+               ("cyl", 4, 0.3, "cylinder $4\\times4$, $J_2=0.3$")]
+    fig, axs = plt.subplots(2, 3, figsize=(7.2, 4.6), sharey=True)
+    axs = axs.ravel()
+    MPS_C = INK2
+    wins, ratios = 0, []
+    for a, (kind, sz, J2, name) in zip(axs, systems):
+        o = _actual_rows(A, (kind, sz, J2))
+        e = o["eps"]
+        m, mchi = o["mps"]
+        sbc = np.fmin(o["dyadic"][0], o["optimized"][0])
+        a.plot(e, m, "o-", color=MPS_C, ms=3.5, lw=1.2, drawstyle="steps-mid")
+        for x, y, c in zip(e, m, mchi):
+            if c:
+                a.annotate(f"{c}", (x, y), xytext=(0, 4), textcoords="offset points", fontsize=5.5, color=MPS_C, ha="center")
+        a.plot(e, o["dyadic"][0], "o-", color=SCHED_COL["dyadic"], ms=3.5)
+        for x, y, c in zip(e, *o["dyadic"]):
+            if c:
+                a.annotate(f"{c}", (x, y), xytext=(0, -8), textcoords="offset points", fontsize=5.5,
+                           color=SCHED_COL["dyadic"], ha="center")
+        ok = np.isfinite(o["optimized"][0])
+        a.plot(e[ok], o["optimized"][0][ok], "s", color=SCHED_COL["optimized"], ms=3.5)
+        a.plot(e, o["qetu"][0], "^--", color=QETU_COL, ms=3, lw=0.9)
+        cheaper = np.isfinite(sbc) & (~np.isfinite(m) | (sbc < m))
+        none = ~np.isfinite(m)
+        wins += int(cheaper.sum())
+        ratios += list((m / sbc)[cheaper & ~none])
+        lo, hi = np.log10(e), None
+        edges = 10 ** np.concatenate([[lo[0] + 0.25], (lo[:-1] + lo[1:]) / 2, [lo[-1] - 0.25]])
+        for i in range(len(e)):
+            if cheaper[i]:
+                a.axvspan(edges[i], edges[i + 1], color=SCHED_COL["dyadic"], alpha=0.12, lw=0)
+            if none[i]:
+                a.axvspan(edges[i], edges[i + 1], facecolor=GRID, alpha=0.7, hatch="////", edgecolor="white", lw=0)
+        a.set_xscale("log"); a.set_yscale("log")
+        a.set_xlim(edges[0], edges[-1]); a.set_ylim(1e2, 2e5)
+        a.set_title(name, loc="left", fontsize=7.5)
+        a.set_xticks([1e-2, 1e-3, 1e-4, 1e-5])
+    for a in axs[[0, 3]]:
+        a.set_ylabel("CNOTs per success")
+    for a in axs[2:5]:
+        a.set_xlabel(r"target infidelity $\varepsilon$")
+    axs[5].axis("off")
+    h = [plt.Line2D([], [], color=MPS_C, marker="o", ms=3.5, lw=1.2, label="MPS alone (number: $\\chi$)"),
+         plt.Line2D([], [], color=SCHED_COL["dyadic"], marker="o", ms=3.5, label="MPS + dyadic SBC filter\n(number: trial $\\chi$)"),
+         plt.Line2D([], [], color=SCHED_COL["optimized"], marker="s", ls="", ms=3.5, label="MPS + optimized SBC filter"),
+         plt.Line2D([], [], color=QETU_COL, marker="^", ls="--", ms=3, lw=0.9, label="MPS + QETU (reference)"),
+         plt.Rectangle((0, 0), 1, 1, color=SCHED_COL["dyadic"], alpha=0.12, lw=0, label="SBC filter cheaper than MPS"),
+         plt.Rectangle((0, 0), 1, 1, facecolor=GRID, alpha=0.7, hatch="////", edgecolor="white",
+                       label="no MPS with $\\chi\\leq64$ reaches $\\varepsilon$")]
+    axs[5].legend(handles=h, loc="center", fontsize=6.6)
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIG, "fig_actual.pdf"))
+    fig.savefig(os.path.join(FIG, "fig_actual.png"), dpi=200)
+    plt.close(fig)
+    macro("actWins", str(wins)); macro("actRatioMax", f"{max(ratios):.1f}")
+    print("actual: SBC cheaper in", wins, "of", 5 * 7, "targets; ratios", np.round(sorted(ratios), 2))
+
+
 # ----------------------------------------------------------------------------- oracle
 def oracle():
     O = load("oracle.json")
@@ -859,7 +942,7 @@ def oracle():
 
 
 if __name__ == "__main__":
-    for f in (inputs_table, validation, scaling, qetu, drivers, empirical, regime, fid_plane, crossover, sens_wide, sensitivity, ansatz, oracle):
+    for f in (inputs_table, validation, scaling, qetu, drivers, empirical, regime, fid_plane, crossover, actual_crossover, sens_wide, sensitivity, ansatz, oracle):
         f()
     with open(os.path.join(GEN, "macros.tex"), "w") as fh:
         fh.write("% generated by sbpipe_study/make_figures.py -- do not edit\n" + "\n".join(MACROS) + "\n")
