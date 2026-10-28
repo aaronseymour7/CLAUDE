@@ -43,9 +43,13 @@ cheaper than a closed-form halving (``dyadic'') schedule, which however is the o
 feasible for small overlaps. Near the critical coupling at $N=48$, a $\chi=4$ trial state is refined to
 infidelity $10^{-2}$ for \cnotFortyEightChiFour{} CNOTs per success. Across all small instances,
 overestimating the gap by 10--25\% or inflating the overlap past $1-\epsilon$ can break the target, while a
-conservative gap costs at most \gapMarginCost$\times$. For this one-dimensional model at $\epsilon=10^{-2}$, however, a $\chi=8$
-matrix-product circuit alone already meets the target with about $10^{3}$--$10^{4}$ CNOTs, so the value of
-the pipeline lies in its conditional certificate and in models where compact trial states are not available.
+conservative gap costs at most \gapMarginCost$\times$. Exact simulations up to $N=16$ show that the smallest working filter degree is set by the gap and the
+target alone, $d\,\Delta\simeq(2/\pi)\cosh^{-1}(1/\eta)$, and that one Trotter step per query suffices, so
+the cost the filter actually needs scales as $(\gamma\Delta)^{-1}\ln[(1-\gamma)/(\gamma\epsilon)]$ and lies a
+median \empCertRatio$\times$ below the certified one. For the chain, and for $4\times L_x$ cylinders up to
+48 sites, compiling a matrix-product circuit that meets the target alone is cheaper than any certified
+filtered plan whenever $\chi\le64$ suffices; the filter is the only certified route at $\epsilon=10^{-4}$ on
+the larger cylinders.
 \end{abstract}
 
 \maketitle
@@ -735,6 +739,52 @@ $\epsilon=10^{-3}$, with the gap held at 0.40 or $J_2$ held at 0.2411. Source:
 \end{figure*}
 
 %=====================================================================================================
+\section{When does the filter pay off? Chains and cylinders}
+\label{sec:regime}
+
+Section~\ref{sec:drivers} and the ansatz study show that for the chain at $\epsilon=10^{-2}$ a better MPS
+is cheaper than a filter. To look for the regime where this reverses we tighten the target to
+$\epsilon=10^{-4}$, allow $\chi$ up to 32 for the chain and 64 for cylinders, and add a two-dimensional
+model: the $J_1$--$J_2$ Heisenberg model on $4\times L_x$ cylinders (periodic around the four-site
+circumference, open along $L_x=3$, 4, 6, 8, 12, so $N=12$--48), at $J_2=0$ and 0.3. The inputs come
+from the same front end: DMRG along a snake path with references up to $\chi=256$, $E_1$ as the lowest
+$S^z=1$ state, and ED on $4\times3$ and $4\times4$, which confirms the triplet as the first excitation
+at both couplings (not at $J_2=0.5$, which we therefore leave out). Cylinders are much harder for a
+snake MPS: at $4\times12$, $J_2=0$ a $\chi=16$ trial reaches $\gamma=\cylGamSixteen$ and $\chi=64$ reaches
+$\cylGamSixtyfour$, against $\gamma\ge0.95$ already at $\chi=8$ for the 48-site chain. For each system
+and target, Table~\ref{tab:regime} compares the cheapest MPS that meets the target alone with the
+cheapest filtered plan (any $\chi$, dyadic, optimized or QETU, second order, certified).
+
+\begin{table*}[t]
+\caption{Cheapest route to infidelity $\epsilon$: compiling an MPS that meets $1-\gamma\le\epsilon$ on its own
+($\chi$ and its CNOT count) against the cheapest certified filtered plan (expected CNOTs per success,
+trial $\chi$ in parentheses). ``--'': no $\chi\le64$ meets the target. Source:
+\texttt{results/ext\_regime\_*.json}.}
+\label{tab:regime}
+\begin{ruledtabular}
+\begin{tabular}{lcc ccc ccc ccc}
+ & & & \multicolumn{3}{c}{$\epsilon=10^{-2}$} & \multicolumn{3}{c}{$\epsilon=10^{-3}$} & \multicolumn{3}{c}{$\epsilon=10^{-4}$}\\
+system & $J_2$ & gap & $\chi$ & MPS & filter & $\chi$ & MPS & filter & $\chi$ & MPS & filter \\
+\hline
+\input{generated/tab_regime.tex}
+\end{tabular}
+\end{ruledtabular}
+\end{table*}
+
+In \regDirect{} of the \regTotal{} cases a compiled MPS meets the target alone and is cheaper than every
+certified filtered plan, usually by one to two orders of magnitude. The \regNone{} exceptions are the
+$4\times8$ and $4\times12$ cylinders at $\epsilon=10^{-4}$, where no $\chi\le64$ trial suffices and the
+filter, at $(1.4$--$8.5)\times10^{6}$ CNOTs, is the only route in the table. Two caveats keep this from
+being a clean crossover. First, the MPS cost grows only as $\chi^2$, so a $\chi=128$ trial (about four
+times the $\chi=64$ cost, $\sim10^{6}$ CNOTs at $4\times12$) would likely be competitive, provided
+DMRG reaches $1-\gamma\le10^{-4}$ at that bond dimension. Second, at this level the overlaps are limited by
+the accuracy of the $\chi=256$ reference itself ($\sim10^{-4}$ in energy). In the other direction, the
+filtered costs here are certified: Sec.~\ref{sec:empirical} found the certified filter cost to be a
+median \empCertRatio$\times$ above what the circuit needs for $N\le16$, mostly in the Trotter count. If a
+similar factor holds for cylinders, the filter would win at $\epsilon=10^{-4}$ for $4\times8$ and beyond.
+Closing that gap between certified and needed Trotter steps is what decides the regime question.
+
+%=====================================================================================================
 \section{Discussion}
 
 \emph{What is guaranteed.} Theorem~\ref{thm:cert} holds whenever its inputs are right. Of these, the
@@ -757,13 +807,15 @@ bounds restricted to the low-energy subspace~\cite{Sahinoglu2021} or higher-orde
 obvious next lever. The leakage term is nearly tight for optimized filters (median 1.4$\times$); for the closed-form
 schedules it could be tightened by certifying $\eta$ numerically when $L$ is small enough.
 
-\emph{Is the filter worth it here?} Not for this model at $\epsilon=10^{-2}$: a $\chi=8$ MPS circuit
-meets the target directly with between one and more than three orders of magnitude fewer CNOTs than
-the cheapest filtered plan (Table~\ref{tab:ansatz}).
-The filter's advantages are a certificate on the output and a cost that depends on the trial overlap
-only through $\ln(1/\eta)$ and $1/p_g$. The pipeline is generic
-in $H$, so the same comparison can be run for two-dimensional models where MPS compilation scales
-worse; we leave that to future work.
+\emph{Is the filter worth it here?} Not for the chain, and not for cylinders up to $4\times12$ while a
+$\chi\le64$ MPS meets the target: in \regDirect{} of \regTotal{} cases the compiled MPS is cheaper than
+every certified filtered plan (Table~\ref{tab:regime}). The filter becomes the only certified route at
+$\epsilon=10^{-4}$ on the larger cylinders, and would be the cheaper one if its real Trotter cost, a
+median \empCertRatio$\times$ below the certified one for $N\le16$, carried over. The filter's
+advantages are a certificate on the output and a cost that depends on the trial overlap only as
+$\gamma^{-1}\ln[(1-\gamma)/(\gamma\epsilon)]$ and on the gap as $1/\Delta$ (Eq.~\eqref{eq:costreal}).
+The pipeline is generic in $H$, so wider cylinders, where snake MPS compilation scales worse, are the
+natural next test.
 
 \emph{Limitations.} Noiseless simulation; repeat-until-success rather than early abort; ladder CNOT
 counts (an upper bound, about $1.5\times$ a compiler's); all-to-all connectivity; trial circuits costed
