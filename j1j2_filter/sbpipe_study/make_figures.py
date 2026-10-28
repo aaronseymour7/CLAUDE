@@ -918,6 +918,112 @@ def actual_crossover():
     print("actual: SBC cheaper in", wins, "of", 5 * 7, "targets; ratios", np.round(sorted(ratios), 2))
 
 
+# ----------------------------------------------------------------------------- gap vs overlap
+def _gapov():
+    p = os.path.join(RES, "gapov.jsonl")
+    if not os.path.exists(p):
+        return None
+    with open(p) as fh:
+        return [json.loads(l) for l in fh]
+
+
+GO_NCOL = {8: "#9ec5f0", 10: "#5a9be0", 12: "#2a6bc0", 14: "#0d3a80"}
+
+
+def _go_cost(r, key):
+    """Expected CNOTs per success: measured from simulation, certified from the theorem."""
+    m = r[key]
+    return m["cnot"] if m else np.nan
+
+
+def _go_fit(G, key):
+    """log-linear fit of the expected CNOTs per success C against N, gap, L = ln[(1-g)/(g eps)] and gamma."""
+    X, y = [], []
+    for r in G:
+        m = r[key]
+        if not m:
+            continue
+        g, e = r["gamma"], r["eps"]
+        X.append([1, np.log(r["N"]), np.log(r["gap"]), np.log(np.log((1 - g) / (g * e))), np.log(g)])
+        y.append(np.log(m["cnot"]))
+    X, y = np.array(X), np.array(y)
+    c, *_ = np.linalg.lstsq(X, y, rcond=None)
+    res = y - X @ c
+    return c, float(np.exp(np.sqrt(np.mean(res ** 2)))), float(np.exp(np.abs(res).max())), X, y
+
+
+def gapov():
+    G = _gapov()
+    if G is None:
+        return
+    Ns = sorted({r["N"] for r in G})
+    EPS = (1e-2, 1e-3, 1e-4)
+    # --- study A: gap fixed, overlap varied; study B: overlap fixed, gap varied
+    for tag, gfix, xkey, xlab, sel in (
+            ("A", 0.40, "gamma", r"trial overlap $\gamma$", lambda r, e: abs(r["gap_target"] - 0.40) < 1e-9 and r["eps"] == e),
+            ("B", 0.10, "gap", r"gap $\Delta$ (fixed across $N$ by tuning $J_2$)",
+             lambda r, e: r["gamma_target"] == 0.10 and r["eps"] == e)):
+        fig, axs = plt.subplots(1, 3, figsize=(7.2, 2.6), sharey=True)
+        for a, e in zip(axs, EPS):
+            for N in Ns:
+                R = sorted([r for r in G if r["N"] == N and sel(r, e)], key=lambda r: r[xkey])
+                if not R:
+                    continue
+                x = [r[xkey] for r in R]
+                a.plot(x, [_go_cost(r, "meas_dyadic") for r in R], "o-", color=GO_NCOL[N], ms=3.2, label=f"$N={N}$")
+                a.plot(x, [_go_cost(r, "cert_dyadic") for r in R], "D--", color=GO_NCOL[N], ms=2.6, lw=0.9)
+            a.set_xscale("log"); a.set_yscale("log")
+            a.set_title(rf"$\varepsilon=10^{{{int(np.log10(e))}}}$", loc="left")
+            a.set_xlabel(xlab)
+            if tag == "B":
+                a.set_xticks([0.3, 0.4, 0.5]); a.set_xticklabels(["0.3", "0.4", "0.5"]); a.minorticks_off()
+        axs[0].set_ylabel("CNOTs per success")
+        h = [plt.Line2D([], [], color=GO_NCOL[N], lw=1.6, label=f"$N={N}$") for N in Ns]
+        h += [plt.Line2D([], [], color=INK2, marker="o", ms=3.2, label="measured (simulation)"),
+              plt.Line2D([], [], color=INK2, marker="D", ls="--", ms=2.6, lw=0.9, label="certified (Theorem 1)")]
+        fig.legend(handles=h, fontsize=6.6, loc="center right")
+        sub = (r"gap fixed at $\Delta=0.40$" if tag == "A" else r"overlap fixed at $\gamma=0.10$")
+        fig.suptitle(f"Dyadic SBC filter, {sub}", fontsize=8.5, x=0.01, ha="left")
+        fig.tight_layout(rect=(0, 0, 0.8, 1))
+        fig.savefig(os.path.join(FIG, f"fig_gapov_{tag}.pdf"))
+        fig.savefig(os.path.join(FIG, f"fig_gapov_{tag}.png"), dpi=200)
+        plt.close(fig)
+    # --- fits and collapse
+    fig, axs = plt.subplots(1, 4, figsize=(7.2, 2.2))
+    lines = []
+    for a, key, name in zip(axs, ("meas_dyadic", "meas_qetu", "cert_dyadic", "cert_qetu"),
+                            ("dyadic, measured", "QETU, measured", "dyadic, certified", "QETU, certified")):
+        c, rms, mx, X, y = _go_fit(G, key)
+        col = SCHED_COL["dyadic"] if "dyadic" in key else QETU_COL
+        a.plot(np.exp(X @ c), np.exp(y), "o", color=col, ms=2, alpha=0.6)
+        lo, hi = np.exp(min(y.min(), (X @ c).min())), np.exp(max(y.max(), (X @ c).max()))
+        a.plot([lo, hi], [lo, hi], color=INK2, lw=0.8)
+        a.set_xscale("log"); a.set_yscale("log")
+        a.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+        a.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+        a.set_title(f"{name}\nrms {rms:.2f}$\\times$, max {mx:.1f}$\\times$", loc="left", fontsize=7)
+        a.set_xlabel("fit")
+        tagm = "".join(w[0] for w in key.split("_")).upper()   # MD, MQ, CD, CQ
+        macro(f"go{tagm}a", f"{np.exp(c[0]):.3g}"); macro(f"go{tagm}N", f"{c[1]:.2f}")
+        macro(f"go{tagm}gap", f"{-c[2]:.2f}"); macro(f"go{tagm}L", f"{c[3]:.2f}")
+        macro(f"go{tagm}rms", f"{rms:.2f}"); macro(f"go{tagm}max", f"{mx:.1f}")
+        macro(f"go{tagm}gam", f"{-c[4]:.2f}")
+        lines.append((name, c, rms, mx))
+    axs[0].set_ylabel("CNOTs per success")
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIG, "fig_gapov_fit.pdf"))
+    fig.savefig(os.path.join(FIG, "fig_gapov_fit.png"), dpi=200)
+    plt.close(fig)
+    rat = [r["cert_dyadic"]["cnot"] / r["meas_dyadic"]["cnot"] for r in G if r["cert_dyadic"] and r["meas_dyadic"]]
+    macro("goCertRatioMed", f"{np.median(rat):.0f}"); macro("goCertRatioMin", f"{min(rat):.0f}")
+    macro("goCertRatioMax", f"{max(rat):.0f}"); macro("goNcases", str(len(G)))
+    sv = [r["meas_qetu"]["cnot"] / r["meas_dyadic"]["cnot"] for r in G if r["meas_qetu"] and r["meas_dyadic"]]
+    macro("goQetuOverDyMed", f"{np.median(sv):.2f}")
+    for name, c, rms, mx in lines:
+        print("gapov fit", name, np.round(c, 3), "rms", round(rms, 3), "max", round(mx, 2))
+    print("cert/meas dyadic", np.round(np.percentile(rat, [0, 50, 100]), 1), "qetu/dyadic meas", np.round(np.percentile(sv, [0, 50, 100]), 2))
+
+
 # ----------------------------------------------------------------------------- oracle
 def oracle():
     O = load("oracle.json")
@@ -942,7 +1048,7 @@ def oracle():
 
 
 if __name__ == "__main__":
-    for f in (inputs_table, validation, scaling, qetu, drivers, empirical, regime, fid_plane, crossover, actual_crossover, sens_wide, sensitivity, ansatz, oracle):
+    for f in (inputs_table, validation, scaling, qetu, drivers, empirical, regime, fid_plane, crossover, actual_crossover, gapov, sens_wide, sensitivity, ansatz, oracle):
         f()
     with open(os.path.join(GEN, "macros.tex"), "w") as fh:
         fh.write("% generated by sbpipe_study/make_figures.py -- do not edit\n" + "\n".join(MACROS) + "\n")
