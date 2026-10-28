@@ -612,6 +612,83 @@ def fid_plane():
     fig.savefig(os.path.join(FIG, "fig_fidplane.png"), dpi=200, bbox_inches="tight")
     plt.close(fig)
 
+# ----------------------------------------------------------------------------- cheapest route to a given accuracy
+def _frontiers(F, R, kind, N, J2):
+    """MPS alone, empirical filter and certified filter: cheapest CNOTs to reach infidelity <= eps, on a
+    fine grid of eps (descending). NaN where no route with chi <= 64 reaches eps."""
+    v = [r for r in F if r["kind"] == kind and r["N"] == N and r["J2"] == J2]
+    fgrid = np.array(sorted({p[0] for r in v for p in r["points"]}, reverse=True))
+    f_raw = np.array([min([p[2] for r in v for p in r["points"] if p[0] == e and p[1] > 0], default=np.nan)
+                      for e in fgrid])
+    f_cost = np.array([np.nanmin(f_raw[i:]) if np.isfinite(f_raw[i:]).any() else np.nan
+                       for i in range(len(fgrid))])                    # a tighter plan also meets a looser target
+    grid = np.logspace(-1, -7, 601)
+    f = np.exp(np.interp(np.log(grid[::-1]), np.log(fgrid[::-1]), np.log(f_cost[::-1])))[::-1]
+    mps = sorted([(max(1 - r["gamma"], 0.0), r["trial_cnot"], r["chi"]) for r in v])
+    m = np.array([min([c for inf, c, _ in mps if inf <= e], default=np.nan) for e in grid])
+    c = [r for r in R if r["kind"] == kind and r["N"] == N and r["J2"] == J2 and r["plan"] and r["plan"]["m"] > 0]
+    cert = sorted({(e, min(r["plan"]["res_expected_cnot"] for r in c if r["eps"] == e)) for e in {r["eps"] for r in c}},
+                  reverse=True)
+    return grid, m, f, cert, mps
+
+
+def crossover():
+    F = load("emp_frontier.json")
+    if F is None:
+        return
+    R = []
+    for f in ("ext_regime_chain.json", "ext_regime_cyl.json", "ext_regime_cyl_12.json"):
+        R += load(f) or []
+    systems = [("chain", 16, 0.2411, "chain $N=16$"), ("chain", 32, 0.2411, "chain $N=32$"),
+               ("chain", 48, 0.2411, "chain $N=48$"), ("cyl", 16, 0.0, "cylinder $4\\times4$"),
+               ("cyl", 24, 0.0, "cylinder $4\\times6$"), ("cyl", 32, 0.0, "cylinder $4\\times8$"),
+               ("cyl", 48, 0.0, "cylinder $4\\times12$")]
+    fig, axs = plt.subplots(2, 4, figsize=(7.2, 4.2), sharey=True)
+    axs = axs.ravel()
+    MPS_C, EMP_C, CERT_C = SCHED_COL["optimized"], QETU_COL, SCHED_COL["dyadic"]
+    rows = []
+    for a, (kind, N, J2, name) in zip(axs, systems):
+        grid, m, f, cert, mps = _frontiers(F, R, kind, N, J2)
+        a.plot(grid, m, color=MPS_C, lw=1.6, drawstyle="steps-pre")
+        for inf, c, chi in mps:
+            if 1e-7 <= inf <= 1e-1:
+                a.plot(inf, c, "o", color=MPS_C, ms=3.5)
+                a.annotate(f"{chi}", (inf, c), xytext=(-2, 4), textcoords="offset points", fontsize=5.5,
+                           color=INK2, ha="right")
+        a.plot(grid, f, "-", color=EMP_C, lw=1.6)
+        a.plot([e for e, _ in cert], [c for _, c in cert], "D--", color=CERT_C, ms=3.5, lw=0.9)
+        both = np.isfinite(m) & np.isfinite(f)
+        cheaper = both & (f < m)
+        none = ~np.isfinite(m)
+        a.fill_between(grid, 1e1, 1e8, where=cheaper, color=EMP_C, alpha=0.18, lw=0, step="pre")
+        a.fill_between(grid, 1e1, 1e8, where=none, step="pre", facecolor=GRID, alpha=0.7, lw=0, hatch="////", edgecolor="white")
+        x = grid[np.argmax(cheaper)] if cheaper.any() else None
+        rows.append((name, x, float(grid[cheaper].min()) if cheaper.any() else None,
+                     float(grid[none].max()) if none.any() else None))
+        a.set_xscale("log"); a.set_yscale("log"); a.invert_xaxis()
+        a.set_xlim(1.5e-1, 7e-8); a.set_ylim(1e2, 3e7)
+        a.set_title(name, loc="left", fontsize=7.5)
+        a.set_xticks([1e-1, 1e-3, 1e-5, 1e-7])
+    for a in axs[[0, 4]]:
+        a.set_ylabel("CNOTs to reach $1-F$")
+    for a in axs[3:7]:
+        a.set_xlabel(r"infidelity $1-F$")
+    axs[7].axis("off")
+    h = [plt.Line2D([], [], color=MPS_C, marker="o", ms=3.5, label="MPS alone (number: $\\chi$)"),
+         plt.Line2D([], [], color=EMP_C, lw=1.6, label="MPS + filter, empirical"),
+         plt.Line2D([], [], color=CERT_C, marker="D", ls="--", ms=3.5, lw=0.9, label="MPS + filter, certified"),
+         plt.Rectangle((0, 0), 1, 1, color=EMP_C, alpha=0.18, lw=0, label="empirical filter cheaper"),
+         plt.Rectangle((0, 0), 1, 1, facecolor=GRID, alpha=0.7, hatch="////", edgecolor="white",
+                       label="no MPS with $\\chi\\leq64$ reaches it")]
+    axs[7].legend(handles=h, loc="center", fontsize=6.8)
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIG, "fig_crossover.pdf"))
+    fig.savefig(os.path.join(FIG, "fig_crossover.png"), dpi=200)
+    plt.close(fig)
+    for name, x, lo, none in rows:
+        print("crossover", name, "first", x, "last", lo, "mps limit", none)
+
+
 # ----------------------------------------------------------------------------- wider sensitivity
 def sens_wide():
     C = load("ext_sensitivity.json")
@@ -782,7 +859,7 @@ def oracle():
 
 
 if __name__ == "__main__":
-    for f in (inputs_table, validation, scaling, qetu, drivers, empirical, regime, fid_plane, sens_wide, sensitivity, ansatz, oracle):
+    for f in (inputs_table, validation, scaling, qetu, drivers, empirical, regime, fid_plane, crossover, sens_wide, sensitivity, ansatz, oracle):
         f()
     with open(os.path.join(GEN, "macros.tex"), "w") as fh:
         fh.write("% generated by sbpipe_study/make_figures.py -- do not edit\n" + "\n".join(MACROS) + "\n")

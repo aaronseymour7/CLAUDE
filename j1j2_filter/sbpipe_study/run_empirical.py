@@ -354,9 +354,109 @@ def run_trotter():
     dump("emp_trotter.json", out)
 
 
+# ----------------------------------------------------------------------------- the empirical filter on the regime systems
+def _emp_regime_case(args):
+    """Filter cost from the two empirical laws (QETU degree from the true-gap design at the full target,
+    one Strang step per query), checked by state-vector simulation where a trial vector exists."""
+    kind, size, J2, chi, eps = args
+    import run_extended as RX
+    from sbpipe.simulate import qetu_trotter, state_metrics
+    from sbpipe.resources import filter_counts
+    rec, est, ans, g = RX.get_case(kind, size, J2, chi)
+    H = RX.model(kind, size, J2)
+    N = H.num_qubits
+    if kind == "chain" and ans.statevector is None and N <= 16:
+        p = os.path.join(CACHEE, _key(N, J2) + ".npz")
+        if os.path.exists(p):
+            z = np.load(p)
+            if f"trial{chi}" in z:
+                ans.statevector, g = z[f"trial{chi}"], z["ground"]
+    out = dict(kind=kind, size=size, N=N, J2=J2, chi=chi, eps=eps, gamma=ans.gamma,
+               trial_cnot=ans.cost["cnot"])
+    if 1 - ans.gamma <= eps:
+        return dict(out, d=0, cnot=ans.cost["cnot"], mps_alone=True)
+    lo, hi = sbpipe.weyl_bounds(H)
+    win = est.window(hi)
+    Hs = H.shifted_scaled(win["shift"], win["W"])
+    des = D.qetu(win["delta"], win["w0"], D.eta_target(eps, ans.gamma))
+    if des is None:
+        return dict(out, d=None)
+    d = des.m
+    sim = None
+    if ans.statevector is not None and g is not None:
+        x_s = math.cos(math.pi / 2 * win["delta"])
+        for _ in range(40):
+            v = qetu_trotter(Hs, ans.statevector, d, math.pi / 2, x_s, [1] * d)
+            m = state_metrics(v, g)
+            sim = dict(d=d, infidelity=m["infidelity"], p_succ=float(np.vdot(v, v).real))
+            if m["infidelity"] <= eps:
+                break
+            d += 2
+    p = sim["p_succ"] if sim else ans.gamma
+    cnot = (filter_counts(Hs, [1] * d, 2, anc_rot_per_pulse=2)["cnot"] + ans.cost["cnot"]) / p
+    return dict(out, d=d, d_model=des.m, sim=sim, cnot=cnot, mps_alone=False)
+
+
+def run_emp_regime():
+    import run_extended as RX
+    cases = [("chain", N, 0.2411, chi, eps) for N in (16, 32, 48) for chi in (2, 4, 8, 16, 32)
+             for eps in (1e-2, 1e-3, 1e-4)]
+    cases += [("cyl", Lx, 0.0, chi, eps) for Lx in RX.LX for chi in RX.CHIS_2D for eps in (1e-2, 1e-3, 1e-4)]
+    out = []
+    with ProcessPoolExecutor(JOBS) as ex:
+        for r in ex.map(_emp_regime_case, cases):
+            s = r.get("sim")
+            print(f"[emp_regime] {r['kind']} N={r['N']} chi={r['chi']} eps={r['eps']:g} d={r.get('d')} "
+                  f"cnot={r.get('cnot') or float('nan'):.2e}"
+                  + (f" sim inf={s['infidelity']:.1e} (d_model={r['d_model']})" if s else ""), flush=True)
+            out.append(r)
+    dump("emp_regime.json", out)
+
+
+# ----------------------------------------------------------------------------- cost to reach a given infidelity
+EPS_GRID = np.logspace(-1, -7, 61)
+
+
+def _frontier_case(args):
+    """Empirical filter cost (degree law, one step per query) on a fine eps grid for one trial."""
+    kind, size, J2, chi = args
+    import run_extended as RX
+    from sbpipe.resources import filter_counts
+    rec, est, ans, _ = RX.get_case(kind, size, J2, chi)
+    H = RX.model(kind, size, J2)
+    lo, hi = sbpipe.weyl_bounds(H)
+    win = est.window(hi)
+    Hs = H.shifted_scaled(win["shift"], win["W"])
+    per_query = filter_counts(Hs, [1, 1], 2, anc_rot_per_pulse=2)["cnot"] - \
+        filter_counts(Hs, [1], 2, anc_rot_per_pulse=2)["cnot"]
+    base = filter_counts(Hs, [1], 2, anc_rot_per_pulse=2)["cnot"] - per_query
+    pts = []
+    for eps in EPS_GRID:
+        if 1 - ans.gamma <= eps:
+            pts.append((float(eps), 0, float(ans.cost["cnot"])))
+            continue
+        des = D.qetu(win["delta"], win["w0"], D.eta_target(eps, ans.gamma))
+        if des is None:
+            continue
+        pts.append((float(eps), des.m, (base + per_query * des.m + ans.cost["cnot"]) / ans.gamma))
+    return dict(kind=kind, size=size, N=H.num_qubits, J2=J2, chi=chi, gamma=ans.gamma,
+                trial_cnot=ans.cost["cnot"], gap=est.E1 - est.E0, delta=win["delta"], points=pts)
+
+
+def run_frontier():
+    import run_extended as RX
+    cases = [("chain", N, 0.2411, chi) for N in (16, 32, 48) for chi in (1, 2, 4, 8, 16, 32)]
+    cases += [("cyl", Lx, J2, chi) for Lx in RX.LX for J2 in RX.J2S_2D for chi in RX.CHIS_2D]
+    out = []
+    with ProcessPoolExecutor(JOBS) as ex:
+        for r in ex.map(_frontier_case, cases):
+            out.append(r)
+    dump("emp_frontier.json", out)
+
+
 if __name__ == "__main__":
     what = sys.argv[1] if len(sys.argv) > 1 else "match,spectra,filters,trotter"
-    steps = dict(match=run_match, gapscan=run_gapscan, spectra=run_spectra, filters=run_filters, trotter=run_trotter)
+    steps = dict(match=run_match, gapscan=run_gapscan, spectra=run_spectra, filters=run_filters, trotter=run_trotter, emp_regime=run_emp_regime, frontier=run_frontier)
     for k in what.split(","):
         t = time.time()
         steps[k]()
