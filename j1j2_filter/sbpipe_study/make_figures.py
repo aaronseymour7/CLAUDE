@@ -571,55 +571,46 @@ def fid_plane():
         R += load(f) or []
     if not R:
         return
-    from matplotlib.colors import LogNorm, LinearSegmentedColormap
-    cmap = LinearSegmentedColormap.from_list("seq", ["#0b1f3d", "#174a8c", "#2a78d6", "#6aa0e6", "#cfe0f7"])
-    norm = LogNorm(1e-5, 1)
-    fig, ax = plt.subplots(1, 2, figsize=(7.0, 3.0), sharey=True)
-    for a, (kind, J2, title) in zip(ax, (("chain", 0.2411, r"(a) chain, $J_2=0.2411$"),
-                                         ("cyl", 0.0, r"(b) $4\times L_x$ cylinder, $J_2=0$"))):
+    blues = {2: "#9ec2f0", 4: "#6aa0e6", 8: "#2a78d6", 16: "#1d5fb3", 32: "#174a8c", 64: "#0b1f3d"}
+    oranges = {1e-2: "#f2a27e", 1e-3: "#eb6834", 1e-4: "#a3401a"}
+    fig, ax = plt.subplots(2, 2, figsize=(7.0, 5.2), sharex="row")
+    for row, (kind, J2, name) in enumerate((("chain", 0.2411, r"chain, $J_2=0.2411$"),
+                                             ("cyl", 0.0, r"$4\times L_x$ cylinder, $J_2=0$"))):
         v = [r for r in R if r["kind"] == kind and r["J2"] == J2]
-        labels = []
         Ns = sorted({r["N"] for r in v})
-        # MPS alone: one line per chi, points coloured by 1 - gamma
+        a0, a1 = ax[row]
         for chi in sorted({r["chi"] for r in v}):
-            pts = sorted({(r["N"], r["trial_cost"]["cnot"], max(1 - r["gamma"], 1e-5)) for r in v if r["chi"] == chi})
-            a.plot([p[0] for p in pts], [p[1] for p in pts], color=GRID, lw=1.0, zorder=1)
-            a.scatter([p[0] for p in pts], [p[1] for p in pts], c=[p[2] for p in pts], cmap=cmap, norm=norm,
-                      marker="o", s=26, edgecolor="white", linewidth=0.8, zorder=3)
-            labels.append((pts[-1][0], pts[-1][1], f"$\\chi={chi}$", INK2))
-        # filter: cheapest certified plan at each target, coloured by the target
+            pts = sorted({(r["N"], r["gamma"], r["trial_cost"]["cnot"]) for r in v if r["chi"] == chi})
+            N = [p[0] for p in pts]
+            inf = np.array([max(1 - p[1], 1e-6) for p in pts])
+            a0.plot(N, inf, "-", color=blues[chi], label=f"MPS $\\chi={chi}$", marker="o", ms=4)
+            low = inf <= 1e-6                        # at or below the precision of the reference state
+            a0.plot(np.array(N)[low], inf[low], "o", ms=5, mfc="white", mec=blues[chi], mew=1.2)
+            a1.plot(N, [p[2] / p[1] for p in pts], "o-", color=blues[chi], ms=4)
         for eps in (1e-2, 1e-3, 1e-4):
             pts = []
-            for N in Ns:
-                fl = [r for r in v if r["N"] == N and r["eps"] == eps and r["plan"] and r["plan"]["m"] > 0]
+            for n in Ns:
+                fl = [r for r in v if r["N"] == n and r["eps"] == eps and r["plan"] and r["plan"]["m"] > 0]
                 if fl:
-                    pts.append((N, min(r["plan"]["res_expected_cnot"] for r in fl)))
-            a.plot([p[0] for p in pts], [p[1] for p in pts], color=INK2, lw=0.9, ls="--", zorder=2)
-            a.scatter([p[0] for p in pts], [p[1] for p in pts], c=[eps] * len(pts), cmap=cmap, norm=norm,
-                      marker="D", s=24, edgecolor=INK, linewidth=0.7, zorder=4)
-            labels.append((pts[-1][0], pts[-1][1], f"filter, $\\epsilon=10^{{{int(np.log10(eps))}}}$", INK))
-        # end labels, spread apart in log y so that none overlap
-        labels.sort(key=lambda t: t[1])
-        ys = [np.log10(t[1]) for t in labels]
-        for i in range(1, len(ys)):
-            ys[i] = max(ys[i], ys[i - 1] + 0.22)
-        for (x, y, txt, col), ly in zip(labels, ys):
-            a.annotate(txt, (x, y), xytext=(x * 1.03 + 0.5, 10 ** ly), fontsize=6, color=col, va="center",
-                       arrowprops=dict(arrowstyle="-", color=GRID, lw=0.6) if abs(ly - np.log10(y)) > 0.05 else None)
-        a.set_yscale("log"); a.set_xlabel(r"$N$"); a.set_title(title, loc="left")
-        a.set_xticks(Ns); a.set_xlim(min(Ns) - 2, max(Ns) * 1.38)
-    ax[0].set_ylabel("CNOTs (MPS circuit, or filter per success)")
-    sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
-    cb = fig.colorbar(sm, ax=ax, fraction=0.025, pad=0.01)
-    cb.ax.invert_yaxis()
-    cb.set_label(r"infidelity $1-F$ (MPS: $1-\gamma$; filter: target $\epsilon$)", fontsize=7)
-    h = [plt.Line2D([], [], marker="o", color=GRID, mfc="#6aa0e6", mec="white", label="MPS alone"),
-         plt.Line2D([], [], marker="D", color=INK2, ls="--", mfc="#6aa0e6", mec=INK, label="MPS + filter (certified)")]
-    fig.legend(handles=h, loc="lower center", ncol=2, fontsize=7, bbox_to_anchor=(0.45, -0.13))
+                    pts.append((n, min(r["plan"]["res_expected_cnot"] for r in fl)))
+            N = [p[0] for p in pts]
+            lab = f"filter $\\epsilon=10^{{{int(np.log10(eps))}}}$"
+            a0.plot(N, [eps] * len(N), "D--", color=oranges[eps], ms=4, lw=1.2, label=lab)
+            a1.plot(N, [p[1] / (1 - eps) for p in pts], "D--", color=oranges[eps], ms=4, lw=1.2)
+        for a in (a0, a1):
+            a.set_yscale("log"); a.set_xticks(Ns); a.set_xlabel(r"$N$")
+        a0.set_ylabel(r"infidelity $1-F$")
+        a1.set_ylabel(r"CNOTs / $F$")
+        a0.set_title(f"({'ac'[row]}) {name}: infidelity", loc="left")
+        a1.set_title(f"({'bd'[row]}) {name}: CNOTs per unit fidelity", loc="left")
+        a0.set_ylim(5e-7, 2)
+        a0.axhspan(5e-7, 1.5e-6, color=GRID, alpha=0.6, lw=0, zorder=0)
+    h0, l0 = ax[1][0].get_legend_handles_labels()
+    fig.legend(h0, l0, loc="lower center", ncol=5, fontsize=6.8, bbox_to_anchor=(0.5, -0.07))
+    fig.tight_layout()
     fig.savefig(os.path.join(FIG, "fig_fidplane.pdf"), bbox_inches="tight")
     fig.savefig(os.path.join(FIG, "fig_fidplane.png"), dpi=200, bbox_inches="tight")
     plt.close(fig)
-
 
 # ----------------------------------------------------------------------------- wider sensitivity
 def sens_wide():
