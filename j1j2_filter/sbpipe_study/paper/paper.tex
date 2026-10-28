@@ -671,6 +671,69 @@ each $N$ and $J_2$ contributes the true gap and 25, 50 and 75\% of it. Dashed: $
 \label{fig:drivers}
 \end{figure*}
 
+\subsection{What the filter actually needs}
+\label{sec:empirical}
+
+Section~\ref{sec:drivers} describes the certified plan, which assumes the worst case for every input it
+does not know. To see how the gap and the overlap act on the filter itself, we replace the certificate
+by simulation for $N=8$--16 (\empN{} cases). Each trial state is decomposed on the exact eigenbasis
+(dense diagonalization per $S^z$ block), so the smallest QETU degree $d_{\min}$ that reaches $\epsilon$ for
+that state is found exactly; at that degree we then find the smallest number of Strang steps per
+query with the Trotterized circuit simulated on the full state vector, allowing a slightly higher
+degree when it makes one step per query enough. Three families separate the inputs. In the first,
+$J_2=0.2411$ for every $N$ and the gap closes with $N$. In the second, $J_2$ is chosen at each $N$ (by
+bisection on ED) so that the gap is $E_1-E_0=0.40$ exactly ($J_2=\empMatchJ$ for $N=8$--16). In the
+third, $J_2$ is tuned at $N=10$, 12 and 14 to gaps from 0.30 to 0.55. For the trial states we use the
+optimal MPS at $\chi=1$, 2, 4 and synthetic states $\sqrt{\gamma}|E_0\rangle+\sqrt{1-\gamma}|\xi\rangle$ with
+$\gamma$ from 0.03 to 0.9, $\xi$ being the normalized excited part of the $\chi=2$ MPS, so that the overlap
+changes while the shape of the excited weight does not. $\epsilon\in\{10^{-2},10^{-3},10^{-4}\}$.
+
+\emph{The degree is set by the gap and the target alone.} The measured degrees collapse onto
+\begin{equation}
+d_{\min}\,\Delta\;\simeq\;\frac{2}{\pi}\cosh^{-1}\frac1\eta,\qquad \eta^2=\frac{\gamma\epsilon}{1-\gamma},
+\label{eq:dmin}
+\end{equation}
+for every family, trial and target (Fig.~\ref{fig:empirical}b). This is the certified degree with the
+true gap: the certificate asks for a median \empDegRatio{} times $d_{\min}$. Where the excited weight
+of the trial sits does not help. The Chebyshev filter is equiripple, so every state above the gap is
+suppressed by the same factor $1/T_d(1/x_s)$, and a trial whose excited weight lies far above the gap
+needs the same degree as one whose weight sits at the gap. Over the gap scan $d_{\min}\propto\Delta^{-\empGapDeg}$.
+
+\emph{The certificate's Trotter count is pessimistic, not its filter.} One Strang step per query was
+enough in all \empKone{} cases, against a certified median of \empCertK{} steps per query. Commutator
+bounds are worst-case over all states, but the filter only has to act well on a state supported near
+the bottom of the spectrum. As a result the certified cost is a median \empCertRatio{} times what the
+filter needs (range \empCertRatioMin--$\empCertRatioMax$), and the real cost follows the degree:
+\begin{equation}
+\text{cost}_{\rm real}\;\approx\;\frac{c_{\rm step}(N)}{\gamma}\,d_{\min}
+\;\propto\;\frac{c_{\rm step}(N)\,W}{g\,\gamma}\,\ln\frac{1-\gamma}{\gamma\epsilon},
+\label{eq:costreal}
+\end{equation}
+with $c_{\rm step}$ the CNOTs of one step ($\propto N$) and $g=E_1-E_0$. Fitting the simulations gives
+overlap $\gamma^{-\empGamLog}$ once the logarithm is divided out ($\gamma^{-\empGamRaw}$ as a plain power,
+against $\gamma^{-\empGamCert}$ for the certified plan) and gap $\Delta^{-\empGapExp}$ (certified
+$\Delta^{-\empGapCert}$). With the gap held at 0.40 the cost grows as $N^{\empNMatch}$; at fixed $J_2$,
+where $g$ also closes, as $N^{\empNFixed}$ (Fig.~\ref{fig:empirical}c). The difference is the
+$1/g$ of Eq.~\eqref{eq:costreal}.
+
+\emph{Gap and overlap are not independent inputs.} Tuning $J_2$ to hold the gap moves the chain toward
+the dimerized point $J_2=1/2$, where a $\chi=2$ MPS is close to exact: at the gap-matched couplings the
+$\chi=2$ overlap is 0.97--1.00 at every $N$, against 0.70--0.90 at $J_2=0.2411$. Up to $J_2\approx1/2$ a larger gap and a better
+trial come together, so for real trials the two effects compound; beyond it the gap keeps
+growing while the $\chi=2$ overlap falls again (to 0.78 at $J_2=0.68$, $N=14$). Holding one of them fixed
+through $J_2$ therefore always moves the other, which is why the scans above use synthetic trials.
+
+\begin{figure*}[t]
+\includegraphics[width=\textwidth]{figs/fig_empirical.pdf}
+\caption{What the filter actually needs, from exact spectra and state-vector simulation ($N=8$--16,
+QETU, second order). (a) CNOTs per success versus overlap at a gap held at 0.40, $\epsilon=10^{-3}$:
+simulated (filled) and certified (open, dashed). (b) Smallest degree times scaled gap for all \empN{}
+cases against $\cosh^{-1}(1/\eta)$; dashed: Eq.~\eqref{eq:dmin}. (c) Cost versus $N$ at $\gamma=0.3$,
+$\epsilon=10^{-3}$, with the gap held at 0.40 or $J_2$ held at 0.2411. Source:
+\texttt{results/emp\_trotter.json}, \texttt{sbpipe\_study/run\_empirical.py}.}
+\label{fig:empirical}
+\end{figure*}
+
 %=====================================================================================================
 \section{Discussion}
 

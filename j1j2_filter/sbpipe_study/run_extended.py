@@ -268,6 +268,10 @@ def run_regime():
     kinds = os.environ.get("KINDS", "chain,cyl").split(",")
     cases = [c for c in cases if c[0] in kinds]
     name = "ext_regime.json" if len(kinds) == 2 else f"ext_regime_{kinds[0]}.json"
+    if os.environ.get("SIZES"):                     # extend an earlier run with new sizes only
+        sizes = [int(x) for x in os.environ["SIZES"].split(",")]
+        cases = [c for c in cases if c[1] in sizes]
+        name = name.replace(".json", "_" + "_".join(map(str, sizes)) + ".json")
     out = []
     with ProcessPoolExecutor(JOBS) as ex:
         for r in ex.map(_regime_case, cases):
