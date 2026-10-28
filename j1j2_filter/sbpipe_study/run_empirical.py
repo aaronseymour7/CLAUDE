@@ -401,7 +401,8 @@ def run_emp_regime():
     import run_extended as RX
     cases = [("chain", N, 0.2411, chi, eps) for N in (16, 32, 48) for chi in (2, 4, 8, 16, 32)
              for eps in (1e-2, 1e-3, 1e-4)]
-    cases += [("cyl", Lx, 0.0, chi, eps) for Lx in RX.LX for chi in RX.CHIS_2D for eps in (1e-2, 1e-3, 1e-4)]
+    cases += [("cyl", Lx, J2, chi, eps) for Lx in RX.LX for J2 in RX.J2S_2D for chi in RX.CHIS_2D
+              for eps in (1e-2, 1e-3, 1e-4)]
     out = []
     with ProcessPoolExecutor(JOBS) as ex:
         for r in ex.map(_emp_regime_case, cases):
