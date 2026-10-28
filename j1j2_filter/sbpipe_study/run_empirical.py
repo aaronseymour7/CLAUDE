@@ -455,9 +455,361 @@ def run_frontier():
     dump("emp_frontier.json", out)
 
 
+# ----------------------------------------------------------------------------- the Stetcu-Baroni-Carlson filter, empirically
+SBC_SCHEDS = ("dyadic", "optimized")
+
+
+def _sbc_trotter(H, Hs, psi, g, des, eps):
+    """Largest common step dt (scaled units, k_i = ceil(t_i / dt)) at which the Trotterised SBC filter
+    still reaches eps; returns (dt, steps, infidelity, p_succ)."""
+    from sbpipe.simulate import filter_trotter, state_metrics
+    t = np.abs(des.times)
+
+    def run(dt):
+        k = np.maximum(1, np.ceil(t / dt - 1e-12)).astype(int)
+        v = filter_trotter(Hs, psi, des.times, des.phases, k, 2)
+        m = state_metrics(v, g)
+        return k, m["infidelity"], float(np.vdot(v, v).real)
+
+    best = None
+    dt = float(t.max())                             # one step for the longest pulse, then halve
+    for _ in range(14):
+        k, inf, p = run(dt)
+        if inf <= eps:
+            best = (dt, k, inf, p)
+            break
+        dt /= 2
+    if best is None:
+        return None
+    lo, hi = best[0], 2 * best[0]                   # refine between the passing dt and the failing 2 dt
+    if lo < t.max():
+        for _ in range(5):
+            mid = 0.5 * (lo + hi)
+            k, inf, p = run(mid)
+            if inf <= eps:
+                lo, best = mid, (mid, k, inf, p)
+            else:
+                hi = mid
+    return best
+
+
+def _sbc_case(args):
+    """SBC filter designed by the pipeline at the full target with the true gap; its real leakage on the
+    exact spectrum and the Trotter steps it really needs, against the certified plan."""
+    fam, N, J2, trial, eps, sched = args
+    from sbpipe.resources import filter_counts
+    from sbpipe.pipeline import Config, _plan_for, trotter_constant
+    r = _filter_case((fam, N, J2, trial, eps))
+    base = {k: r[k] for k in ("family", "N", "J2", "trial", "eps", "gamma", "gap", "W", "delta")}
+    base["schedule"] = sched
+    if not r.get("d_min"):
+        return dict(base, skip=True)
+    E, w = spectral_weights(N, J2, trial)
+    Es = (E - E[0]) / r["W"]
+    z = np.load(os.path.join(CACHEE, _key(N, J2) + ".npz"))
+    g = z["ground"]
+    if isinstance(trial, tuple):
+        t2 = z["trial2"]
+        xi = t2 - np.vdot(g, t2) * g
+        xi /= np.linalg.norm(xi)
+        ph = np.vdot(g, t2) / abs(np.vdot(g, t2))
+        psi = np.sqrt(trial[1]) * g * ph + np.sqrt(1 - trial[1]) * xi
+    else:
+        psi = z[f"trial{trial}"]
+    H = j1j2_chain(N, 1.0, J2)
+    Hs = H.shifted_scaled(z["E"][0], r["W"])
+    cfg = Config(eps=eps, schedule=sched, order=2)
+    const = trotter_constant(Hs, 2)
+    # certified: the pipeline's best split of eps
+    cert = None
+    fracs = cfg.leak_fracs if sched != "optimized" else (0.25,)   # the optimizer takes ~40 s per design
+    for f in fracs:
+        des = D.design_filter(sched, r["delta"], 0.0, f * eps, r["gamma"])
+        pc = _plan_for(H, Hs, None, des, r["gamma"], cfg, const, {}) if des else None
+        if pc and (cert is None or pc[2]["expected_cnot"] < cert["cert_cnot_per_success"]):
+            cert = dict(cert_T=des.T, cert_m=des.m, cert_steps=int(np.sum(pc[0])),
+                        cert_cnot_per_success=pc[2]["expected_cnot"])
+    # empirical: the design for the full eps (all of it to leakage), real leakage, real Trotter steps
+    des = D.design_filter(sched, r["delta"], 0.0, eps, r["gamma"])
+    if des is None:
+        return dict(base, **(cert or {}), design=None)
+    f = des.values(Es)
+    a = w * f ** 2
+    leak_exact = 1 - a[0] / a.sum()
+    tr = _sbc_trotter(H, Hs, psi, g, des, eps)
+    out = dict(base, **(cert or {}), emp_T=des.T, emp_m=des.m, leak_exact=float(leak_exact),
+               times=list(map(float, des.times)), phases=list(map(float, des.phases)))
+    if tr:
+        dt, k, inf, p = tr
+        cnot = filter_counts(Hs, k, 2, anc_rot_per_pulse=1)["cnot"]
+        out.update(dt=dt, steps=int(np.sum(k)), inf_trotter=inf, p_succ=p, cnot_filter=cnot,
+                   cnot_per_success=cnot / p)
+    return out
+
+
+def run_sbc():
+    cases = []
+    for fam, N, J2 in families():
+        if fam == "gapscan":
+            continue
+        for eps in EPSS:
+            cases += [(fam, N, J2, ("synthetic", gm), eps, "dyadic") for gm in (0.03, 0.3, 0.9)]
+            cases += [(fam, N, J2, chi, eps, "dyadic") for chi in (1, 2)]
+            if N in (8, 12, 16) and eps in (1e-2, 1e-4):
+                cases += [(fam, N, J2, ("synthetic", gm), eps, "optimized") for gm in (0.03, 0.3, 0.9)]
+    out = []
+    with ProcessPoolExecutor(JOBS) as ex:
+        for r in ex.map(_sbc_case, cases):
+            if not r.get("skip"):
+                print(f"[sbc] {r['family']} N={r['N']} {r['trial']} eps={r['eps']:g} {r['schedule']} "
+                      f"T={r.get('emp_T', float('nan')):.1f} leak={r.get('leak_exact', float('nan')):.1e} "
+                      f"dt={r.get('dt', float('nan')):.2f} steps={r.get('steps')} cert_steps={r.get('cert_steps')} "
+                      f"ratio={r.get('cert_cnot_per_success', float('nan')) / r.get('cnot_per_success', float('nan')):.1f}",
+                      flush=True)
+            out.append(r)
+    dump("emp_sbc.json", out)
+
+
+# ----------------------------------------------------------------------------- SBC on the regime systems
+def _sbc_regime_case(args):
+    """SBC (dyadic, or optimized) designed for the full target with the pipeline's gap, one Strang step
+    per pulse; simulated where a trial vector exists. With grid=True only the cost model on EPS_GRID."""
+    kind, size, J2, chi, eps_list, sched, simulate, dt_model = args
+    import run_extended as RX
+    from sbpipe.simulate import filter_trotter, state_metrics
+    from sbpipe.resources import filter_counts
+    rec, est, ans, g = RX.get_case(kind, size, J2, chi)
+    H = RX.model(kind, size, J2)
+    N = H.num_qubits
+    if kind == "chain" and ans.statevector is None and N <= 16:
+        p = os.path.join(CACHEE, _key(N, J2) + ".npz")
+        if os.path.exists(p):
+            z = np.load(p)
+            if f"trial{chi}" in z:
+                ans.statevector, g = z[f"trial{chi}"], z["ground"]
+    lo, hi = sbpipe.weyl_bounds(H)
+    win = est.window(hi)
+    Hs = H.shifted_scaled(win["shift"], win["W"])
+    per_pulse = filter_counts(Hs, [1, 1], 2)["cnot"] - filter_counts(Hs, [1], 2)["cnot"]
+    pts = []
+    for eps in eps_list:
+        if 1 - ans.gamma <= eps:
+            pts.append(dict(eps=float(eps), m=0, cnot=float(ans.cost["cnot"])))
+            continue
+        des = D.design_filter(sched, win["delta"], win["w0"], eps, ans.gamma)
+        if des is None:
+            continue
+        dt = dt_model[0] * eps ** dt_model[1]          # empirical Strang step law (scaled units)
+        k = np.maximum(1, np.ceil(np.abs(des.times) / dt - 1e-12)).astype(int)
+        cnot_f = filter_counts(Hs, k, 2)["cnot"]
+        pt = dict(eps=float(eps), m=des.m, T=des.T, steps_model=int(k.sum()),
+                  cnot=(cnot_f + ans.cost["cnot"]) / ans.gamma)
+        if simulate and ans.statevector is not None and g is not None:
+            tr = _sbc_trotter(H, Hs, ans.statevector, g, des, eps)
+            v = filter_trotter(Hs, ans.statevector, des.times, des.phases, k, 2)
+            m = state_metrics(v, g)
+            pt.update(model_inf=m["infidelity"], model_p=float(np.vdot(v, v).real))
+            if tr:
+                dt, ks, inf, p = tr
+                pt.update(sim_dt=dt, sim_steps=int(ks.sum()), sim_inf=inf, sim_p=p,
+                          cnot_sim=(filter_counts(Hs, ks, 2)["cnot"] + ans.cost["cnot"]) / p)
+        pts.append(pt)
+    return dict(kind=kind, size=size, N=N, J2=J2, chi=chi, schedule=sched, gamma=ans.gamma,
+                trial_cnot=ans.cost["cnot"], points=pts)
+
+
+def run_sbc_regime():
+    import run_extended as RX
+    systems = [("chain", N, 0.2411, (1, 2, 4, 8, 16, 32)) for N in (16, 32, 48)]
+    systems += [("cyl", Lx, J2, tuple(RX.CHIS_2D)) for Lx in RX.LX for J2 in RX.J2S_2D]
+    # smallest step that sufficed for the dyadic filter on the exact chains (N = 8-16), per target:
+    # 5.8, 3.3, 1.6 at eps = 1e-2, 1e-3, 1e-4  ->  dt = 20 eps^0.27 (a lower envelope)
+    dt_model = (20.0, 0.27)
+    cases = [(k, s, J2, chi, list(EPS_GRID), "dyadic", False, dt_model) for k, s, J2, chis in systems for chi in chis]
+    small = [(k, s, J2, chis) for k, s, J2, chis in systems if (k == "chain" and s == 16) or (k == "cyl" and s <= 4)]
+    cases += [(k, s, J2, chi, [1e-2, 1e-3, 1e-4], sc, True, dt_model) for k, s, J2, chis in small for chi in chis
+              for sc in ("dyadic", "optimized")]
+    out = []
+    with ProcessPoolExecutor(JOBS) as ex:
+        for r in ex.map(_sbc_regime_case, cases):
+            for p in r["points"]:
+                if "model_inf" in p:
+                    print(f"[sbc_regime] {r['kind']} N={r['N']} J2={r['J2']} chi={r['chi']} {r['schedule']} "
+                          f"eps={p['eps']:g} m={p['m']} model_inf={p['model_inf']:.1e} "
+                          f"ok={p['model_inf'] <= p['eps']} sim_dt={p.get('sim_dt')}", flush=True)
+            out.append(r)
+    dump("emp_sbc_regime.json", out)
+
+
+# ----------------------------------------------------------------------------- actual filter behaviour, no models
+ACT_SYSTEMS = [("chain", 16, 0.2411), ("cyl", 3, 0.0), ("cyl", 3, 0.3), ("cyl", 4, 0.0), ("cyl", 4, 0.3)]
+ACT_CHIS = [2, 4, 8, 16, 32, 64]
+EPS_ACT = [1e-2, 3e-3, 1e-3, 3e-4, 1e-4, 3e-5, 1e-5]
+
+
+def _act_key(kind, size, J2):
+    return f"act_{kind}{size}_J2{J2:g}"
+
+
+def _act_spectrum(args):
+    """Exact eigen-decomposition (S^z blocks) of every MPS trial of one system; cached."""
+    kind, size, J2 = args
+    import run_extended as RX
+    from sbpipe.frontends.dmrg_quimb import pauli_to_mpo, trial_mps
+    p = os.path.join(CACHEE, _act_key(kind, size, J2) + ".npz")
+    if os.path.exists(p):
+        return args, 0.0
+    t0 = time.time()
+    H = RX.model(kind, size, J2)
+    N = H.num_qubits
+    trials, costs = {}, {}
+    from sbpipe.frontends.dmrg_quimb import mps_circuit_cost
+    for chi in ACT_CHIS:
+        try:
+            rec, est, ans, g = RX.get_case(kind, size, J2, chi)
+        except KeyError:
+            ans = None
+        if ans is None or ans.statevector is None:  # chain: build the same variational MPS here
+            _, psi = trial_mps(pauli_to_mpo(H), chi)
+            v = np.asarray(psi.to_dense()).reshape(-1)
+        else:
+            v = np.asarray(ans.statevector).reshape(-1)
+        trials[chi] = v / np.linalg.norm(v)
+        costs[chi] = mps_circuit_cost(N, chi)["cnot"]
+    Hsp = H.to_sparse().tocsr()
+    idx = np.arange(2 ** N)
+    pop = np.array([bin(i).count("1") for i in idx])
+    E, W, low = [], {c: [] for c in ACT_CHIS}, []
+    for n_up in range(N + 1):
+        b = idx[pop == n_up]
+        Hb = Hsp[b][:, b].toarray()
+        if np.iscomplexobj(Hb) and np.abs(Hb.imag).max() < 1e-12:
+            Hb = np.ascontiguousarray(Hb.real)
+        e, U = scipy.linalg.eigh(Hb, overwrite_a=True, check_finite=False, driver="evr")
+        del Hb
+        E.append(e)
+        for c in ACT_CHIS:
+            W[c].append(np.abs(U.T.conj() @ trials[c][b]) ** 2)
+        low.append((e[0], b, U[:, 0].copy()))
+        del U
+        gc.collect()
+    E = np.concatenate(E)
+    o = np.argsort(E)
+    out = dict(E=E[o])
+    for c in ACT_CHIS:
+        out[f"w{c}"] = np.concatenate(W[c])[o]
+        out[f"trial{c}"] = trials[c]
+        out[f"cost{c}"] = costs[c]
+    e0, b, u = min(low, key=lambda t: t[0])
+    gvec = np.zeros(2 ** N, complex)
+    gvec[b] = u
+    out["ground"] = gvec
+    np.savez(p, **out)
+    return args, time.time() - t0
+
+
+def _dyadic_candidates(Es, w, delta, eps, n=2):
+    """Shortest dyadic ladders (K, r) whose exact filter reaches eps on this trial (exact spectrum)."""
+    tau = math.pi / (1 + delta)
+    out = []
+    for K in range(1, 24):
+        blk = np.ones_like(Es)
+        for k in range(K):
+            blk = blk * np.cos(2 ** k * Es * tau)
+        for r in range(1, 400):
+            inf, _ = _infid(w, blk ** r)
+            if inf <= eps:
+                out.append((r * tau * (2 ** K - 1), K, r))
+                break
+    out.sort()
+    return out[:n]
+
+
+def _act_case(args):
+    kind, size, J2, chi, eps = args
+    import run_extended as RX
+    from sbpipe.resources import filter_counts
+    from sbpipe.simulate import qetu_trotter, state_metrics
+    z = np.load(os.path.join(CACHEE, _act_key(kind, size, J2) + ".npz"))
+    E, w, psi, g = z["E"], z[f"w{chi}"], z[f"trial{chi}"], z["ground"]
+    trial_cnot = float(z[f"cost{chi}"])
+    H = RX.model(kind, size, J2)
+    lo, hi = sbpipe.weyl_bounds(H)
+    Wr = hi - E[0]
+    Es = (E - E[0]) / Wr
+    gap = float(E[np.argmax(E > E[0] + 1e-8)] - E[0])
+    delta = gap / Wr
+    gamma = float(w[0])
+    Hs = H.shifted_scaled(E[0], Wr)
+    out = dict(kind=kind, size=size, N=H.num_qubits, J2=J2, chi=chi, eps=eps, gamma=gamma, gap=gap,
+               delta=delta, trial_cnot=trial_cnot, mps_alone=bool(1 - gamma <= eps))
+    if out["mps_alone"]:
+        return out
+    res = {}
+    # dyadic: the shortest exact-passing ladders, each with the coarsest Trotter step that still passes
+    best = None
+    for T, K, r in _dyadic_candidates(Es, w, delta, eps):
+        tau = math.pi / (1 + delta)
+        times = np.tile(tau * 2.0 ** np.arange(K), r)
+        des = D.FilterDesign("dyadic", times, np.zeros(len(times)), delta, 0.0, 0.0, 1.0, {})
+        tr = _sbc_trotter(H, Hs, psi, g, des, eps)
+        if tr:
+            dt, k, inf, p = tr
+            c = (filter_counts(Hs, k, 2)["cnot"] + trial_cnot) / p
+            if best is None or c < best["cnot"]:
+                best = dict(cnot=c, T=T, K=K, r=r, steps=int(k.sum()), inf=inf, p=p, dt=dt)
+    res["dyadic"] = best
+    # optimized (Stetcu-Baroni-Carlson recipe), designed for the full target with the true gap
+    if eps in (1e-2, 1e-3, 1e-4):
+        des = D.design_filter("optimized", delta, 0.0, eps, gamma)
+        if des is not None:
+            tr = _sbc_trotter(H, Hs, psi, g, des, eps)
+            if tr:
+                dt, k, inf, p = tr
+                res["optimized"] = dict(cnot=(filter_counts(Hs, k, 2)["cnot"] + trial_cnot) / p, T=des.T,
+                                        m=des.m, steps=int(k.sum()), inf=inf, p=p, dt=dt)
+    # QETU: smallest exact-passing degree, then the fewest steps per query (or a slightly higher degree)
+    d, _ = _min_qetu(Es, w, delta, eps)
+    if d:
+        x_s = math.cos(math.pi / 2 * delta)
+        q = None
+        for dd in range(d, int(1.5 * d) + 3, 2):
+            for kk in (1, 2, 3, 4):
+                v = qetu_trotter(Hs, psi, dd, math.pi / 2, x_s, [kk] * dd)
+                inf = state_metrics(v, g)["infidelity"]
+                if inf <= eps:
+                    p = float(np.vdot(v, v).real)
+                    c = (filter_counts(Hs, [kk] * dd, 2, anc_rot_per_pulse=2)["cnot"] + trial_cnot) / p
+                    if q is None or c < q["cnot"]:
+                        q = dict(cnot=c, d=dd, k=kk, inf=inf, p=p)
+                    break
+            if q is not None and dd * 1 > q["cnot"]:
+                break
+            if q is not None:
+                break
+        res["qetu"] = q
+    return dict(out, **res)
+
+
+def run_actual():
+    with ProcessPoolExecutor(2) as ex:                  # N = 16 diagonalisations need ~4 GB each
+        for a, dt in ex.map(_act_spectrum, ACT_SYSTEMS):
+            print(f"[actual] spectrum {a} {dt:.0f}s", flush=True)
+    cases = [(k, s, J2, chi, eps) for k, s, J2 in ACT_SYSTEMS for chi in ACT_CHIS for eps in EPS_ACT]
+    out = []
+    with ProcessPoolExecutor(JOBS) as ex:
+        for r in ex.map(_act_case, cases):
+            msg = "MPS alone" if r["mps_alone"] else " ".join(
+                f"{s}={r[s]['cnot']:.2e}" for s in ("dyadic", "optimized", "qetu") if r.get(s))
+            print(f"[actual] {r['kind']}{r['size']} J2={r['J2']} chi={r['chi']} eps={r['eps']:g} "
+                  f"1-gamma={1 - r['gamma']:.1e} mps={r['trial_cnot']:.2e} {msg}", flush=True)
+            out.append(r)
+    dump("emp_actual.json", out)
+
+
 if __name__ == "__main__":
     what = sys.argv[1] if len(sys.argv) > 1 else "match,spectra,filters,trotter"
-    steps = dict(match=run_match, gapscan=run_gapscan, spectra=run_spectra, filters=run_filters, trotter=run_trotter, emp_regime=run_emp_regime, frontier=run_frontier)
+    steps = dict(match=run_match, gapscan=run_gapscan, spectra=run_spectra, filters=run_filters, trotter=run_trotter, emp_regime=run_emp_regime, frontier=run_frontier, sbc=run_sbc, sbc_regime=run_sbc_regime, actual=run_actual)
     for k in what.split(","):
         t = time.time()
         steps[k]()
