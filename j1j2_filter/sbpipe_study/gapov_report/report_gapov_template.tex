@@ -95,7 +95,13 @@ $\gamma$ & @NHEAD@ \\\midrule
 \bottomrule\end{tabular}
 \end{table}
 
-@TEXTA@
+\paragraph{Result.} Overlap is the dominant input. At $\Delta=0.40$, lowering $\gamma$ from 0.9 to 0.03 (a factor
+of 30) raises the measured dyadic cost by 33--62$\times$ and the certified cost by 137--273$\times$. Most of the
+rise is the repetition $1/p\approx1/\gamma$: each success needs about $1/\gamma$ attempts. The rest comes from the
+longer filter needed to remove more excited weight (larger $L$). The curves for different $N$ run nearly parallel,
+so the effect of the overlap does not depend on size over this range. Across all cases the certificate lies
+@CRD@ above the measured dyadic cost. The excess is largest at small $\gamma$, because the bound grows faster in
+$L$ than the measured cost does (Table~\ref{tab:fit}).
 
 \section{Study B: overlap fixed, gap varied}
 
@@ -105,7 +111,12 @@ $\gamma$ & @NHEAD@ \\\midrule
 \label{fig:B}
 \end{figure}
 
-@TEXTB@
+\paragraph{Result.} At fixed overlap, the gap matters much less over the range that can be held fixed at every
+$N$. At $\gamma=0.1$, closing $\Delta$ from 0.55 to 0.30 (a factor of 1.8) raises the measured dyadic cost by
+1.1--2.9$\times$, QETU by 1.4--1.8$\times$ and the certified cost by 1.5--2.4$\times$. At fixed $\Delta=0.40$ and
+$\gamma=0.1$, growing the chain from $N=8$ to 14 raises the measured cost 2.1--2.9$\times$ and the certified cost
+3.3--3.4$\times$. A wider gap range is not reachable at every $N$ (Table~\ref{tab:tune}), so the gap exponent is
+less well pinned than the overlap one.
 
 \section{Cost as a function of $N$, $\Delta$, $\gamma$ and $\varepsilon$}
 
@@ -131,7 +142,30 @@ factor by which a case differs from the fit.}\label{tab:fit}
 \caption{Each case against its fit, Eq.~\eqref{eq:fit} with Table~\ref{tab:fit}.}\label{fig:fit}
 \end{figure}
 
-@TEXTFIT@
+\paragraph{The cost rules.} With $L=\ln[(1-\gamma)/(\gamma\varepsilon)]$, the expected CNOTs per success are
+\begin{align}
+C^{\text{meas}}_{\text{dyadic}}&\approx @MDA@\;N^{@MDN@}\,\Delta^{-@MDGAP@}\,L^{@MDL@}\,\gamma^{-@MDGAM@}
+&&(\text{within } @MDRMS@\times\text{ typical, } @MDMAX@\times\text{ worst}),\\
+C^{\text{meas}}_{\text{QETU}}&\approx @MQA@\;N^{@MQN@}\,\Delta^{-@MQGAP@}\,L^{@MQL@}\,\gamma^{-@MQGAM@}
+&&(@MQRMS@\times,\ @MQMAX@\times),\\
+C^{\text{cert}}_{\text{dyadic}}&\approx @CDA@\;N^{@CDN@}\,\Delta^{-@CDGAP@}\,L^{@CDL@}\,\gamma^{-@CDGAM@}
+&&(@CDRMS@\times,\ @CDMAX@\times),\\
+C^{\text{cert}}_{\text{QETU}}&\approx @CQA@\;N^{@CQN@}\,\Delta^{-@CQGAP@}\,L^{@CQL@}\,\gamma^{-@CQGAM@}
+&&(@CQRMS@\times,\ @CQMAX@\times).
+\end{align}
+Three of the four rules have $\gamma^{-1}$ almost exactly, which is the post-selection repetition. The measured
+dyadic rule has $\gamma^{-@MDGAM@}$, because its success probability ranges from 0.76 to 1.24 times $\gamma$:
+the ladders over-suppress, so part of its $\gamma$ dependence is absorbed into $L$. The certified rules grow
+as $L^{2.2\text{--}2.4}$, where the measured ones grow as $L^{0.8\text{--}1.7}$. That difference is why the
+certificate's overhead grows at small $\gamma$ and small $\varepsilon$. The certified $N^{2}$ is one factor of
+$N$ from the CNOTs per Trotter step and one from the spectral width $W\propto N$, which sets the filter length at a
+fixed gap.
+
+\paragraph{Dyadic versus QETU, measured.} Over all cases, QETU costs a median @SV@$\times$ the dyadic filter.
+The dyadic filter is cheaper in every case at $\varepsilon=10^{-2}$ and in all but 9 at $10^{-3}$. At
+$\varepsilon=10^{-4}$ QETU is cheaper in 56 of 74 cases, because the dyadic ladder lengthens in coarse
+power-of-two steps. The fits show the same thing: the dyadic cost grows as $L^{@MDL@}$ against $L^{@MQL@}$ for
+QETU, while the dyadic cost grows more slowly with $N$ ($N^{@MDN@}$ against $N^{@MQN@}$).
 
 \section{Caveats}
 \begin{itemize}

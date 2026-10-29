@@ -961,7 +961,7 @@ def gapov():
     # --- study A: gap fixed, overlap varied; study B: overlap fixed, gap varied
     for tag, gfix, xkey, xlab, sel in (
             ("A", 0.40, "gamma", r"trial overlap $\gamma$", lambda r, e: abs(r["gap_target"] - 0.40) < 1e-9 and r["eps"] == e),
-            ("B", 0.10, "gap", r"gap $\Delta$ (fixed across $N$ by tuning $J_2$)",
+            ("B", 0.10, "gap", r"gap $\Delta$",
              lambda r, e: r["gamma_target"] == 0.10 and r["eps"] == e)):
         fig, axs = plt.subplots(1, 3, figsize=(7.2, 2.6), sharey=True)
         for a, e in zip(axs, EPS):
