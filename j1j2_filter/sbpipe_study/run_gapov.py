@@ -216,7 +216,8 @@ def _dyadic_measured(Hsp, Hs, psi, g, delta, eps, trial_cnot, n_cand=2):
 
 
 def _case(args):
-    study, N, gap, J2, gamma, eps = args
+    study, N, gap, J2, gamma, eps = args[:6]
+    scheds = args[6] if len(args) > 6 else ("dyadic", "qetu")
     from sbpipe.frontends.dmrg_quimb import mps_circuit_cost
     t0 = time.time()
     s, psi = _trial(N, J2, gamma)
@@ -236,7 +237,7 @@ def _case(args):
     # certified, exact inputs (tiny error bars), dyadic and QETU
     est = EnergyEstimates(E0=E0, E0_err=1e-9, E1=E1, E1_err=1e-9, E_max=None, source="ED")
     ans = Ansatz(gamma=gam, statevector=None, cost=trial_cost, name="mps16+Y", meta={})
-    for sched in ("dyadic", "qetu"):
+    for sched in scheds:
         try:
             pl = refine(H, est, ans, Config(eps=eps, schedule=sched, order=2))
             sm = pl.summary()
@@ -244,7 +245,8 @@ def _case(args):
                                         steps=sm["res_steps"])
         except RuntimeError:
             out[f"cert_{sched}"] = None
-    out["meas_qetu"] = _qetu_measured(Hsp, Hs, psi, g, delta, eps, trial_cost["cnot"])
+    out["meas_qetu"] = (_qetu_measured(Hsp, Hs, psi, g, delta, eps, trial_cost["cnot"])
+                        if "qetu" in scheds else None)
     out["meas_dyadic"] = _dyadic_measured(Hsp, Hs, psi, g, delta, eps, trial_cost["cnot"])
     out["time"] = time.time() - t0
     return out
@@ -287,9 +289,220 @@ def run_run():
     dump("gapov.json", out)
 
 
+EPS_HEAT = [1e-2, 3e-3, 1e-3, 3e-4, 1e-4, 3e-5, 1e-5]
+
+
+def run_heat():
+    """Dyadic filter only, on a finer eps grid, at gap 0.40 and gamma 0.1 / 0.5 (for the N-eps maps).
+    Points already in gapov.jsonl are reused, not rerun."""
+    import json
+    T = load("gapov_tune.json")
+    pts = {(p["N"], p["gap"]): p["J2"] for p in T["points"]}
+    have = [json.loads(l) for l in open(os.path.join(RS.RES, "gapov.jsonl"))]
+    done = {(r["N"], r["gap_target"], r["gamma_target"], r["eps"]) for r in have}
+    path = os.path.join(RS.RES, "gapov_heat.jsonl")
+    if os.path.exists(path):
+        done |= {(r["N"], r["gap_target"], r["gamma_target"], r["eps"]) for r in map(json.loads, open(path))}
+    todo = [("H", N, 0.40, pts[(N, 0.40)], gm, e, ("dyadic",)) for N in N_GO if (N, 0.40) in pts and N <= 14
+            for gm in (0.1, 0.5) for e in EPS_HEAT if (N, 0.40, gm, e) not in done]
+    todo.sort(key=lambda a: (-a[1], a[5]))
+    print(len(todo), "heat cases", flush=True)
+    with ProcessPoolExecutor(JOBS) as ex, open(path, "a") as fh:
+        for r in ex.map(_case, todo):
+            fh.write(json.dumps(r, default=RS._f) + "\n")
+            fh.flush()
+            d = r["meas_dyadic"]
+            print(f"[heat] N={r['N']} gamma={r['gamma']:.2f} eps={r['eps']:g} meas={d['cnot'] if d else float('nan'):.3e} "
+                  f"({r['time']:.0f}s)", flush=True)
+
+
+def _opt_case(args):
+    """Optimized SBC filter (Stetcu-Baroni-Carlson recipe) for one (N, gap, gamma, eps) point: measured
+    (designed for the target with the true gap, then the coarsest passing Strang step; if no step passes,
+    redesigned at half the target) and certified (refine() with leak fraction 0.25 to bound design time)."""
+    N, gap, J2, gamma, eps = args
+    from sbpipe.frontends.dmrg_quimb import mps_circuit_cost
+    t0 = time.time()
+    s, psi = _trial(N, J2, gamma)
+    g = s["ground"]
+    gam = abs(np.vdot(g, psi)) ** 2
+    H = j1j2_chain(N, 1.0, J2)
+    lo, hi = sbpipe.weyl_bounds(H)
+    E0, E1 = float(s["E0"]), float(s["E1"])
+    W = hi - E0
+    delta = (E1 - E0) / W
+    Hs = H.shifted_scaled(E0, W)
+    mc = mps_circuit_cost(N, CHI_BASE)
+    trial_cost = dict(cnot=mc["cnot"], rotations=mc["rotations"] + N // 2)
+    out = dict(N=N, gap=E1 - E0, gap_target=gap, J2=J2, gamma=gam, gamma_target=gamma, eps=eps, W=W, delta=delta,
+               trial_cnot=trial_cost["cnot"])
+    meas = None
+    for frac in (1.0, 0.5):
+        des = D.design_filter("optimized", delta, 0.0, eps * frac, gam)
+        if des is None:
+            continue
+        tr = RE._sbc_trotter(None, Hs, psi, g, des, eps)
+        if tr:
+            dt, k, inf, p = tr
+            fc = filter_counts(Hs, k, 2)["cnot"]
+            meas = dict(T=des.T, m=des.m, steps=int(k.sum()), dt=dt, inf=inf, p=p, design_frac=frac,
+                        cnot_filter=fc, cnot=(fc + trial_cost["cnot"]) / p)
+            break
+    out["meas_optimized"] = meas
+    est = EnergyEstimates(E0=E0, E0_err=1e-9, E1=E1, E1_err=1e-9, E_max=None, source="ED")
+    ans = Ansatz(gamma=gam, statevector=None, cost=trial_cost, name="mps16+Y", meta={})
+    try:
+        pl = refine(H, est, ans, Config(eps=eps, schedule="optimized", order=2, leak_fracs=(0.25,)))
+        sm = pl.summary()
+        out["cert_optimized"] = dict(cnot=sm["res_expected_cnot"], m=sm["m"], T=sm["T_scaled"], steps=sm["res_steps"])
+    except RuntimeError:
+        out["cert_optimized"] = None
+    out["time"] = time.time() - t0
+    return out
+
+
+def _opt_fix_case(args):
+    """Retry an optimized point whose design collapsed (success probability << gamma, or a certificate far
+    above dyadic): measured over optimizer seeds 0-3 and design fractions 1, 1/2, keeping the cheapest per
+    success; certified over leak fractions 0.5, 0.25, 0.1 (refine keeps the cheapest)."""
+    N, gap, J2, gamma, eps, redo_meas, redo_cert = args
+    t0 = time.time()
+    s, psi = _trial(N, J2, gamma)
+    g = s["ground"]
+    gam = abs(np.vdot(g, psi)) ** 2
+    H = j1j2_chain(N, 1.0, J2)
+    lo, hi = sbpipe.weyl_bounds(H)
+    E0, E1 = float(s["E0"]), float(s["E1"])
+    W = hi - E0
+    delta = (E1 - E0) / W
+    Hs = H.shifted_scaled(E0, W)
+    from sbpipe.frontends.dmrg_quimb import mps_circuit_cost
+    mc = mps_circuit_cost(N, CHI_BASE)
+    trial_cost = dict(cnot=mc["cnot"], rotations=mc["rotations"] + N // 2)
+    out = dict(N=N, gap_target=gap, gamma_target=gamma, eps=eps)
+    if redo_meas:
+        best = None
+        for seed in (0, 1, 2, 3):
+            for frac in (1.0, 0.5):
+                des = D.design_filter("optimized", delta, 0.0, eps * frac, gam, seed=seed)
+                if des is None:
+                    continue
+                tr = RE._sbc_trotter(None, Hs, psi, g, des, eps)
+                if tr:
+                    dt, k, inf, p = tr
+                    fc = filter_counts(Hs, k, 2)["cnot"]
+                    c = (fc + trial_cost["cnot"]) / p
+                    if best is None or c < best["cnot"]:
+                        best = dict(T=des.T, m=des.m, steps=int(k.sum()), dt=dt, inf=inf, p=p, design_frac=frac,
+                                    seed=seed, cnot_filter=fc, cnot=c)
+        out["meas_optimized"] = best
+    if redo_cert:
+        est = EnergyEstimates(E0=E0, E0_err=1e-9, E1=E1, E1_err=1e-9, E_max=None, source="ED")
+        ans = Ansatz(gamma=gam, statevector=None, cost=trial_cost, name="mps16+Y", meta={})
+        try:
+            pl = refine(H, est, ans, Config(eps=eps, schedule="optimized", order=2, leak_fracs=(0.5, 0.25, 0.1)))
+            sm = pl.summary()
+            out["cert_optimized"] = dict(cnot=sm["res_expected_cnot"], m=sm["m"], T=sm["T_scaled"],
+                                         steps=sm["res_steps"])
+        except RuntimeError:
+            out["cert_optimized"] = None
+    out["time"] = time.time() - t0
+    return out
+
+
+def run_opt_fix():
+    import json
+    D0 = {}
+    for f in ("gapov.jsonl", "gapov_heat.jsonl"):
+        p = os.path.join(RS.RES, f)
+        if os.path.exists(p):
+            for r in map(json.loads, open(p)):
+                D0[(r["N"], r["gap_target"], r["gamma_target"], r["eps"])] = r
+    path = os.path.join(RS.RES, "gapov_opt_fix.jsonl")
+    done = set()
+    if os.path.exists(path):
+        done = {(r["N"], r["gap_target"], r["gamma_target"], r["eps"]) for r in map(json.loads, open(path))}
+    todo = []
+    for r in map(json.loads, open(os.path.join(RS.RES, "gapov_opt.jsonl"))):
+        key = (r["N"], r["gap_target"], r["gamma_target"], r["eps"])
+        if key in done:
+            continue
+        m, c, d = r["meas_optimized"], r["cert_optimized"], D0.get(key)
+        rm = m is None or m["p"] < 0.5 * r["gamma"]
+        rc = c is None or (d is not None and d.get("cert_dyadic") and c["cnot"] > 2 * d["cert_dyadic"]["cnot"])
+        if rm or rc:
+            todo.append((r["N"], r["gap_target"], r["J2"], r["gamma_target"], r["eps"], rm, bool(rc)))
+    print(len(todo), "optimized points to retry", flush=True)
+    with ProcessPoolExecutor(JOBS) as ex, open(path, "a") as fh:
+        for r in ex.map(_opt_fix_case, todo):
+            fh.write(json.dumps(r, default=RS._f) + "\n")
+            fh.flush()
+            m, c = r.get("meas_optimized"), r.get("cert_optimized")
+            print(f"[fix] N={r['N']} gap={r['gap_target']} gamma={r['gamma_target']} eps={r['eps']:g} "
+                  f"meas={m['cnot'] if m else float('nan'):.3e} p={m['p'] if m else float('nan'):.3g} "
+                  f"cert={c['cnot'] if c else float('nan'):.3e} ({r['time']:.0f}s)", flush=True)
+
+
+def run_grid():
+    """Full gap x overlap grid at eps = 1e-2 for N = 12, 14 (dyadic only); reuses gapov.jsonl points."""
+    import json
+    T = load("gapov_tune.json")
+    pts = {(p["N"], p["gap"]): p["J2"] for p in T["points"]}
+    ok = {(r["N"], round(r["J2"], 7), r["gamma"]) for r in T["theta"]}
+    done = {(r["N"], r["gap_target"], r["gamma_target"], r["eps"])
+            for r in map(json.loads, open(os.path.join(RS.RES, "gapov.jsonl")))}
+    path = os.path.join(RS.RES, "gapov_grid.jsonl")
+    if os.path.exists(path):
+        done |= {(r["N"], r["gap_target"], r["gamma_target"], r["eps"]) for r in map(json.loads, open(path))}
+    todo = [("G", N, gap, pts[(N, gap)], gm, 1e-2, ("dyadic",)) for N in (12, 14) for gap in GAPS
+            if (N, gap) in pts for gm in GAMMAS
+            if (N, gap, gm, 1e-2) not in done and (N, round(pts[(N, gap)], 7), gm) in ok]
+    print(len(todo), "grid cases", flush=True)
+    with ProcessPoolExecutor(JOBS) as ex, open(path, "a") as fh:
+        for r in ex.map(_case, todo):
+            fh.write(json.dumps(r, default=RS._f) + "\n")
+            fh.flush()
+            d = r["meas_dyadic"]
+            print(f"[grid] N={r['N']} gap={r['gap']:.2f} gamma={r['gamma']:.2f} meas={d['cnot'] if d else float('nan'):.3e} "
+                  f"({r['time']:.0f}s)", flush=True)
+
+
+def run_opt():
+    """Optimized filter on the heat-map grid first, then on every gap/overlap case."""
+    import json
+    T = load("gapov_tune.json")
+    pts = {(p["N"], p["gap"]): p["J2"] for p in T["points"]}
+    ok = {(r["N"], round(r["J2"], 7), r["gamma"]) for r in T["theta"]}
+    want = [(N, 0.40, pts[(N, 0.40)], gm, e) for N in N_GO if N <= 14 and (N, 0.40) in pts
+            for gm in (0.1, 0.5) for e in EPS_HEAT]
+    want += [(a[1], a[2], a[3], a[4], a[5]) for a in cases()]
+    want += [(N, gap, pts[(N, gap)], gm, 1e-2) for N in (12, 14) for gap in GAPS if (N, gap) in pts
+             for gm in GAMMAS]                                   # the gap x overlap grid
+    path = os.path.join(RS.RES, "gapov_opt.jsonl")
+    done = set()
+    if os.path.exists(path):
+        done = {(r["N"], r["gap_target"], r["gamma_target"], r["eps"]) for r in map(json.loads, open(path))}
+    seen, todo = set(), []
+    for a in want:
+        key = (a[0], a[1], a[3], a[4])
+        if key in done or key in seen or (a[0], round(a[2], 7), a[3]) not in ok:
+            continue
+        seen.add(key)
+        todo.append(a)
+    print(len(todo), "optimized cases", flush=True)
+    with ProcessPoolExecutor(JOBS) as ex, open(path, "a") as fh:
+        for r in ex.map(_opt_case, todo):
+            fh.write(json.dumps(r, default=RS._f) + "\n")
+            fh.flush()
+            m, c = r["meas_optimized"], r["cert_optimized"]
+            print(f"[opt] N={r['N']} gap={r['gap']:.2f} gamma={r['gamma']:.2f} eps={r['eps']:g} "
+                  f"meas={m['cnot'] if m else float('nan'):.3e} cert={c['cnot'] if c else float('nan'):.3e} "
+                  f"({r['time']:.0f}s)", flush=True)
+
+
 if __name__ == "__main__":
     what = sys.argv[1] if len(sys.argv) > 1 else "tune,run"
     for k in what.split(","):
         t = time.time()
-        dict(tune=run_tune, run=run_run)[k]()
+        dict(tune=run_tune, run=run_run, heat=run_heat, opt=run_opt, optfix=run_opt_fix, grid=run_grid)[k]()
         print(f"== {k} done in {time.time() - t:.0f}s", flush=True)

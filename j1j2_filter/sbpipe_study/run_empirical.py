@@ -807,9 +807,36 @@ def run_actual():
     dump("emp_actual.json", out)
 
 
+ACT1D_SYSTEMS = [("chain", N, J2) for J2 in (0.0, 0.2411, 0.4) for N in (12, 14, 16)
+                 if (N, J2) != (16, 0.2411)]
+
+
+def run_actual1d():
+    """The measured crossover of run_actual on more chains (N = 12-16, J2 = 0, 0.2411, 0.4); one json line per
+    case in results/emp_actual1d.jsonl, resumable."""
+    import json
+    with ProcessPoolExecutor(2) as ex:
+        for a, dt in ex.map(_act_spectrum, ACT1D_SYSTEMS):
+            print(f"[actual1d] spectrum {a} {dt:.0f}s", flush=True)
+    path = os.path.join(RES, "emp_actual1d.jsonl")
+    done = set()
+    if os.path.exists(path):
+        done = {(r["size"], r["J2"], r["chi"], r["eps"]) for r in map(json.loads, open(path))}
+    cases = [(k, s, J2, chi, eps) for k, s, J2 in ACT1D_SYSTEMS for chi in ACT_CHIS for eps in EPS_ACT
+             if (s, J2, chi, eps) not in done]
+    with ProcessPoolExecutor(JOBS) as ex, open(path, "a") as fh:
+        for r in ex.map(_act_case, cases):
+            fh.write(json.dumps(r, default=float) + "\n")
+            fh.flush()
+            msg = "MPS alone" if r["mps_alone"] else " ".join(
+                f"{s}={r[s]['cnot']:.2e}" for s in ("dyadic", "optimized", "qetu") if r.get(s))
+            print(f"[actual1d] {r['kind']}{r['size']} J2={r['J2']} chi={r['chi']} eps={r['eps']:g} "
+                  f"1-gamma={1 - r['gamma']:.1e} mps={r['trial_cnot']:.2e} {msg}", flush=True)
+
+
 if __name__ == "__main__":
     what = sys.argv[1] if len(sys.argv) > 1 else "match,spectra,filters,trotter"
-    steps = dict(match=run_match, gapscan=run_gapscan, spectra=run_spectra, filters=run_filters, trotter=run_trotter, emp_regime=run_emp_regime, frontier=run_frontier, sbc=run_sbc, sbc_regime=run_sbc_regime, actual=run_actual)
+    steps = dict(match=run_match, gapscan=run_gapscan, spectra=run_spectra, filters=run_filters, trotter=run_trotter, emp_regime=run_emp_regime, frontier=run_frontier, sbc=run_sbc, sbc_regime=run_sbc_regime, actual=run_actual, actual1d=run_actual1d)
     for k in what.split(","):
         t = time.time()
         steps[k]()

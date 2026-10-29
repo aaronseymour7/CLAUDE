@@ -915,16 +915,25 @@ def actual_crossover():
     fig.savefig(os.path.join(FIG, "fig_actual.png"), dpi=200)
     plt.close(fig)
     macro("actWins", str(wins)); macro("actRatioMax", f"{max(ratios):.1f}")
+    cyl = []
+    for kind, sz, J2, _ in systems:
+        if kind != "cyl":
+            continue
+        o = _actual_rows(A, (kind, sz, J2))
+        m = o["mps"][0]
+        sbc = np.fmin(o["dyadic"][0], o["optimized"][0])
+        cyl += [m[i] / sbc[i] for i, e in enumerate(o["eps"]) if e <= 3.1e-3 and np.isfinite(m[i])]
+    macro("actRatioLo", f"{min(cyl):.1f}")
     print("actual: SBC cheaper in", wins, "of", 5 * 7, "targets; ratios", np.round(sorted(ratios), 2))
 
 
 # ----------------------------------------------------------------------------- gap vs overlap
 def _gapov():
-    p = os.path.join(RES, "gapov.jsonl")
-    if not os.path.exists(p):
+    """gap/overlap cases with the optimized SBC results attached (derive_gapov_filter.load_cases)."""
+    if not os.path.exists(os.path.join(RES, "gapov.jsonl")):
         return None
-    with open(p) as fh:
-        return [json.loads(l) for l in fh]
+    from derive_gapov_filter import load_cases
+    return load_cases()
 
 
 GO_NCOL = {8: "#9ec5f0", 10: "#5a9be0", 12: "#2a6bc0", 14: "#0d3a80"}
@@ -989,12 +998,14 @@ def gapov():
         fig.savefig(os.path.join(FIG, f"fig_gapov_{tag}.png"), dpi=200)
         plt.close(fig)
     # --- fits and collapse
-    fig, axs = plt.subplots(1, 4, figsize=(7.2, 2.2))
-    lines = []
-    for a, key, name in zip(axs, ("meas_dyadic", "meas_qetu", "cert_dyadic", "cert_qetu"),
-                            ("dyadic, measured", "QETU, measured", "dyadic, certified", "QETU, certified")):
+    fig, axs = plt.subplots(2, 3, figsize=(7.2, 4.4))
+    lines, TAB = [], []
+    keys = (("meas_dyadic", "dyadic, measured"), ("meas_optimized", "optimized, measured"),
+            ("meas_qetu", "QETU, measured"), ("cert_dyadic", "dyadic, certified"),
+            ("cert_optimized", "optimized, certified"), ("cert_qetu", "QETU, certified"))
+    for a, (key, name) in zip(axs.ravel(), keys):
         c, rms, mx, X, y = _go_fit(G, key)
-        col = SCHED_COL["dyadic"] if "dyadic" in key else QETU_COL
+        col = SCHED_COL["dyadic"] if "dyadic" in key else SCHED_COL["optimized"] if "optim" in key else QETU_COL
         a.plot(np.exp(X @ c), np.exp(y), "o", color=col, ms=2, alpha=0.6)
         lo, hi = np.exp(min(y.min(), (X @ c).min())), np.exp(max(y.max(), (X @ c).max()))
         a.plot([lo, hi], [lo, hi], color=INK2, lw=0.8)
@@ -1009,11 +1020,16 @@ def gapov():
         macro(f"go{tagm}rms", f"{rms:.2f}"); macro(f"go{tagm}max", f"{mx:.1f}")
         macro(f"go{tagm}gam", f"{-c[4]:.2f}")
         lines.append((name, c, rms, mx))
-    axs[0].set_ylabel("CNOTs per success")
+        TAB.append(f"{name} & {len(y)} & ${sci(np.exp(c[0]), 1)}$ & {c[1]:.2f} & {-c[2]:.2f} & {c[3]:.2f} & {-c[4]:.2f} & "
+                   f"{rms:.2f} & {mx:.1f} \\\\")
+    for a in axs[:, 0]:
+        a.set_ylabel("CNOTs per success")
     fig.tight_layout()
     fig.savefig(os.path.join(FIG, "fig_gapov_fit.pdf"))
     fig.savefig(os.path.join(FIG, "fig_gapov_fit.png"), dpi=200)
     plt.close(fig)
+    with open(os.path.join(GEN, "tab_gapov_fit.tex"), "w") as fh:
+        fh.write("\n".join(TAB) + "\n")
     rat = [r["cert_dyadic"]["cnot"] / r["meas_dyadic"]["cnot"] for r in G if r["cert_dyadic"] and r["meas_dyadic"]]
     macro("goCertRatioMed", f"{np.median(rat):.0f}"); macro("goCertRatioMin", f"{min(rat):.0f}")
     macro("goCertRatioMax", f"{max(rat):.0f}"); macro("goNcases", str(len(G)))
@@ -1022,6 +1038,119 @@ def gapov():
     for name, c, rms, mx in lines:
         print("gapov fit", name, np.round(c, 3), "rms", round(rms, 3), "max", round(mx, 2))
     print("cert/meas dyadic", np.round(np.percentile(rat, [0, 50, 100]), 1), "qetu/dyadic meas", np.round(np.percentile(sv, [0, 50, 100]), 2))
+
+
+# ----------------------------------------------------------------------------- filter-only (gap vs overlap)
+def gapov_filter():
+    """Macros for the filter-only analysis (results/gapov_filter.json from derive_gapov_filter.py) and copies
+    of the gap/overlap report figures into the paper's figure folder."""
+    import shutil
+    rep = os.path.join(HERE, "gapov_report", "figs")
+    for f in ("fig_filter_A", "fig_filter_B", "fig_filter_mech", "fig_gridmap", "fig_gridmap_shot", "fig_heat_dyadic_succ",
+              "fig_heat_ratio", "fig_heat_meas_succ"):
+        if os.path.exists(os.path.join(rep, f + ".pdf")):
+            shutil.copy(os.path.join(rep, f + ".pdf"), FIG)
+    D = load("gapov_filter.json")
+    if D is None:
+        return
+    Ns = sorted({r["N"] for r in D})
+
+    def rng(meth, met, sel, a, b):
+        v = []
+        for e in (1e-2, 1e-3, 1e-4):
+            for N in Ns:
+                R = [r for r in D if r["N"] == N and r["eps"] == e and sel(r)]
+                A = [r for r in R if a(r)]
+                B = [r for r in R if b(r)]
+                if A and B:
+                    v.append(A[0][meth][met] / B[0][meth][met])
+        return min(v), max(v)
+
+    selA = lambda r: abs(r["gap_target"] - 0.4) < 1e-9
+    for meth, t in (("meas_dyadic", "MD"), ("meas_qetu", "MQ"), ("cert_dyadic", "CD"), ("cert_qetu", "CQ")):
+        for met in ("cnot", "time"):
+            lo, hi = rng(meth, met, selA, lambda r: r["gamma_target"] == 0.03, lambda r: r["gamma_target"] == 0.9)
+            macro(f"fA{t}{met}", f"{lo:.1f}--{hi:.1f}")
+            v = []
+            for e in (1e-2, 1e-3, 1e-4):
+                for N in (12, 14):
+                    R = sorted([r for r in D if r["N"] == N and r["gamma_target"] == 0.1 and r["eps"] == e],
+                               key=lambda r: r["gap"])
+                    v.append(R[0][meth][met] / R[-1][meth][met])
+            macro(f"fB{t}{met}", f"{min(v):.1f}--{max(v):.1f}")
+    for fam, t in (("dyadic", "D"), ("qetu", "Q")):
+        for met in ("time", "steps"):
+            v = [r["cert_" + fam][met] / r["meas_" + fam][met] for r in D]
+            macro(f"fCM{t}{met}", f"{np.median(v):.1f}")
+            macro(f"fCM{t}{met}Lo", f"{min(v):.1f}"); macro(f"fCM{t}{met}Hi", f"{max(v):.0f}")
+    macro("fQDtime", f"{np.median([r['meas_qetu']['time'] / r['meas_dyadic']['time'] for r in D]):.2f}")
+    macro("fQDsteps", f"{np.median([r['meas_qetu']['steps'] / r['meas_dyadic']['steps'] for r in D]):.2f}")
+    macro("fRzCnot", f"{np.median([r['meas_dyadic']['rz'] / r['meas_dyadic']['cnot'] for r in D]):.2f}")
+    macro("fCps", f"{np.median([r['meas_dyadic']['cnot'] / r['meas_dyadic']['steps'] / r['N'] for r in D]):.0f}")
+    for e, t in ((1e-2, "Two"), (1e-3, "Three"), (1e-4, "Four")):
+        macro(f"fDtD{t}", f"{np.median([r['meas_dyadic']['dt'] for r in D if r['eps'] == e]):.2f}")
+        macro(f"fDtC{t}", f"{np.median([r['cert_dyadic']['dt'] for r in D if r['eps'] == e]):.3f}")
+    # per-shot fits X ~ a N^al gap^-be L^la eps^-e
+    def fit(meth, met):
+        X, y = [], []
+        for r in D:
+            g, e = r["gamma"], r["eps"]
+            X.append([1, np.log(r["N"]), np.log(r["gap"]), np.log(np.log((1 - g) / (g * e))), np.log(e)])
+            y.append(np.log(r[meth][met]))
+        c, *_ = np.linalg.lstsq(np.array(X), np.array(y), rcond=None)
+        return c
+    for meth, t in (("meas_dyadic", "MD"), ("meas_qetu", "MQ"), ("cert_dyadic", "CD"), ("cert_qetu", "CQ")):
+        for met, m in (("time", "T"), ("steps", "S"), ("cnot", "C")):
+            c = fit(meth, met)
+            macro(f"fit{t}{m}N", f"{c[1]:.2f}"); macro(f"fit{t}{m}gap", f"{-c[2]:.2f}")
+            macro(f"fit{t}{m}L", f"{c[3]:.2f}"); macro(f"fit{t}{m}eps", f"{-c[4]:.2f}")
+    # optimized design retries, and dyadic vs optimized vs QETU, measured and certified
+    from derive_gapov_filter import _jsonl
+    fix = _jsonl("gapov_opt_fix.jsonl")
+    macro("optRetried", str(sum(1 for r in fix if "meas_optimized" in r)))
+    macro("optCertRetried", str(sum(1 for r in fix if "cert_optimized" in r)))
+    macro("optPoints", str(len(_jsonl("gapov_opt.jsonl"))))
+    G = _gapov()
+    for w, t in (("meas", "M"), ("cert", "C")):
+        v = [r[f"{w}_optimized"]["cnot"] / r[f"{w}_dyadic"]["cnot"] for r in G if r[f"{w}_optimized"]]
+        macro(f"od{t}Med", f"{np.median(v):.2f}"); macro(f"od{t}Lo", f"{min(v):.2f}")
+        macro(f"od{t}Hi", f"{max(v):.2f}"); macro(f"od{t}Wins", str(sum(x < 1 for x in v)))
+    v = [r["meas_optimized"]["p"] / r["gamma"] for r in G]
+    macro("optPgLo", f"{min(v):.2f}"); macro("optPgMed", f"{np.median(v):.2f}")
+    for e, t in ((1e-2, "Two"), (1e-3, "Three"), (1e-4, "Four")):
+        R = [r for r in G if r["eps"] == e]
+        best = [min(("dyadic", "optimized", "qetu"), key=lambda f: r[f"meas_{f}"]["cnot"]) for r in R]
+        for f, ft in (("dyadic", "Dy"), ("optimized", "Op"), ("qetu", "Qe")):
+            macro(f"best{ft}{t}", str(best.count(f)))
+    Do = load("gapov_filter.json")
+    for met in ("time", "steps", "cnot"):
+        v = [r["meas_optimized"][met] / r["meas_dyadic"][met] for r in Do]
+        macro(f"odShot{met.capitalize()}", f"{np.median(v):.2f}")
+    macro("fDtOFour", f"{np.median([r['meas_optimized']['dt'] for r in Do if r['eps'] == 1e-4]):.2f}")
+    macro("fDtOTwo", f"{np.median([r['meas_optimized']['dt'] for r in Do if r['eps'] == 1e-2]):.2f}")
+    for meth, t in (("meas_optimized", "MO"), ("cert_optimized", "CO")):
+        for met, m in (("time", "T"), ("steps", "S"), ("cnot", "C")):
+            X, y = [], []
+            for r in Do:
+                g, e = r["gamma"], r["eps"]
+                X.append([1, np.log(r["N"]), np.log(r["gap"]), np.log(np.log((1 - g) / (g * e))), np.log(e)])
+                y.append(np.log(r[meth][met]))
+            c, *_ = np.linalg.lstsq(np.array(X), np.array(y), rcond=None)
+            macro(f"fit{t}{m}N", f"{c[1]:.2f}"); macro(f"fit{t}{m}gap", f"{-c[2]:.2f}")
+            macro(f"fit{t}{m}L", f"{c[3]:.2f}"); macro(f"fit{t}{m}eps", f"{-c[4]:.2f}")
+    v = [r["cert_optimized"]["time"] / r["meas_optimized"]["time"] for r in Do]
+    macro("fCMOtime", f"{np.median(v):.1f}")
+    v = [r["cert_optimized"]["steps"] / r["meas_optimized"]["steps"] for r in Do]
+    macro("fCMOsteps", f"{np.median(v):.0f}")
+    v = [r["cert_optimized"]["cnot"] / r["meas_optimized"]["cnot"] for r in G]
+    rat = [r["cert_optimized"]["cnot"] / r["meas_optimized"]["cnot"] for r in G]
+    macro("goCertRatioOptMed", f"{np.median(rat):.0f}"); macro("goCertRatioOptMin", f"{min(rat):.0f}")
+    macro("goCertRatioOptMax", f"{max(rat):.0f}")
+    # dyadic vs QETU, measured, by eps
+    for e, t in ((1e-2, "Two"), (1e-3, "Three"), (1e-4, "Four")):
+        R = [r for r in G if r["eps"] == e]
+        macro(f"goQetuWins{t}", str(sum(r["meas_qetu"]["cnot"] < r["meas_dyadic"]["cnot"] for r in R)))
+        macro(f"goCases{t}", str(len(R)))
 
 
 # ----------------------------------------------------------------------------- oracle
@@ -1048,7 +1177,7 @@ def oracle():
 
 
 if __name__ == "__main__":
-    for f in (inputs_table, validation, scaling, qetu, drivers, empirical, regime, fid_plane, crossover, actual_crossover, gapov, sens_wide, sensitivity, ansatz, oracle):
+    for f in (inputs_table, validation, scaling, qetu, drivers, empirical, regime, fid_plane, crossover, actual_crossover, gapov, gapov_filter, sens_wide, sensitivity, ansatz, oracle):
         f()
     with open(os.path.join(GEN, "macros.tex"), "w") as fh:
         fh.write("% generated by sbpipe_study/make_figures.py -- do not edit\n" + "\n".join(MACROS) + "\n")

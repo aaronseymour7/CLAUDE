@@ -18,8 +18,9 @@ os.makedirs(FIGD, exist_ok=True)
 D = M.load("gapov_filter.json")
 NS = sorted({r["N"] for r in D})
 NCOL = M.GO_NCOL
-METHODS = (("meas_dyadic", "dyadic, measured"), ("meas_qetu", "QETU, measured"),
-           ("cert_dyadic", "dyadic, certified"), ("cert_qetu", "QETU, certified"))
+METHODS = (("meas_dyadic", "dyadic, measured"), ("meas_optimized", "optimized, measured"),
+           ("meas_qetu", "QETU, measured"), ("cert_dyadic", "dyadic, certified"),
+           ("cert_optimized", "optimized, certified"), ("cert_qetu", "QETU, certified"))
 sci = M.sci
 
 
@@ -58,8 +59,8 @@ def study_fig(tag):
     else:
         sel = lambda r: r["gamma_target"] == 0.10 and r["eps"] == eps
         xk, xl = "gap", r"gap $\Delta$"
-    fig, axs = plt.subplots(2, 4, figsize=(7.2, 4.4), sharex=True)
-    for row, fam in enumerate(("dyadic", "qetu")):
+    fig, axs = plt.subplots(3, 4, figsize=(7.2, 6.3), sharex=True)
+    for row, fam in enumerate(("dyadic", "optimized", "qetu")):
         for a, (met, ps, lab) in zip(axs[row], PANELS):
             for N in NS:
                 R = sorted([r for r in D if r["N"] == N and sel(r)], key=lambda r: r[xk])
@@ -72,17 +73,17 @@ def study_fig(tag):
             a.yaxis.set_minor_formatter(M.matplotlib.ticker.NullFormatter())
             if row == 0:
                 a.set_title(lab, loc="left", fontsize=7.5)
-            if row == 1:
+            if row == 2:
                 a.set_xlabel(xl)
             if tag == "B":
                 a.set_xticks([0.3, 0.4, 0.5]); a.set_xticklabels(["0.3", "0.4", "0.5"])
                 a.xaxis.set_minor_formatter(M.matplotlib.ticker.NullFormatter())
-        axs[row, 0].set_ylabel("dyadic SBC" if fam == "dyadic" else "QETU")
+        axs[row, 0].set_ylabel({"dyadic": "dyadic SBC", "optimized": "optimized SBC", "qetu": "QETU"}[fam])
     h = [plt.Line2D([], [], color=NCOL[N], lw=1.5, label=f"$N={N}$") for N in NS]
     h += [plt.Line2D([], [], color=M.INK2, marker="o", ms=2.8, lw=1.3, label="measured"),
           plt.Line2D([], [], color=M.INK2, marker="D", ls="--", ms=2.2, lw=0.8, label="certified")]
     fig.legend(handles=h, loc="lower center", ncol=6, fontsize=6.8, bbox_to_anchor=(0.5, 0.0))
-    fig.tight_layout(rect=(0, 0.05, 1, 1))
+    fig.tight_layout(rect=(0, 0.04, 1, 1))
     fig.savefig(os.path.join(FIGD, f"fig_filter_{tag}.pdf"))
     fig.savefig(os.path.join(FIGD, f"fig_filter_{tag}.png"), dpi=200)
     plt.close(fig)
@@ -92,7 +93,8 @@ def mechanism_fig():
     """(a) evolution time collapses on L/gap; (b) Trotter step against eps; (c) steps against L/gap."""
     fig, axs = plt.subplots(1, 3, figsize=(7.2, 2.5))
     sty = {"meas_dyadic": (M.SCHED_COL["dyadic"], "o"), "meas_qetu": (M.QETU_COL, "^"),
-           "cert_dyadic": (M.SCHED_COL["dyadic"], "D"), "cert_qetu": (M.QETU_COL, "s")}
+           "cert_dyadic": (M.SCHED_COL["dyadic"], "o"), "cert_qetu": (M.QETU_COL, "^"),
+           "meas_optimized": (M.SCHED_COL["optimized"], "s"), "cert_optimized": (M.SCHED_COL["optimized"], "s")}
     for meth, name in METHODS:
         col, mk = sty[meth]
         fill = col if meth.startswith("meas") else "none"

@@ -29,8 +29,42 @@ def counts(H, steps, pulses, anc):
     return int(cnot), int(rot)
 
 
+def _key(r):
+    return (r["N"], r["gap_target"], r["gamma_target"], r["eps"])
+
+
+def _jsonl(name):
+    p = os.path.join(RS.RES, name)
+    return [json.loads(l) for l in open(p)] if os.path.exists(p) else []
+
+
+def optimized_map():
+    """(N, gap, gamma, eps) -> {meas_optimized, cert_optimized}: the single-seed run, replaced by the retry
+    (more optimizer seeds / leak fractions) wherever the retry is cheaper."""
+    out = {}
+    for r in _jsonl("gapov_opt.jsonl"):
+        out[_key(r)] = {k: r[k] for k in ("meas_optimized", "cert_optimized")}
+    for r in _jsonl("gapov_opt_fix.jsonl"):
+        o = out.setdefault(_key(r), {"meas_optimized": None, "cert_optimized": None})
+        for k in ("meas_optimized", "cert_optimized"):
+            if k in r and r[k] and (o[k] is None or r[k]["cnot"] < o[k]["cnot"]):
+                o[k] = r[k]
+    return out
+
+
+def load_cases(files=("gapov.jsonl",)):
+    """gap/overlap cases with the optimized results attached (None where not run)."""
+    opt = optimized_map()
+    rows = []
+    for f in files:
+        for r in _jsonl(f):
+            r.update(opt.get(_key(r), {"meas_optimized": None, "cert_optimized": None}))
+            rows.append(r)
+    return rows
+
+
 def main():
-    rows = [json.loads(l) for l in open(os.path.join(RS.RES, "gapov.jsonl"))]
+    rows = load_cases()
     out, cache = [], {}
     for r in rows:
         key = (r["N"], r["J2"])
@@ -55,6 +89,17 @@ def main():
             p = (c + r["trial_cnot"]) / cc["cnot"]
             ent[name] = dict(cnot=c, rz=z, steps=cc["steps"], pulses=cc["m"], time=cc["T"] / W, p=p,
                              dt=cc["T"] / cc["steps"] / W)
+        mo, co = r["meas_optimized"], r["cert_optimized"]
+        ent["meas_optimized"] = ent["cert_optimized"] = None
+        if mo:
+            c, z = counts(H, mo["steps"], mo["m"], 1)
+            assert c == mo["cnot_filter"], (c, mo["cnot_filter"])
+            ent["meas_optimized"] = dict(cnot=c, rz=z, steps=mo["steps"], pulses=mo["m"], time=mo["T"] / W,
+                                         p=mo["p"], dt=mo["dt"] / W)
+        if co:
+            c, z = counts(H, co["steps"], co["m"], 1)
+            ent["cert_optimized"] = dict(cnot=c, rz=z, steps=co["steps"], pulses=co["m"], time=co["T"] / W,
+                                         p=(c + r["trial_cnot"]) / co["cnot"], dt=co["T"] / co["steps"] / W)
         o.update(ent)
         # consistency: reconstructed measured CNOTs must reproduce the stored per-success total
         for k, m in (("meas_dyadic", md), ("meas_qetu", mq)):
