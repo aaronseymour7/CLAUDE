@@ -927,6 +927,90 @@ def actual_crossover():
     print("actual: SBC cheaper in", wins, "of", 5 * 7, "targets; ratios", np.round(sorted(ratios), 2))
 
 
+def _actual1d_data():
+    p = os.path.join(RES, "emp_actual1d.jsonl")
+    if not os.path.exists(p):
+        return None
+    A = [json.loads(l) for l in open(p)]
+    return A + [r for r in (load("emp_actual.json") or []) if r["kind"] == "chain"]
+
+
+def actual1d():
+    """Measured crossover on nine chains (N = 12, 14, 16 x J2 = 0, 0.2411, 0.4): fig_actual1d and act1* macros."""
+    A = _actual1d_data()
+    if A is None:
+        return
+    Ns, J2s = (12, 14, 16), (0.0, 0.2411, 0.4)
+    fig, axs = plt.subplots(3, 3, figsize=(7.2, 6.4), sharex=True, sharey=True)
+    MPS_C = INK2
+    wins, tot, ratios = 0, 0, []
+    for i, J2 in enumerate(J2s):
+        for j, N in enumerate(Ns):
+            a = axs[i, j]
+            o = _actual_rows(A, ("chain", N, J2))
+            e = o["eps"]
+            m, mchi = o["mps"]
+            sbc = np.fmin(o["dyadic"][0], o["optimized"][0])
+            a.plot(e, m, "o-", color=MPS_C, ms=3.2, lw=1.2, drawstyle="steps-mid")
+            for x, y, c in zip(e, m, mchi):
+                if c:
+                    a.annotate(f"{c}", (x, y), xytext=(0, 4), textcoords="offset points", fontsize=5.5, color=MPS_C, ha="center")
+            a.plot(e, o["dyadic"][0], "o-", color=SCHED_COL["dyadic"], ms=3.2)
+            for x, y, c in zip(e, *o["dyadic"]):
+                if c:
+                    a.annotate(f"{c}", (x, y), xytext=(0, -8), textcoords="offset points", fontsize=5.5,
+                               color=SCHED_COL["dyadic"], ha="center")
+            ok = np.isfinite(o["optimized"][0])
+            a.plot(e[ok], o["optimized"][0][ok], "s", color=SCHED_COL["optimized"], ms=3.2)
+            a.plot(e, o["qetu"][0], "^--", color=QETU_COL, ms=2.8, lw=0.9)
+            cheaper = np.isfinite(sbc) & (sbc < m)
+            wins += int(cheaper.sum()); tot += len(e)
+            ratios += list((m / sbc)[cheaper])
+            lo = np.log10(e)
+            edges = 10 ** np.concatenate([[lo[0] + 0.25], (lo[:-1] + lo[1:]) / 2, [lo[-1] - 0.25]])
+            for k in range(len(e)):
+                if cheaper[k]:
+                    a.axvspan(edges[k], edges[k + 1], color=SCHED_COL["dyadic"], alpha=0.12, lw=0)
+            a.set_xscale("log"); a.set_yscale("log")
+            a.set_xlim(edges[0], edges[-1]); a.set_ylim(1e2, 1e5)
+            a.set_title(f"$N={N}$, $J_2={J2:g}$", loc="left", fontsize=7.5)
+            a.set_xticks([1e-2, 1e-3, 1e-4, 1e-5])
+            if j == 0:
+                a.set_ylabel("CNOTs per success")
+            if i == 2:
+                a.set_xlabel(r"target infidelity $\varepsilon$")
+    h = [plt.Line2D([], [], color=MPS_C, marker="o", ms=3.2, lw=1.2, label="MPS alone (number: $\\chi$)"),
+         plt.Line2D([], [], color=SCHED_COL["dyadic"], marker="o", ms=3.2, label="MPS + dyadic SBC (number: trial $\\chi$)"),
+         plt.Line2D([], [], color=SCHED_COL["optimized"], marker="s", ls="", ms=3.2, label="MPS + optimized SBC"),
+         plt.Line2D([], [], color=QETU_COL, marker="^", ls="--", ms=2.8, lw=0.9, label="MPS + QETU"),
+         plt.Rectangle((0, 0), 1, 1, color=SCHED_COL["dyadic"], alpha=0.12, lw=0, label="SBC cheaper than MPS alone")]
+    fig.legend(handles=h, loc="lower center", ncol=3, fontsize=6.6, frameon=False)
+    fig.tight_layout(rect=(0, 0.06, 1, 1))
+    fig.savefig(os.path.join(FIG, "fig_actual1d.pdf"))
+    fig.savefig(os.path.join(FIG, "fig_actual1d.png"), dpi=200)
+    plt.close(fig)
+    # every filtered route against the cheapest MPS alone at the same (system, eps), by how far the trial is from eps
+    pts = []
+    for r in A:
+        if r["mps_alone"]:
+            continue
+        m = min(q["trial_cnot"] for q in A if q["mps_alone"] and
+                (q["size"], q["J2"], q["eps"]) == (r["size"], r["J2"], r["eps"]))
+        c = min(r[k]["cnot"] for k in ("dyadic", "optimized") if r.get(k))
+        pts.append(((1 - r["gamma"]) / r["eps"], m / c))
+    pts = np.array(pts)
+    win = pts[:, 1] > 1
+    far = pts[:, 0] > pts[win, 0].max()
+    macro("actOneWins", str(wins)); macro("actOneTot", str(tot)); macro("actOneLoss", str(tot - wins))
+    macro("actOneRatioMax", f"{max(ratios):.1f}")
+    macro("actOneFarMax", f"{pts[win, 0].max():.1f}")
+    macro("actOneNearWins", str(int(win.sum()))); macro("actOneNear", str(int((~far).sum())))
+    macro("actOneFar", str(int(far.sum())))
+    macro("actOneFarMed", f"{1 / np.median(pts[far, 1]):.0f}")
+    print("actual1d: SBC cheaper in", wins, "of", tot, "; ratios", np.round(sorted(ratios), 2),
+          "; win (1-g)/eps <=", pts[win, 0].max(), "; far cases", far.sum(), "median MPS advantage", 1 / np.median(pts[far, 1]))
+
+
 # ----------------------------------------------------------------------------- gap vs overlap
 def _gapov():
     """gap/overlap cases with the optimized SBC results attached (derive_gapov_filter.load_cases)."""
@@ -1177,7 +1261,7 @@ def oracle():
 
 
 if __name__ == "__main__":
-    for f in (inputs_table, validation, scaling, qetu, drivers, empirical, regime, fid_plane, crossover, actual_crossover, gapov, gapov_filter, sens_wide, sensitivity, ansatz, oracle):
+    for f in (inputs_table, validation, scaling, qetu, drivers, empirical, regime, fid_plane, crossover, actual_crossover, actual1d, gapov, gapov_filter, sens_wide, sensitivity, ansatz, oracle):
         f()
     with open(os.path.join(GEN, "macros.tex"), "w") as fh:
         fh.write("% generated by sbpipe_study/make_figures.py -- do not edit\n" + "\n".join(MACROS) + "\n")

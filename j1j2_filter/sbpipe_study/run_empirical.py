@@ -667,7 +667,7 @@ def _act_spectrum(args):
     for chi in ACT_CHIS:
         try:
             rec, est, ans, g = RX.get_case(kind, size, J2, chi)
-        except KeyError:
+        except (KeyError, FileNotFoundError):
             ans = None
         if ans is None or ans.statevector is None:  # chain: build the same variational MPS here
             _, psi = trial_mps(pauli_to_mpo(H), chi)
