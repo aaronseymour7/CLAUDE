@@ -4,10 +4,10 @@
   "J2": 0.0,
   "eps": 0.01,
   "schedule": "dyadic",
-  "n_cert": 314,
-  "n_oracle": 22,
-  "m": 8,
-  "ratio": 14.272727272727273
+  "n_cert": 320,
+  "n_oracle": 24,
+  "m": 12,
+  "ratio": 13.333333333333334
  },
  {
   "N": 8,
@@ -174,10 +174,10 @@
   "J2": 0.2411,
   "eps": 0.01,
   "schedule": "optimized",
-  "n_cert": 151,
-  "n_oracle": 10,
+  "n_cert": 143,
+  "n_oracle": 9,
   "m": 6,
-  "ratio": 15.1
+  "ratio": 15.88888888888889
  },
  {
   "N": 10,
@@ -334,10 +334,10 @@
   "J2": 0.4,
   "eps": 0.01,
   "schedule": "optimized",
-  "n_cert": 125,
-  "n_oracle": 10,
-  "m": 6,
-  "ratio": 12.5
+  "n_cert": 117,
+  "n_oracle": 7,
+  "m": 4,
+  "ratio": 16.714285714285715
  },
  {
   "N": 12,

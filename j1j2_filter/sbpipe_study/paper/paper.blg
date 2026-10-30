@@ -1,0 +1,106 @@
+This is BibTeX, Version 0.99d (TeX Live 2023/Debian)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: paper.aux
+The style file: apsrev4-2.bst
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Database file #1: paperNotes.bib
+Warning--I didn't find a database entry for "White1992"
+Warning--I didn't find a database entry for "Schollwock2011"
+Warning--I didn't find a database entry for "Ran2020"
+Warning--I didn't find a database entry for "Ge2019"
+Warning--I didn't find a database entry for "Lin2020"
+Warning--I didn't find a database entry for "Gilyen2019"
+Warning--I didn't find a database entry for "Dong2022"
+Warning--I didn't find a database entry for "Stetcu2023"
+Warning--I didn't find a database entry for "Choi2021"
+Warning--I didn't find a database entry for "Qian2021"
+Warning--I didn't find a database entry for "Rule2024"
+Warning--I didn't find a database entry for "CohenOh2023"
+Warning--I didn't find a database entry for "Patkowski2026"
+Warning--I didn't find a database entry for "Childs2021"
+Warning--I didn't find a database entry for "Kane2023"
+Warning--I didn't find a database entry for "Muller2024"
+Warning--I didn't find a database entry for "Karacan2024"
+Warning--I didn't find a database entry for "Fomichev2024"
+Warning--I didn't find a database entry for "Berry2025"
+Warning--I didn't find a database entry for "Lee2025"
+Warning--I didn't find a database entry for "Watanabe2026"
+Warning--I didn't find a database entry for "Yoshioka2024"
+Warning--I didn't find a database entry for "Amy2014"
+Warning--I didn't find a database entry for "Vatan2004"
+Warning--I didn't find a database entry for "Vidal2004"
+Warning--I didn't find a database entry for "BeeLindgren2025"
+Warning--I didn't find a database entry for "Ross2016"
+Warning--I didn't find a database entry for "Okamoto1992"
+Warning--I didn't find a database entry for "Eggert1996"
+Warning--I didn't find a database entry for "Gray2018"
+Warning--I didn't find a database entry for "Shende2006"
+Warning--I didn't find a database entry for "Sahinoglu2021"
+Warning--I didn't find a database entry for "Mizuta2025"
+Warning--I didn't find a database entry for "Childs2018"
+Warning--I didn't find a database entry for "Iten2016"
+Warning--I didn't find a database entry for "Brassard2002"
+Warning--I didn't find a database entry for "Yoder2014"
+control{REVTEX42Control}, control.key{N/A}, control.author{N/A}, control.editor{N/A}, control.title{N/A}, control.pages{N/A}, control.year{N/A}, control.eprint{N/A}, 
+control{apsrev42Control}, control.key{N/A}, control.author{08}, control.editor{1}, control.title{0}, control.pages{0}, control.year{1}, control.eprint{N/A}, 
+Warning--jnrlst (dependency: not reversed) set 1
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated wiz_functions (elt_size=4) to 9000 items from 6000.
+apsrev4-2.bst 2019-01-14 (MD) hand-edited version of apsrev4-1.bst
+Control: key (0) 
+Control: author (8) initials jnrlst
+Control: editor formatted (1) identically to author
+Control: production of article title (0) allowed
+Control: page (0) single
+Control: year (1) truncated
+Control: production of eprint (0) enabled
+You've used 2 entries,
+            6079 wiz_defined-function locations,
+            1709 strings with 15737 characters,
+and the built_in function-call counts, 991 in all, are:
+= -- 12
+> -- 16
+< -- 35
++ -- 8
+- -- 20
+* -- 131
+:= -- 72
+add.period$ -- 0
+call.type$ -- 2
+change.case$ -- 0
+chr.to.int$ -- 12
+cite$ -- 2
+duplicate$ -- 137
+empty$ -- 17
+format.name$ -- 0
+if$ -- 127
+int.to.chr$ -- 1
+int.to.str$ -- 9
+missing$ -- 28
+newline$ -- 52
+num.names$ -- 0
+pop$ -- 68
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 33
+stack$ -- 0
+substring$ -- 12
+swap$ -- 110
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 10
+type$ -- 12
+warning$ -- 1
+while$ -- 11
+width$ -- 0
+write$ -- 52
+(There were 38 warnings)
