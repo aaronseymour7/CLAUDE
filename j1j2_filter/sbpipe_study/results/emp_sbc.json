@@ -13,7 +13,7 @@
   "cert_T": 175.58195599830142,
   "cert_m": 16,
   "cert_steps": 2540,
-  "cert_cnot_per_success": 29028544.45812832,
+  "cert_cnot_per_success": 13752832.288653284,
   "emp_T": 163.87649226508137,
   "emp_m": 24,
   "leak_exact": 0.0011434761217195,
@@ -73,8 +73,8 @@
   "steps": 32,
   "inf_trotter": 0.0032108383596232137,
   "p_succ": 0.03243092749481217,
-  "cnot_filter": 9824,
-  "cnot_per_success": 302920.7228677472
+  "cnot_filter": 4752,
+  "cnot_per_success": 146526.7991721839
  },
  {
   "family": "fixedJ2",
@@ -90,7 +90,7 @@
   "cert_T": 131.68646699872608,
   "cert_m": 12,
   "cert_steps": 900,
-  "cert_cnot_per_success": 1036164.2244197369,
+  "cert_cnot_per_success": 491001.1668601858,
   "emp_T": 122.907369198811,
   "emp_m": 18,
   "leak_exact": 0.000736423452577073,
@@ -138,8 +138,8 @@
   "steps": 24,
   "inf_trotter": 0.003216622141760439,
   "p_succ": 0.27582185585501856,
-  "cnot_filter": 7368,
-  "cnot_per_success": 26712.894006024213
+  "cnot_filter": 3564,
+  "cnot_per_success": 12921.383582718552
  },
  {
   "family": "fixedJ2",
@@ -155,7 +155,7 @@
   "cert_T": 61.453684599405506,
   "cert_m": 9,
   "cert_steps": 303,
-  "cert_cnot_per_success": 109565.45010244577,
+  "cert_cnot_per_success": 51943.35474644535,
   "emp_T": 43.89548899957536,
   "emp_m": 4,
   "leak_exact": 0.0008353177865745298,
@@ -175,8 +175,8 @@
   "steps": 8,
   "inf_trotter": 0.007473787074584348,
   "p_succ": 0.8165564785715516,
-  "cnot_filter": 2448,
-  "cnot_per_success": 2997.9555171522547
+  "cnot_filter": 1176,
+  "cnot_per_success": 1440.194317063338
  },
  {
   "family": "fixedJ2",
@@ -192,7 +192,7 @@
   "cert_T": 131.68646699872608,
   "cert_m": 12,
   "cert_steps": 1653,
-  "cert_cnot_per_success": 4730526.294841114,
+  "cert_cnot_per_success": 2241239.3204927742,
   "emp_T": 131.68646699872608,
   "emp_m": 12,
   "leak_exact": 4.7631458158781115e-06,
@@ -228,8 +228,8 @@
   "steps": 24,
   "inf_trotter": 0.0032103001132214315,
   "p_succ": 0.07562101806484559,
-  "cnot_filter": 7344,
-  "cnot_per_success": 97115.85730970278
+  "cnot_filter": 3528,
+  "cnot_per_success": 46653.69615858271
  },
  {
   "family": "fixedJ2",
@@ -245,7 +245,7 @@
   "cert_T": 61.453684599405506,
   "cert_m": 9,
   "cert_steps": 294,
-  "cert_cnot_per_success": 106162.28389834941,
+  "cert_cnot_per_success": 50331.26665829007,
   "emp_T": 43.89548899957536,
   "emp_m": 4,
   "leak_exact": 0.000796900432559533,
@@ -265,8 +265,8 @@
   "steps": 8,
   "inf_trotter": 0.007295040787377638,
   "p_succ": 0.8198808525639935,
-  "cnot_filter": 2448,
-  "cnot_per_success": 2985.7996955831195
+  "cnot_filter": 1176,
+  "cnot_per_success": 1434.3547557213024
  },
  {
   "family": "fixedJ2",
@@ -282,7 +282,7 @@
   "cert_T": 64.07278129050978,
   "cert_m": 8,
   "cert_steps": 627,
-  "cert_cnot_per_success": 8375284.06667236,
+  "cert_cnot_per_success": 3968682.655512559,
   "emp_T": 53.39398440875816,
   "emp_m": 8,
   "leak_exact": 0.005229089963751599,
@@ -310,8 +310,8 @@
   "steps": 15,
   "inf_trotter": 0.009124955098079535,
   "p_succ": 0.023511476639174415,
-  "cnot_filter": 4592,
-  "cnot_per_success": 195308.87278891233
+  "cnot_filter": 2208,
+  "cnot_per_success": 93911.58343160246
  },
  {
   "family": "fixedJ2",
@@ -327,7 +327,7 @@
   "cert_T": 42.71518752700651,
   "cert_m": 8,
   "cert_steps": 206,
-  "cert_cnot_per_success": 343072.693453927,
+  "cert_cnot_per_success": 162687.94477628765,
   "emp_T": 32.03639064525489,
   "emp_m": 6,
   "leak_exact": 0.003008339937163651,
@@ -351,8 +351,8 @@
   "steps": 9,
   "inf_trotter": 0.006542727830095574,
   "p_succ": 0.1489246346070473,
-  "cnot_filter": 2760,
-  "cnot_per_success": 18532.86400388048
+  "cnot_filter": 1332,
+  "cnot_per_success": 8944.121323611886
  },
  {
   "family": "fixedJ2",
@@ -368,7 +368,7 @@
   "cert_T": 25.62911251620393,
   "cert_m": 6,
   "cert_steps": 73,
-  "cert_cnot_per_success": 41685.21092163143,
+  "cert_cnot_per_success": 19791.843932362637,
   "emp_T": 17.08607501080261,
   "emp_m": 4,
   "leak_exact": 0.006267193338890142,
@@ -388,8 +388,8 @@
   "steps": 4,
   "inf_trotter": 0.007668339292809079,
   "p_succ": 0.37924940207790714,
-  "cnot_filter": 1232,
-  "cnot_per_success": 3248.521931082483
+  "cnot_filter": 600,
+  "cnot_per_success": 1582.072369033677
  },
  {
   "family": "fixedJ2",
@@ -405,7 +405,7 @@
   "cert_T": 219.47744499787677,
   "cert_m": 20,
   "cert_steps": 6135,
-  "cert_cnot_per_success": 64657419.273534276,
+  "cert_cnot_per_success": 30630044.915782332,
   "emp_T": 204.84561533135167,
   "emp_m": 30,
   "leak_exact": 0.00012831311599725836,
@@ -477,8 +477,8 @@
   "steps": 60,
   "inf_trotter": 0.0007147283071201604,
   "p_succ": 0.03215172596360029,
-  "cnot_filter": 18360,
-  "cnot_per_success": 571042.4386170055
+  "cnot_filter": 8820,
+  "cnot_per_success": 274324.308747385
  },
  {
   "family": "fixedJ2",
@@ -494,7 +494,7 @@
   "cert_T": 175.58195599830142,
   "cert_m": 16,
   "cert_steps": 2416,
-  "cert_cnot_per_success": 2551568.3487062524,
+  "cert_cnot_per_success": 1208865.8095399712,
   "emp_T": 163.87649226508137,
   "emp_m": 24,
   "leak_exact": 8.260653738445534e-05,
@@ -554,8 +554,8 @@
   "steps": 48,
   "inf_trotter": 0.0007163073285084698,
   "p_succ": 0.29642321022484974,
-  "cnot_filter": 14688,
-  "cnot_per_success": 49550.775692829586
+  "cnot_filter": 7056,
+  "cnot_per_success": 23803.804009300482
  },
  {
   "family": "fixedJ2",
@@ -571,7 +571,7 @@
   "cert_T": 131.68646699872608,
   "cert_m": 12,
   "cert_steps": 1116,
-  "cert_cnot_per_success": 395190.64275011857,
+  "cert_cnot_per_success": 187252.94354102734,
   "emp_T": 87.79097799915071,
   "emp_m": 8,
   "leak_exact": 6.935937730379038e-06,
@@ -599,8 +599,8 @@
   "steps": 24,
   "inf_trotter": 0.000779976112152081,
   "p_succ": 0.8594325744783953,
-  "cnot_filter": 7328,
-  "cnot_per_success": 8526.556029654208
+  "cnot_filter": 3504,
+  "cnot_per_success": 4077.108669201466
  },
  {
   "family": "fixedJ2",
@@ -616,7 +616,7 @@
   "cert_T": 219.47744499787677,
   "cert_m": 20,
   "cert_steps": 3845,
-  "cert_cnot_per_success": 10906116.964362415,
+  "cert_cnot_per_success": 5166821.426621874,
   "emp_T": 175.58195599830142,
   "emp_m": 16,
   "leak_exact": 1.5637651673561237e-07,
@@ -660,8 +660,8 @@
   "steps": 48,
   "inf_trotter": 0.0006258205794040794,
   "p_succ": 0.09932601362934185,
-  "cnot_filter": 14656,
-  "cnot_per_success": 147554.49720042403
+  "cnot_filter": 7008,
+  "cnot_per_success": 70555.534687539
  },
  {
   "family": "fixedJ2",
@@ -677,7 +677,7 @@
   "cert_T": 131.68646699872608,
   "cert_m": 12,
   "cert_steps": 1113,
-  "cert_cnot_per_success": 392470.65810647997,
+  "cert_cnot_per_success": 185964.28842619804,
   "emp_T": 87.79097799915071,
   "emp_m": 8,
   "leak_exact": 6.616692615590836e-06,
@@ -705,8 +705,8 @@
   "steps": 24,
   "inf_trotter": 0.0007752477886223685,
   "p_succ": 0.8632596959315977,
-  "cnot_filter": 7328,
-  "cnot_per_success": 8488.754930336341
+  "cnot_filter": 3504,
+  "cnot_per_success": 4059.033471056024
  },
  {
   "family": "fixedJ2",
@@ -722,7 +722,7 @@
   "cert_T": 263.37293399745215,
   "cert_m": 24,
   "cert_steps": 13998,
-  "cert_cnot_per_success": 143691042.25904933,
+  "cert_cnot_per_success": 68067504.7571884,
   "emp_T": 245.81473839762197,
   "emp_m": 36,
   "leak_exact": 1.4385445822107101e-05,
@@ -806,8 +806,8 @@
   "steps": 120,
   "inf_trotter": 9.282372729746413e-05,
   "p_succ": 0.031133154549118993,
-  "cnot_filter": 36624,
-  "cnot_per_success": 1176366.4983648881
+  "cnot_filter": 17496,
+  "cnot_per_success": 561973.2485635672
  },
  {
   "family": "fixedJ2",
@@ -823,7 +823,7 @@
   "cert_T": 219.47744499787677,
   "cert_m": 20,
   "cert_steps": 5870,
-  "cert_cnot_per_success": 6029311.098047903,
+  "cert_cnot_per_success": 2856266.8681858256,
   "emp_T": 204.84561533135167,
   "emp_m": 30,
   "leak_exact": 9.260811933087254e-06,
@@ -895,8 +895,8 @@
   "steps": 100,
   "inf_trotter": 9.221102689949134e-05,
   "p_succ": 0.3012920689805095,
-  "cnot_filter": 30520,
-  "cnot_per_success": 101297.05738113649
+  "cnot_filter": 14580,
+  "cnot_per_success": 48391.582457961005
  },
  {
   "family": "fixedJ2",
@@ -912,7 +912,7 @@
   "cert_T": 175.58195599830142,
   "cert_m": 16,
   "cert_steps": 3016,
-  "cert_cnot_per_success": 1034379.714128587,
+  "cert_cnot_per_success": 490043.4361448862,
   "emp_T": 131.68646699872608,
   "emp_m": 12,
   "leak_exact": 5.956176829524651e-08,
@@ -948,8 +948,8 @@
   "steps": 60,
   "inf_trotter": 8.559480857994739e-05,
   "p_succ": 0.8921890538118521,
-  "cnot_filter": 18288,
-  "cnot_per_success": 20497.897751451943
+  "cnot_filter": 8712,
+  "cnot_per_success": 9764.746566636555
  },
  {
   "family": "fixedJ2",
@@ -965,7 +965,7 @@
   "cert_T": 263.37293399745215,
   "cert_m": 24,
   "cert_steps": 8886,
-  "cert_cnot_per_success": 24328823.54637728,
+  "cert_cnot_per_success": 11525066.890013587,
   "emp_T": 219.47744499787677,
   "emp_m": 20,
   "leak_exact": 6.640779037780931e-09,
@@ -1017,8 +1017,8 @@
   "steps": 100,
   "inf_trotter": 8.17238244994467e-05,
   "p_succ": 0.10992993800023154,
-  "cnot_filter": 30480,
-  "cnot_per_success": 277267.50832822087
+  "cnot_filter": 14520,
+  "cnot_per_success": 132084.12798312886
  },
  {
   "family": "fixedJ2",
@@ -1034,7 +1034,7 @@
   "cert_T": 175.58195599830142,
   "cert_m": 16,
   "cert_steps": 2996,
-  "cert_cnot_per_success": 1022908.7855547032,
+  "cert_cnot_per_success": 484609.5058040041,
   "emp_T": 131.68646699872608,
   "emp_m": 12,
   "leak_exact": 5.6820260163625846e-08,
@@ -1070,8 +1070,8 @@
   "steps": 60,
   "inf_trotter": 8.549973409388567e-05,
   "p_succ": 0.8962590016912095,
-  "cnot_filter": 18288,
-  "cnot_per_success": 20404.815980080737
+  "cnot_filter": 8712,
+  "cnot_per_success": 9720.404462951847
  },
  {
   "family": "fixedJ2",
@@ -1087,7 +1087,7 @@
   "cert_T": 128.14556258101956,
   "cert_m": 12,
   "cert_steps": 5349,
-  "cert_cnot_per_success": 54759212.173006736,
+  "cert_cnot_per_success": 25940233.08809548,
   "emp_T": 128.14556258101956,
   "emp_m": 12,
   "leak_exact": 3.3441312055182415e-05,
@@ -1123,8 +1123,8 @@
   "steps": 54,
   "inf_trotter": 7.269356868322419e-05,
   "p_succ": 0.030978789906265722,
-  "cnot_filter": 16464,
-  "cnot_per_success": 531460.3975757626
+  "cnot_filter": 7848,
+  "cnot_per_success": 253334.62100185765
  },
  {
   "family": "fixedJ2",
@@ -1140,7 +1140,7 @@
   "cert_T": 128.14556258101956,
   "cert_m": 10,
   "cert_steps": 3010,
-  "cert_cnot_per_success": 3081450.2983855153,
+  "cert_cnot_per_success": 1459772.5929428258,
   "emp_T": 64.0727812905098,
   "emp_m": 8,
   "leak_exact": 7.222000851514476e-05,
@@ -1168,8 +1168,8 @@
   "steps": 24,
   "inf_trotter": 3.6805059537625695e-05,
   "p_succ": 0.1893279155112475,
-  "cnot_filter": 7328,
-  "cnot_per_success": 38705.332915180494
+  "cnot_filter": 3504,
+  "cnot_per_success": 18507.571852455298
  },
  {
   "family": "fixedJ2",
@@ -1185,7 +1185,7 @@
   "cert_T": 53.39398440875816,
   "cert_m": 8,
   "cert_steps": 663,
-  "cert_cnot_per_success": 299574.3037870918,
+  "cert_cnot_per_success": 141952.4242883513,
   "emp_T": 42.71518752700652,
   "emp_m": 8,
   "leak_exact": 7.377982997780475e-05,
@@ -1213,8 +1213,8 @@
   "steps": 41,
   "inf_trotter": 9.234324795714954e-05,
   "p_succ": 0.5624334234583114,
-  "cnot_filter": 12496,
-  "cnot_per_success": 22217.740765056482
+  "cnot_filter": 5952,
+  "cnot_per_success": 10582.585870167748
  },
  {
   "family": "fixedJ2",
@@ -1230,7 +1230,7 @@
   "cert_T": 269.8310491800554,
   "cert_m": 24,
   "cert_steps": 3864,
-  "cert_cnot_per_success": 58355109.95197023,
+  "cert_cnot_per_success": 28014149.579141285,
   "emp_T": 224.85920765004616,
   "emp_m": 20,
   "leak_exact": 0.0001269858348150743,
@@ -1282,8 +1282,8 @@
   "steps": 40,
   "inf_trotter": 0.003006542231691167,
   "p_succ": 0.028644623865992622,
-  "cnot_filter": 16080,
-  "cnot_per_success": 561361.883305804
+  "cnot_filter": 7800,
+  "cnot_per_success": 272302.40608117357
  },
  {
   "family": "fixedJ2",
@@ -1299,7 +1299,7 @@
   "cert_T": 179.88736612003692,
   "cert_m": 16,
   "cert_steps": 1380,
-  "cert_cnot_per_success": 2014822.1427335446,
+  "cert_cnot_per_success": 967352.8755078802,
   "emp_T": 179.88736612003692,
   "emp_m": 16,
   "leak_exact": 8.826570844455706e-05,
@@ -1343,8 +1343,8 @@
   "steps": 32,
   "inf_trotter": 0.0031803222676280996,
   "p_succ": 0.24640573011952852,
-  "cnot_filter": 12864,
-  "cnot_per_success": 52206.578125272594
+  "cnot_filter": 6240,
+  "cnot_per_success": 25324.08640405014
  },
  {
   "family": "fixedJ2",
@@ -1360,7 +1360,7 @@
   "cert_T": 89.94368306001846,
   "cert_m": 8,
   "cert_steps": 412,
-  "cert_cnot_per_success": 197258.95886968682,
+  "cert_cnot_per_success": 94723.36143742387,
   "emp_T": 89.94368306001846,
   "emp_m": 8,
   "leak_exact": 0.0004491584644016333,
@@ -1388,8 +1388,8 @@
   "steps": 16,
   "inf_trotter": 0.0036646279934808845,
   "p_succ": 0.794998180142806,
-  "cnot_filter": 6432,
-  "cnot_per_success": 8090.584558123915
+  "cnot_filter": 3120,
+  "cnot_per_success": 3924.5372856571225
  },
  {
   "family": "fixedJ2",
@@ -1405,7 +1405,7 @@
   "cert_T": 224.85920765004616,
   "cert_m": 20,
   "cert_steps": 2810,
-  "cert_cnot_per_success": 17118692.000061322,
+  "cert_cnot_per_success": 8218214.852068441,
   "emp_T": 224.85920765004616,
   "emp_m": 20,
   "leak_exact": 2.455018093816541e-05,
@@ -1457,8 +1457,8 @@
   "steps": 40,
   "inf_trotter": 0.0030879475598794004,
   "p_succ": 0.0471694078261716,
-  "cnot_filter": 16080,
-  "cnot_per_success": 340898.9160783598
+  "cnot_filter": 7800,
+  "cnot_per_success": 165361.41451562234
  },
  {
   "family": "fixedJ2",
@@ -1474,7 +1474,7 @@
   "cert_T": 134.9155245900277,
   "cert_m": 12,
   "cert_steps": 573,
-  "cert_cnot_per_success": 306786.167622392,
+  "cert_cnot_per_success": 147322.88011766248,
   "emp_T": 89.94368306001846,
   "emp_m": 8,
   "leak_exact": 0.0006787106181632696,
@@ -1502,8 +1502,8 @@
   "steps": 16,
   "inf_trotter": 0.0038536386693578395,
   "p_succ": 0.759706390817477,
-  "cnot_filter": 6432,
-  "cnot_per_success": 8466.42871212244
+  "cnot_filter": 3120,
+  "cnot_per_success": 4106.849748417602
  },
  {
   "family": "fixedJ2",
@@ -1519,7 +1519,7 @@
   "cert_T": 359.77473224007383,
   "cert_m": 32,
   "cert_steps": 9400,
-  "cert_cnot_per_success": 131588949.63725463,
+  "cert_cnot_per_success": 63167264.886633515,
   "emp_T": 314.8028907100646,
   "emp_m": 28,
   "leak_exact": 1.4275015793874246e-06,
@@ -1587,8 +1587,8 @@
   "steps": 84,
   "inf_trotter": 0.0006762454182408506,
   "p_succ": 0.030902948502587166,
-  "cnot_filter": 33712,
-  "cnot_per_success": 1090899.1417818163
+  "cnot_filter": 16296,
+  "cnot_per_success": 527328.3226885523
  },
  {
   "family": "fixedJ2",
@@ -1604,7 +1604,7 @@
   "cert_T": 269.8310491800554,
   "cert_m": 24,
   "cert_steps": 3684,
-  "cert_cnot_per_success": 5124967.598764172,
+  "cert_cnot_per_success": 2460324.9768153583,
   "emp_T": 224.85920765004616,
   "emp_m": 20,
   "leak_exact": 9.165006062294978e-06,
@@ -1656,8 +1656,8 @@
   "steps": 60,
   "inf_trotter": 0.0006615358194554943,
   "p_succ": 0.288477468134101,
-  "cnot_filter": 24080,
-  "cnot_per_success": 83472.7237303893
+  "cnot_filter": 11640,
+  "cnot_per_success": 40349.77177000546
  },
  {
   "family": "fixedJ2",
@@ -1673,7 +1673,7 @@
   "cert_T": 179.88736612003692,
   "cert_m": 16,
   "cert_steps": 1588,
-  "cert_cnot_per_success": 734133.0702623306,
+  "cert_cnot_per_success": 352459.3135538118,
   "emp_T": 134.9155245900277,
   "emp_m": 12,
   "leak_exact": 4.195901407100244e-05,
@@ -1709,8 +1709,8 @@
   "steps": 36,
   "inf_trotter": 0.0006023822545635493,
   "p_succ": 0.8664097053092548,
-  "cnot_filter": 14448,
-  "cnot_per_success": 16675.713477658883
+  "cnot_filter": 6984,
+  "cnot_per_success": 8060.85153155936
  },
  {
   "family": "fixedJ2",
@@ -1726,7 +1726,7 @@
   "cert_T": 314.8028907100646,
   "cert_m": 28,
   "cert_steps": 6692,
-  "cert_cnot_per_success": 38956250.557890244,
+  "cert_cnot_per_success": 18700662.76624215,
   "emp_T": 269.8310491800554,
   "emp_m": 24,
   "leak_exact": 2.6245219015841315e-06,
@@ -1786,8 +1786,8 @@
   "steps": 72,
   "inf_trotter": 0.000676819052554456,
   "p_succ": 0.06356071104441288,
-  "cnot_filter": 28896,
-  "cnot_per_success": 454620.46483100223
+  "cnot_filter": 13968,
+  "cnot_per_success": 219758.39745153097
  },
  {
   "family": "fixedJ2",
@@ -1803,7 +1803,7 @@
   "cert_T": 179.88736612003692,
   "cert_m": 16,
   "cert_steps": 1728,
-  "cert_cnot_per_success": 834943.0342044397,
+  "cert_cnot_per_success": 400851.5048483587,
   "emp_T": 179.88736612003692,
   "emp_m": 16,
   "leak_exact": 6.353208337084304e-06,
@@ -1847,8 +1847,8 @@
   "steps": 48,
   "inf_trotter": 0.0007008178638053808,
   "p_succ": 0.8132804338933146,
-  "cnot_filter": 19264,
-  "cnot_per_success": 23686.786497223213
+  "cnot_filter": 9312,
+  "cnot_per_success": 11449.925034372018
  },
  {
   "family": "fixedJ2",
@@ -1864,7 +1864,7 @@
   "cert_T": 404.74657377008305,
   "cert_m": 36,
   "cert_steps": 21258,
-  "cert_cnot_per_success": 287273545.4963149,
+  "cert_cnot_per_success": 137896263.97293514,
   "emp_T": 359.77473224007383,
   "emp_m": 32,
   "leak_exact": 1.5246602580454294e-07,
@@ -1940,8 +1940,8 @@
   "steps": 160,
   "inf_trotter": 8.567364470113414e-05,
   "p_succ": 0.031014697058838865,
-  "cnot_filter": 64128,
-  "cnot_per_success": 2067664.884114165
+  "cnot_filter": 30912,
+  "cnot_per_success": 996688.7615041335
  },
  {
   "family": "fixedJ2",
@@ -1957,7 +1957,7 @@
   "cert_T": 314.8028907100646,
   "cert_m": 28,
   "cert_steps": 9184,
-  "cert_cnot_per_success": 12377580.871730674,
+  "cert_cnot_per_success": 5941623.719271831,
   "emp_T": 314.8028907100646,
   "emp_m": 28,
   "leak_exact": 1.0301571440329838e-07,
@@ -2025,8 +2025,8 @@
   "steps": 140,
   "inf_trotter": 8.505377138734449e-05,
   "p_succ": 0.299620899553792,
-  "cnot_filter": 56112,
-  "cnot_per_success": 187276.6555456056
+  "cnot_filter": 27048,
+  "cnot_per_success": 90274.07647557635
  },
  {
   "family": "fixedJ2",
@@ -2042,7 +2042,7 @@
   "cert_T": 224.85920765004616,
   "cert_m": 20,
   "cert_steps": 4500,
-  "cert_cnot_per_success": 2018941.3757374692,
+  "cert_cnot_per_success": 969183.3816287398,
   "emp_T": 224.85920765004616,
   "emp_m": 20,
   "leak_exact": 4.364326693373499e-07,
@@ -2094,8 +2094,8 @@
   "steps": 100,
   "inf_trotter": 8.390136589009334e-05,
   "p_succ": 0.8931203220818328,
-  "cnot_filter": 40080,
-  "cnot_per_success": 44876.37220769414
+  "cnot_filter": 19320,
+  "cnot_per_success": 21632.023728858552
  },
  {
   "family": "fixedJ2",
@@ -2111,7 +2111,7 @@
   "cert_T": 404.74657377008305,
   "cert_m": 36,
   "cert_steps": 15732,
-  "cert_cnot_per_success": 89241785.96186078,
+  "cert_cnot_per_success": 42838140.2030831,
   "emp_T": 359.77473224007383,
   "emp_m": 32,
   "leak_exact": 3.007145132905009e-08,
@@ -2187,8 +2187,8 @@
   "steps": 160,
   "inf_trotter": 8.534688077099783e-05,
   "p_succ": 0.06974181320804715,
-  "cnot_filter": 64128,
-  "cnot_per_success": 919505.7749459344
+  "cnot_filter": 30912,
+  "cnot_per_success": 443234.8196595672
  },
  {
   "family": "fixedJ2",
@@ -2204,7 +2204,7 @@
   "cert_T": 269.8310491800554,
   "cert_m": 24,
   "cert_steps": 4854,
-  "cert_cnot_per_success": 2300513.659610699,
+  "cert_cnot_per_success": 1104362.5718377377,
   "emp_T": 224.85920765004616,
   "emp_m": 20,
   "leak_exact": 6.59632371502461e-07,
@@ -2256,8 +2256,8 @@
   "steps": 100,
   "inf_trotter": 8.357246120704875e-05,
   "p_succ": 0.8502477943538924,
-  "cnot_filter": 40080,
-  "cnot_per_success": 47139.19902662846
+  "cnot_filter": 19320,
+  "cnot_per_success": 22722.78755475204
  },
  {
   "family": "fixedJ2",
@@ -2273,7 +2273,7 @@
   "cert_T": 376.8866123785706,
   "cert_m": 20,
   "cert_steps": 5880,
-  "cert_cnot_per_success": 107716406.48194976,
+  "cert_cnot_per_success": 52123844.116392374,
   "emp_T": 376.8866123785706,
   "emp_m": 20,
   "leak_exact": 4.03666544634973e-10,
@@ -2325,8 +2325,8 @@
   "steps": 52,
   "inf_trotter": 0.00742925662502858,
   "p_succ": 0.006097447023977729,
-  "cnot_filter": 25872,
-  "cnot_per_success": 4243087.295102426
+  "cnot_filter": 12600,
+  "cnot_per_success": 2066438.617744688
  },
  {
   "family": "fixedJ2",
@@ -2342,7 +2342,7 @@
   "cert_T": 282.66495928392794,
   "cert_m": 15,
   "cert_steps": 2034,
-  "cert_cnot_per_success": 3774911.1441198243,
+  "cert_cnot_per_success": 1826798.0205808408,
   "emp_T": 273.546734790898,
   "emp_m": 24,
   "leak_exact": 0.0019380701361703112,
@@ -2402,8 +2402,8 @@
   "steps": 42,
   "inf_trotter": 0.009106133887839984,
   "p_succ": 0.17993816101618235,
-  "cnot_filter": 20928,
-  "cnot_per_success": 116306.62379681587
+  "cnot_filter": 10224,
+  "cnot_per_success": 56819.520341105
  },
  {
   "family": "fixedJ2",
@@ -2419,7 +2419,7 @@
   "cert_T": 188.44330618928527,
   "cert_m": 10,
   "cert_steps": 762,
-  "cert_cnot_per_success": 484272.90700302465,
+  "cert_cnot_per_success": 234377.67362042936,
   "emp_T": 136.77336739544901,
   "emp_m": 12,
   "leak_exact": 0.0017668884747207292,
@@ -2455,8 +2455,8 @@
   "steps": 21,
   "inf_trotter": 0.008812313099013092,
   "p_succ": 0.6730555560648316,
-  "cnot_filter": 10464,
-  "cnot_per_success": 15547.007829754937
+  "cnot_filter": 5112,
+  "cnot_per_success": 7595.212540683032
  },
  {
   "family": "fixedJ2",
@@ -2472,7 +2472,7 @@
   "cert_T": 376.8866123785706,
   "cert_m": 20,
   "cert_steps": 4832,
-  "cert_cnot_per_success": 59147312.43296188,
+  "cert_cnot_per_success": 28621673.39789398,
   "emp_T": 364.72897972119733,
   "emp_m": 32,
   "leak_exact": 0.000667169416379787,
@@ -2548,8 +2548,8 @@
   "steps": 56,
   "inf_trotter": 0.009095851285153445,
   "p_succ": 0.01804188586871188,
-  "cnot_filter": 27904,
-  "cnot_per_success": 1546623.2412206382
+  "cnot_filter": 13632,
+  "cnot_per_success": 755575.1155504492
  },
  {
   "family": "fixedJ2",
@@ -2565,7 +2565,7 @@
   "cert_T": 188.44330618928527,
   "cert_m": 10,
   "cert_steps": 884,
-  "cert_cnot_per_success": 608220.4980724748,
+  "cert_cnot_per_success": 294356.61727359524,
   "emp_T": 182.36448986059867,
   "emp_m": 16,
   "leak_exact": 0.0014356287532207856,
@@ -2609,8 +2609,8 @@
   "steps": 28,
   "inf_trotter": 0.009204680259509046,
   "p_succ": 0.5496237824573456,
-  "cnot_filter": 13952,
-  "cnot_per_success": 25384.636628388198
+  "cnot_filter": 6816,
+  "cnot_per_success": 12401.210095978637
  },
  {
   "family": "fixedJ2",
@@ -2626,7 +2626,7 @@
   "cert_T": 280.3336131767314,
   "cert_m": 12,
   "cert_steps": 3743,
-  "cert_cnot_per_success": 68684420.78316888,
+  "cert_cnot_per_success": 33236201.564725958,
   "emp_T": 116.80567215697143,
   "emp_m": 8,
   "leak_exact": 0.005706482803030433,
@@ -2654,8 +2654,8 @@
   "steps": 20,
   "inf_trotter": 0.004411108967520727,
   "p_succ": 0.01751258804648186,
-  "cnot_filter": 9952,
-  "cnot_per_success": 568276.9430529303
+  "cnot_filter": 4848,
+  "cnot_per_success": 276829.4433199966
  },
  {
   "family": "fixedJ2",
@@ -2671,7 +2671,7 @@
   "cert_T": 93.44453772557715,
   "cert_m": 8,
   "cert_steps": 454,
-  "cert_cnot_per_success": 1285508.9891749336,
+  "cert_cnot_per_success": 622206.0772413203,
   "emp_T": 70.08340329418286,
   "emp_m": 8,
   "leak_exact": 0.004886222199377177,
@@ -2699,8 +2699,8 @@
   "steps": 15,
   "inf_trotter": 0.008381539425419415,
   "p_succ": 0.11086666904210367,
-  "cnot_filter": 7472,
-  "cnot_per_success": 67396.27035391827
+  "cnot_filter": 3648,
+  "cnot_per_success": 32904.388952234185
  },
  {
   "family": "fixedJ2",
@@ -2716,7 +2716,7 @@
   "cert_T": 56.066722635346295,
   "cert_m": 6,
   "cert_steps": 161,
-  "cert_cnot_per_success": 151803.98061295206,
+  "cert_cnot_per_success": 73499.88425371224,
   "emp_T": 37.37781509023086,
   "emp_m": 4,
   "leak_exact": 0.005956591355062768,
@@ -2736,8 +2736,8 @@
   "steps": 7,
   "inf_trotter": 0.0020470555426245207,
   "p_succ": 0.41050157726888536,
-  "cnot_filter": 3488,
-  "cnot_per_success": 8496.922285186012
+  "cnot_filter": 1704,
+  "cnot_per_success": 4151.019373267479
  },
  {
   "family": "fixedJ2",
@@ -2753,7 +2753,7 @@
   "cert_T": 471.1082654732132,
   "cert_m": 25,
   "cert_steps": 14380,
-  "cert_cnot_per_success": 245687552.37855512,
+  "cert_cnot_per_success": 118884573.87112744,
   "emp_T": 471.1082654732132,
   "emp_m": 25,
   "leak_exact": 8.580913757327835e-13,
@@ -2815,8 +2815,8 @@
   "steps": 120,
   "inf_trotter": 0.0005707407919806062,
   "p_succ": 0.028206629473705766,
-  "cnot_filter": 59620,
-  "cnot_per_success": 2113687.4951889515
+  "cnot_filter": 28950,
+  "cnot_per_success": 1026354.4613505558
  },
  {
   "family": "fixedJ2",
@@ -2832,7 +2832,7 @@
   "cert_T": 376.8866123785706,
   "cert_m": 20,
   "cert_steps": 5488,
-  "cert_cnot_per_success": 9412697.493837744,
+  "cert_cnot_per_success": 4554812.134764724,
   "emp_T": 364.72897972119733,
   "emp_m": 32,
   "leak_exact": 0.00027134439414178146,
@@ -2908,8 +2908,8 @@
   "steps": 96,
   "inf_trotter": 0.0006081281987442289,
   "p_succ": 0.28878070886401014,
-  "cnot_filter": 47744,
-  "cnot_per_success": 165329.6031712532
+  "cnot_filter": 23232,
+  "cnot_per_success": 80448.5870659047
  },
  {
   "family": "fixedJ2",
@@ -2925,7 +2925,7 @@
   "cert_T": 282.66495928392794,
   "cert_m": 15,
   "cert_steps": 2463,
-  "cert_cnot_per_success": 1419325.8813659744,
+  "cert_cnot_per_success": 686841.4173619046,
   "emp_T": 188.44330618928527,
   "emp_m": 10,
   "leak_exact": 3.4896423395380793e-07,
@@ -2957,8 +2957,8 @@
   "steps": 48,
   "inf_trotter": 0.0006568278976976094,
   "p_succ": 0.8408686950060761,
-  "cnot_filter": 23848,
-  "cnot_per_success": 28361.146207051595
+  "cnot_filter": 11580,
+  "cnot_per_success": 13771.472369911837
  },
  {
   "family": "fixedJ2",
@@ -2974,7 +2974,7 @@
   "cert_T": 471.1082654732132,
   "cert_m": 25,
   "cert_steps": 11885,
-  "cert_cnot_per_success": 133701094.45057487,
+  "cert_cnot_per_success": 64696382.56014144,
   "emp_T": 471.1082654732132,
   "emp_m": 25,
   "leak_exact": 1.2283429828841008e-09,
@@ -3036,8 +3036,8 @@
   "steps": 120,
   "inf_trotter": 0.0005694939415341604,
   "p_succ": 0.0368841832747672,
-  "cnot_filter": 59620,
-  "cnot_per_success": 1616411.01162152
+  "cnot_filter": 28950,
+  "cnot_per_success": 784889.2785381249
  },
  {
   "family": "fixedJ2",
@@ -3053,7 +3053,7 @@
   "cert_T": 282.66495928392794,
   "cert_m": 15,
   "cert_steps": 2835,
-  "cert_cnot_per_success": 1808494.52499389,
+  "cert_cnot_per_success": 875156.404625942,
   "emp_T": 273.546734790898,
   "emp_m": 24,
   "leak_exact": 0.000200905691458253,
@@ -3113,8 +3113,8 @@
   "steps": 72,
   "inf_trotter": 0.0006166108449694452,
   "p_succ": 0.7710671631293924,
-  "cnot_filter": 35808,
-  "cnot_per_success": 46439.5343392299
+  "cnot_filter": 17424,
+  "cnot_per_success": 22597.25330447782
  },
  {
   "family": "fixedJ2",
@@ -3130,7 +3130,7 @@
   "cert_T": 659.5515716624985,
   "cert_m": 35,
   "cert_steps": 32851,
-  "cert_cnot_per_success": 552560511.5485079,
+  "cert_cnot_per_success": 267372813.63045394,
   "emp_T": 565.3299185678559,
   "emp_m": 30,
   "leak_exact": 2.55351295663786e-15,
@@ -3202,8 +3202,8 @@
   "steps": 240,
   "inf_trotter": 7.319092101876201e-05,
   "p_succ": 0.03048120074088734,
-  "cnot_filter": 119160,
-  "cnot_per_success": 3909294.814628458
+  "cnot_filter": 57780,
+  "cnot_per_success": 1895594.6155524699
  },
  {
   "family": "fixedJ2",
@@ -3219,7 +3219,7 @@
   "cert_T": 471.1082654732132,
   "cert_m": 25,
   "cert_steps": 13465,
-  "cert_cnot_per_success": 22526517.657656696,
+  "cert_cnot_per_success": 10900270.62591627,
   "emp_T": 471.1082654732132,
   "emp_m": 25,
   "leak_exact": 6.161737786669619e-14,
@@ -3281,8 +3281,8 @@
   "steps": 200,
   "inf_trotter": 7.320302054958372e-05,
   "p_succ": 0.29614870506228497,
-  "cnot_filter": 99300,
-  "cnot_per_success": 335304.52202759276
+  "cnot_filter": 48150,
+  "cnot_per_success": 162587.23802244302
  },
  {
   "family": "fixedJ2",
@@ -3298,7 +3298,7 @@
   "cert_T": 376.8866123785706,
   "cert_m": 20,
   "cert_steps": 6680,
-  "cert_cnot_per_success": 3734079.5949736484,
+  "cert_cnot_per_success": 1806904.3195466686,
   "emp_T": 282.66495928392794,
   "emp_m": 15,
   "leak_exact": 6.849936173836113e-10,
@@ -3340,8 +3340,8 @@
   "steps": 120,
   "inf_trotter": 7.400562679260592e-05,
   "p_succ": 0.8887469773768019,
-  "cnot_filter": 59580,
-  "cnot_per_success": 67038.20267929854
+  "cnot_filter": 28890,
+  "cnot_per_success": 32506.439667756546
  },
  {
   "family": "fixedJ2",
@@ -3357,7 +3357,7 @@
   "cert_T": 565.3299185678559,
   "cert_m": 30,
   "cert_steps": 27486,
-  "cert_cnot_per_success": 301114299.30075926,
+  "cert_cnot_per_success": 145703160.5777872,
   "emp_T": 565.3299185678559,
   "emp_m": 30,
   "leak_exact": 4.8399506624718924e-11,
@@ -3429,8 +3429,8 @@
   "steps": 240,
   "inf_trotter": 7.318644547138486e-05,
   "p_succ": 0.04399321359782604,
-  "cnot_filter": 119160,
-  "cnot_per_success": 2708599.5828658533
+  "cnot_filter": 57780,
+  "cnot_per_success": 1313384.3898790618
  },
  {
   "family": "fixedJ2",
@@ -3446,7 +3446,7 @@
   "cert_T": 376.8866123785706,
   "cert_m": 20,
   "cert_steps": 7660,
-  "cert_cnot_per_success": 4770816.075081261,
+  "cert_cnot_per_success": 2308561.4644153873,
   "emp_T": 364.72897972119733,
   "emp_m": 32,
   "leak_exact": 2.8086266786631064e-05,
@@ -3522,8 +3522,8 @@
   "steps": 160,
   "inf_trotter": 8.573200164585515e-05,
   "p_succ": 0.800774146250047,
-  "cnot_filter": 79488,
-  "cnot_per_success": 99263.94398749652
+  "cnot_filter": 38592,
+  "cnot_per_success": 48193.364109871494
  },
  {
   "family": "fixedJ2",
@@ -3571,8 +3571,8 @@
   "steps": 139,
   "inf_trotter": 7.170429858316396e-05,
   "p_succ": 0.025826395212023408,
-  "cnot_filter": 68992,
-  "cnot_per_success": 2671375.522352456
+  "cnot_filter": 33432,
+  "cnot_per_success": 1294489.5997113767
  },
  {
   "family": "fixedJ2",
@@ -3588,7 +3588,7 @@
   "cert_T": 280.33361317673143,
   "cert_m": 12,
   "cert_steps": 6658,
-  "cert_cnot_per_success": 11120484.446529828,
+  "cert_cnot_per_success": 5381043.812069435,
   "emp_T": 280.33361317673143,
   "emp_m": 12,
   "leak_exact": 3.5991577023053445e-05,
@@ -3624,8 +3624,8 @@
   "steps": 121,
   "inf_trotter": 9.559469812026045e-05,
   "p_succ": 0.295033733019529,
-  "cnot_filter": 60064,
-  "cnot_per_success": 203583.50004683775
+  "cnot_filter": 29112,
+  "cnot_per_success": 98673.46252936103
  },
  {
   "family": "fixedJ2",
@@ -3641,7 +3641,7 @@
   "cert_T": 116.80567215697144,
   "cert_m": 8,
   "cert_steps": 1520,
-  "cert_cnot_per_success": 1313693.7902424128,
+  "cert_cnot_per_success": 635714.9420418858,
   "emp_T": 93.44453772557713,
   "emp_m": 8,
   "leak_exact": 6.891687783305844e-05,
@@ -3669,8 +3669,8 @@
   "steps": 66,
   "inf_trotter": 9.481883463469121e-05,
   "p_succ": 0.5420382334675381,
-  "cnot_filter": 32768,
-  "cnot_per_success": 60453.30011201586
+  "cnot_filter": 15888,
+  "cnot_per_success": 29311.585454703003
  },
  {
   "family": "fixedJ2",
@@ -3686,7 +3686,7 @@
   "cert_T": 570.1316522414984,
   "cert_m": 30,
   "cert_steps": 7794,
-  "cert_cnot_per_success": 179044531.36952412,
+  "cert_cnot_per_success": 87107464.2999429,
   "emp_T": 475.1097102012487,
   "emp_m": 25,
   "leak_exact": 1.7664929575555988e-05,
@@ -3748,8 +3748,8 @@
   "steps": 65,
   "inf_trotter": 0.007345454819335906,
   "p_succ": 0.009052087363622846,
-  "cnot_filter": 38580,
-  "cnot_per_success": 4262000.403911196
+  "cnot_filter": 18870,
+  "cnot_per_success": 2084602.0638103748
  },
  {
   "family": "fixedJ2",
@@ -3765,7 +3765,7 @@
   "cert_T": 380.0877681609989,
   "cert_m": 20,
   "cert_steps": 2712,
-  "cert_cnot_per_success": 6019075.364114323,
+  "cert_cnot_per_success": 2928502.7856763457,
   "emp_T": 380.0877681609989,
   "emp_m": 20,
   "leak_exact": 1.903547668047345e-05,
@@ -3817,8 +3817,8 @@
   "steps": 52,
   "inf_trotter": 0.007349620238114585,
   "p_succ": 0.09431761053353784,
-  "cnot_filter": 30864,
-  "cnot_per_success": 327234.75314321346
+  "cnot_filter": 15096,
+  "cnot_per_success": 160054.9453554287
  },
  {
   "family": "fixedJ2",
@@ -3834,7 +3834,7 @@
   "cert_T": 190.04388408049948,
   "cert_m": 10,
   "cert_steps": 830,
-  "cert_cnot_per_success": 597621.0494115887,
+  "cert_cnot_per_success": 290783.868364491,
   "emp_T": 190.04388408049948,
   "emp_m": 10,
   "leak_exact": 0.00022051962580771356,
@@ -3866,8 +3866,8 @@
   "steps": 26,
   "inf_trotter": 0.007457669399401068,
   "p_succ": 0.48821001721850643,
-  "cnot_filter": 15432,
-  "cnot_per_success": 31609.347321304867
+  "cnot_filter": 7548,
+  "cnot_per_success": 15460.559459642895
  },
  {
   "family": "fixedJ2",
@@ -3883,7 +3883,7 @@
   "cert_T": 570.1316522414984,
   "cert_m": 30,
   "cert_steps": 7848,
-  "cert_cnot_per_success": 183187893.76162866,
+  "cert_cnot_per_success": 89123230.10139188,
   "emp_T": 475.1097102012487,
   "emp_m": 25,
   "leak_exact": 2.8589125836697704e-06,
@@ -3945,8 +3945,8 @@
   "steps": 65,
   "inf_trotter": 0.007345110700829216,
   "p_succ": 0.005473265957637144,
-  "cnot_filter": 38580,
-  "cnot_per_success": 7048807.841352427
+  "cnot_filter": 18870,
+  "cnot_per_success": 3447667.2878776644
  },
  {
   "family": "fixedJ2",
@@ -3962,7 +3962,7 @@
   "cert_T": 285.0658261207492,
   "cert_m": 15,
   "cert_steps": 1350,
-  "cert_cnot_per_success": 1201730.9166487458,
+  "cert_cnot_per_success": 584717.2837068422,
   "emp_T": 190.04388408049948,
   "emp_m": 10,
   "leak_exact": 0.0006474338335356045,
@@ -3994,8 +3994,8 @@
   "steps": 26,
   "inf_trotter": 0.00764222643073309,
   "p_succ": 0.4162830896213917,
-  "cnot_filter": 15432,
-  "cnot_per_success": 37070.92693588721
+  "cnot_filter": 7548,
+  "cnot_per_success": 18131.891946091022
  },
  {
   "family": "fixedJ2",
@@ -4011,7 +4011,7 @@
   "cert_T": 665.1535942817482,
   "cert_m": 35,
   "cert_steps": 18487,
-  "cert_cnot_per_success": 380342287.848176,
+  "cert_cnot_per_success": 185036314.31709334,
   "emp_T": 570.1316522414984,
   "emp_m": 30,
   "leak_exact": 1.1996053870255707e-06,
@@ -4083,8 +4083,8 @@
   "steps": 138,
   "inf_trotter": 0.0008264608473985691,
   "p_succ": 0.028184606203190007,
-  "cnot_filter": 81816,
-  "cnot_per_success": 2902861.2076453227
+  "cnot_filter": 39924,
+  "cnot_per_success": 1416517.9286940435
  },
  {
   "family": "fixedJ2",
@@ -4100,7 +4100,7 @@
   "cert_T": 475.1097102012487,
   "cert_m": 25,
   "cert_steps": 7625,
-  "cert_cnot_per_success": 15477802.237125902,
+  "cert_cnot_per_success": 7530089.139155989,
   "emp_T": 475.1097102012487,
   "emp_m": 25,
   "leak_exact": 1.2748096264170172e-06,
@@ -4162,8 +4162,8 @@
   "steps": 115,
   "inf_trotter": 0.000816841559099335,
   "p_succ": 0.2660879304244953,
-  "cnot_filter": 68180,
-  "cnot_per_success": 256231.0883144196
+  "cnot_filter": 33270,
+  "cnot_per_success": 125033.8560900666
  },
  {
   "family": "fixedJ2",
@@ -4179,7 +4179,7 @@
   "cert_T": 380.0877681609989,
   "cert_m": 20,
   "cert_steps": 3288,
-  "cert_cnot_per_success": 2262378.0599163854,
+  "cert_cnot_per_success": 1100710.5887140557,
   "emp_T": 285.0658261207492,
   "emp_m": 15,
   "leak_exact": 1.3856225560493485e-05,
@@ -4221,8 +4221,8 @@
   "steps": 69,
   "inf_trotter": 0.0007847438879372559,
   "p_succ": 0.8267915936373184,
-  "cnot_filter": 40908,
-  "cnot_per_success": 49478.00668852079
+  "cnot_filter": 19962,
+  "cnot_per_success": 24143.93198191679
  },
  {
   "family": "fixedJ2",
@@ -4238,7 +4238,7 @@
   "cert_T": 665.1535942817482,
   "cert_m": 35,
   "cert_steps": 18606,
-  "cert_cnot_per_success": 389071506.1541462,
+  "cert_cnot_per_success": 189283041.97131094,
   "emp_T": 570.1316522414984,
   "emp_m": 30,
   "leak_exact": 1.9687864594164495e-07,
@@ -4310,8 +4310,8 @@
   "steps": 138,
   "inf_trotter": 0.0008218501019497948,
   "p_succ": 0.023790874005368924,
-  "cnot_filter": 81816,
-  "cnot_per_success": 3438965.713556234
+  "cnot_filter": 39924,
+  "cnot_per_success": 1678122.4595191537
  },
  {
   "family": "fixedJ2",
@@ -4327,7 +4327,7 @@
   "cert_T": 380.0877681609989,
   "cert_m": 20,
   "cert_steps": 4116,
-  "cert_cnot_per_success": 3334877.5545205474,
+  "cert_cnot_per_success": 1622483.8298914437,
   "emp_T": 380.0877681609989,
   "emp_m": 20,
   "leak_exact": 2.6624729483337717e-06,
@@ -4379,8 +4379,8 @@
   "steps": 92,
   "inf_trotter": 0.0008349847565759516,
   "p_succ": 0.6752785495749183,
-  "cnot_filter": 54544,
-  "cnot_per_success": 80772.5938197429
+  "cnot_filter": 26616,
+  "cnot_per_success": 39414.84594284023
  },
  {
   "family": "fixedJ2",
@@ -4396,7 +4396,7 @@
   "cert_T": 855.1974783622477,
   "cert_m": 45,
   "cert_steps": 42831,
-  "cert_cnot_per_success": 859159877.9997402,
+  "cert_cnot_per_success": 417975851.8662799,
   "emp_T": 760.1755363219979,
   "emp_m": 40,
   "leak_exact": 5.651114021176795e-09,
@@ -4488,8 +4488,8 @@
   "steps": 296,
   "inf_trotter": 9.880203473189297e-05,
   "p_succ": 0.0303869114577284,
-  "cnot_filter": 175392,
-  "cnot_per_success": 5771958.767313023
+  "cnot_filter": 85488,
+  "cnot_per_success": 2813316.5201380663
  },
  {
   "family": "fixedJ2",
@@ -4505,7 +4505,7 @@
   "cert_T": 665.1535942817482,
   "cert_m": 35,
   "cert_steps": 17787,
-  "cert_cnot_per_success": 35600019.48221364,
+  "cert_cnot_per_success": 17319408.105490334,
   "emp_T": 570.1316522414984,
   "emp_m": 30,
   "leak_exact": 8.656955718944204e-08,
@@ -4577,8 +4577,8 @@
   "steps": 222,
   "inf_trotter": 9.933459116984178e-05,
   "p_succ": 0.2956846851384599,
-  "cnot_filter": 131544,
-  "cnot_per_success": 444879.31438992877
+  "cnot_filter": 64116,
+  "cnot_per_success": 216839.09658688097
  },
  {
   "family": "fixedJ2",
@@ -4594,7 +4594,7 @@
   "cert_T": 475.1097102012487,
   "cert_m": 25,
   "cert_steps": 8725,
-  "cert_cnot_per_success": 5810554.2470139,
+  "cert_cnot_per_success": 2826870.132428626,
   "emp_T": 380.0877681609989,
   "emp_m": 20,
   "leak_exact": 9.064677035652835e-07,
@@ -4646,8 +4646,8 @@
   "steps": 156,
   "inf_trotter": 8.960046493411422e-05,
   "p_succ": 0.8891155795732355,
-  "cnot_filter": 92432,
-  "cnot_per_success": 103959.48752170806
+  "cnot_filter": 45048,
+  "cnot_per_success": 50666.07878091899
  },
  {
   "family": "fixedJ2",
@@ -4663,7 +4663,7 @@
   "cert_T": 855.1974783622477,
   "cert_m": 45,
   "cert_steps": 43047,
-  "cert_cnot_per_success": 877801370.4659582,
+  "cert_cnot_per_success": 427044788.47088075,
   "emp_T": 760.1755363219979,
   "emp_m": 40,
   "leak_exact": 9.395892952568374e-10,
@@ -4755,8 +4755,8 @@
   "steps": 296,
   "inf_trotter": 9.870525205857295e-05,
   "p_succ": 0.028065714384808777,
-  "cnot_filter": 175392,
-  "cnot_per_success": 6249333.175532315
+  "cnot_filter": 85488,
+  "cnot_per_success": 3045994.084735373
  },
  {
   "family": "fixedJ2",
@@ -4772,7 +4772,7 @@
   "cert_T": 570.1316522414984,
   "cert_m": 30,
   "cert_steps": 11022,
-  "cert_cnot_per_success": 8782458.511961397,
+  "cert_cnot_per_success": 4272711.079718339,
   "emp_T": 475.1097102012487,
   "emp_m": 25,
   "leak_exact": 1.783036143176986e-07,
@@ -4834,8 +4834,8 @@
   "steps": 185,
   "inf_trotter": 9.75430139079636e-05,
   "p_succ": 0.7402455802505823,
-  "cnot_filter": 109620,
-  "cnot_per_success": 148085.99054774805
+  "cnot_filter": 53430,
+  "cnot_per_success": 72178.74908744918
  },
  {
   "family": "fixedJ2",
@@ -4851,7 +4851,7 @@
   "cert_T": 776.7651839204375,
   "cert_m": 24,
   "cert_steps": 10948,
-  "cert_cnot_per_success": 291759750.88118917,
+  "cert_cnot_per_success": 142491081.93672147,
   "emp_T": 668.8811305981545,
   "emp_m": 35,
   "leak_exact": 0.0006886042648930335,
@@ -4933,8 +4933,8 @@
   "steps": 91,
   "inf_trotter": 0.006655971836590502,
   "p_succ": 0.009779041476337305,
-  "cnot_filter": 62748,
-  "cnot_per_success": 6416579.799956219
+  "cnot_filter": 30786,
+  "cnot_per_success": 3148161.3074751734
  },
  {
   "family": "fixedJ2",
@@ -4950,7 +4950,7 @@
   "cert_T": 477.772236141539,
   "cert_m": 25,
   "cert_steps": 4145,
-  "cert_cnot_per_success": 10256801.505261583,
+  "cert_cnot_per_success": 5009499.453912078,
   "emp_T": 477.772236141539,
   "emp_m": 25,
   "leak_exact": 0.0007893935923743989,
@@ -5012,8 +5012,8 @@
   "steps": 65,
   "inf_trotter": 0.006602197036053692,
   "p_succ": 0.11546666816313805,
-  "cnot_filter": 44820,
-  "cnot_per_success": 388163.9672556905
+  "cnot_filter": 21990,
+  "cnot_per_success": 190444.57028006768
  },
  {
   "family": "fixedJ2",
@@ -5029,7 +5029,7 @@
   "cert_T": 286.66334168492335,
   "cert_m": 15,
   "cert_steps": 1254,
-  "cert_cnot_per_success": 1064311.8484492905,
+  "cert_cnot_per_success": 519855.077976869,
   "emp_T": 191.1088944566156,
   "emp_m": 10,
   "leak_exact": 0.0023968327950253387,
@@ -5061,8 +5061,8 @@
   "steps": 26,
   "inf_trotter": 0.007369176260495491,
   "p_succ": 0.6015089885114567,
-  "cnot_filter": 17928,
-  "cnot_per_success": 29805.040892848654
+  "cnot_filter": 8796,
+  "cnot_per_success": 14623.222874469922
  },
  {
   "family": "fixedJ2",
@@ -5078,7 +5078,7 @@
   "cert_T": 764.4355778264623,
   "cert_m": 40,
   "cert_steps": 13520,
-  "cert_cnot_per_success": 547745827.2651962,
+  "cert_cnot_per_success": 267513307.29921302,
   "emp_T": 668.8811305981545,
   "emp_m": 35,
   "leak_exact": 0.00011199943291517744,
@@ -5160,8 +5160,8 @@
   "steps": 91,
   "inf_trotter": 0.0066756834320513825,
   "p_succ": 0.0039158216886705215,
-  "cnot_filter": 62748,
-  "cnot_per_success": 16024223.008301448
+  "cnot_filter": 30786,
+  "cnot_per_success": 7861951.449186721
  },
  {
   "family": "fixedJ2",
@@ -5177,7 +5177,7 @@
   "cert_T": 388.38259196021875,
   "cert_m": 12,
   "cert_steps": 2030,
-  "cert_cnot_per_success": 2223678.735684747,
+  "cert_cnot_per_success": 1086059.9481808546,
   "emp_T": 286.66334168492335,
   "emp_m": 15,
   "leak_exact": 0.0022704887471587387,
@@ -5219,8 +5219,8 @@
   "steps": 39,
   "inf_trotter": 0.006251408494355681,
   "p_succ": 0.38881030923594595,
-  "cnot_filter": 26892,
-  "cnot_per_success": 69164.83272484639
+  "cnot_filter": 13194,
+  "cnot_per_success": 33934.2853998075
  },
  {
   "family": "fixedJ2",
@@ -5236,7 +5236,7 @@
   "cert_T": 490.7990419806653,
   "cert_m": 12,
   "cert_steps": 5871,
-  "cert_cnot_per_success": 153493631.62009096,
+  "cert_cnot_per_success": 74963851.35395841,
   "emp_T": 490.7990419806653,
   "emp_m": 12,
   "leak_exact": 0.0027091031097692397,
@@ -5272,8 +5272,8 @@
   "steps": 99,
   "inf_trotter": 0.009224211598113374,
   "p_succ": 0.017115177004334375,
-  "cnot_filter": 68160,
-  "cnot_per_success": 3982430.329685673
+  "cnot_filter": 33336,
+  "cnot_per_success": 1947744.9746244366
  },
  {
   "family": "fixedJ2",
@@ -5289,7 +5289,7 @@
   "cert_T": 163.59968066022176,
   "cert_m": 8,
   "cert_steps": 817,
-  "cert_cnot_per_success": 3587860.182710459,
+  "cert_cnot_per_success": 1752417.4062935552,
   "emp_T": 163.5996806602218,
   "emp_m": 8,
   "leak_exact": 0.005769689340325401,
@@ -5317,8 +5317,8 @@
   "steps": 33,
   "inf_trotter": 0.009776778658733054,
   "p_succ": 0.2191610954378254,
-  "cnot_filter": 22736,
-  "cnot_per_success": 103741.04014482835
+  "cnot_filter": 11136,
+  "cnot_per_success": 50811.93803012001
  },
  {
   "family": "fixedJ2",
@@ -5334,7 +5334,7 @@
   "cert_T": 98.15980839613306,
   "cert_m": 6,
   "cert_steps": 282,
-  "cert_cnot_per_success": 371611.44618235924,
+  "cert_cnot_per_success": 181531.15729093726,
   "emp_T": 65.4398722640887,
   "emp_m": 6,
   "leak_exact": 0.006077698214895122,
@@ -5358,8 +5358,8 @@
   "steps": 10,
   "inf_trotter": 0.006284103858990919,
   "p_succ": 0.27710718079327457,
-  "cnot_filter": 6904,
-  "cnot_per_success": 24914.547433364674
+  "cnot_filter": 3396,
+  "cnot_per_success": 12255.185846423297
  },
  {
   "family": "fixedJ2",
@@ -5375,7 +5375,7 @@
   "cert_T": 955.544472283078,
   "cert_m": 50,
   "cert_steps": 27060,
-  "cert_cnot_per_success": 648817306.0882547,
+  "cert_cnot_per_success": 316871316.79019994,
   "emp_T": 776.7651839204375,
   "emp_m": 24,
   "leak_exact": 4.981482963573036e-06,
@@ -5435,8 +5435,8 @@
   "steps": 164,
   "inf_trotter": 0.0009645723583412424,
   "p_succ": 0.0208540806570115,
-  "cnot_filter": 112928,
-  "cnot_per_success": 5415151.205048766
+  "cnot_filter": 55248,
+  "cnot_per_success": 2649265.6717247646
  },
  {
   "family": "fixedJ2",
@@ -5452,7 +5452,7 @@
   "cert_T": 764.4355778264623,
   "cert_m": 40,
   "cert_steps": 10824,
-  "cert_cnot_per_success": 25972053.210777767,
+  "cert_cnot_per_success": 12684590.483499106,
   "emp_T": 582.5738879403282,
   "emp_m": 18,
   "leak_exact": 1.494584621830608e-05,
@@ -5500,8 +5500,8 @@
   "steps": 132,
   "inf_trotter": 0.0009896240457439864,
   "p_succ": 0.22977708451301637,
-  "cnot_filter": 90888,
-  "cnot_per_success": 395548.58219489414
+  "cnot_filter": 44460,
+  "cnot_per_success": 193491.879724331
  },
  {
   "family": "fixedJ2",
@@ -5517,7 +5517,7 @@
   "cert_T": 477.772236141539,
   "cert_m": 25,
   "cert_steps": 4540,
-  "cert_cnot_per_success": 3598442.526410226,
+  "cert_cnot_per_success": 1757495.4488273785,
   "emp_T": 382.2177889132311,
   "emp_m": 20,
   "leak_exact": 0.00014993450214384474,
@@ -5569,8 +5569,8 @@
   "steps": 84,
   "inf_trotter": 0.0009198477044443099,
   "p_succ": 0.8039556419939804,
-  "cnot_filter": 57872,
-  "cnot_per_success": 71984.07098240542
+  "cnot_filter": 28344,
+  "cnot_per_success": 35255.67645710015
  },
  {
   "family": "fixedJ2",
@@ -5586,7 +5586,7 @@
   "cert_T": 970.9564799005468,
   "cert_m": 30,
   "cert_steps": 30755,
-  "cert_cnot_per_success": 1160446773.6809216,
+  "cert_cnot_per_success": 566736477.3497336,
   "emp_T": 859.9900250547701,
   "emp_m": 45,
   "leak_exact": 7.050545055009572e-06,
@@ -5688,8 +5688,8 @@
   "steps": 189,
   "inf_trotter": 0.0009010001039412296,
   "p_succ": 0.013972716834613754,
-  "cnot_filter": 130212,
-  "cnot_per_success": 9319018.022138244
+  "cnot_filter": 63774,
+  "cnot_per_success": 4564180.377721288
  },
  {
   "family": "fixedJ2",
@@ -5705,7 +5705,7 @@
   "cert_T": 573.3266833698467,
   "cert_m": 30,
   "cert_steps": 6420,
-  "cert_cnot_per_success": 6510128.090541158,
+  "cert_cnot_per_success": 3179543.800366858,
   "emp_T": 477.772236141539,
   "emp_m": 25,
   "leak_exact": 0.00014310835592090676,
@@ -5767,8 +5767,8 @@
   "steps": 105,
   "inf_trotter": 0.0008965274520417177,
   "p_succ": 0.614090330519387,
-  "cnot_filter": 72340,
-  "cnot_per_success": 117800.2590251113
+  "cnot_filter": 35430,
+  "cnot_per_success": 57695.09506856087
  },
  {
   "family": "fixedJ2",
@@ -5784,7 +5784,7 @@
   "cert_T": 1165.1477758806561,
   "cert_m": 36,
   "cert_steps": 60144,
-  "cert_cnot_per_success": 1401839502.6970522,
+  "cert_cnot_per_success": 684624227.1531594,
   "emp_T": 955.544472283078,
   "emp_m": 50,
   "leak_exact": 1.0881959713548994e-05,
@@ -5896,8 +5896,8 @@
   "steps": 370,
   "inf_trotter": 8.694650378526791e-05,
   "p_succ": 0.030428480950483866,
-  "cnot_filter": 254760,
-  "cnot_per_success": 8372419.261236532
+  "cnot_filter": 124620,
+  "cnot_per_success": 4095505.1355601214
  },
  {
   "family": "fixedJ2",
@@ -5913,7 +5913,7 @@
   "cert_T": 970.9564799005468,
   "cert_m": 30,
   "cert_steps": 25790,
-  "cert_cnot_per_success": 60107672.70000126,
+  "cert_cnot_per_success": 29355321.15747304,
   "emp_T": 764.4355778264623,
   "emp_m": 40,
   "leak_exact": 1.2475866692840398e-05,
@@ -6005,8 +6005,8 @@
   "steps": 296,
   "inf_trotter": 8.784352957902364e-05,
   "p_succ": 0.29636928119344835,
-  "cnot_filter": 203808,
-  "cnot_per_success": 687682.6072502735
+  "cnot_filter": 99696,
+  "cnot_per_success": 336391.13877974986
  },
  {
   "family": "fixedJ2",
@@ -6022,7 +6022,7 @@
   "cert_T": 668.8811305981545,
   "cert_m": 35,
   "cert_steps": 12782,
-  "cert_cnot_per_success": 9893056.452180805,
+  "cert_cnot_per_success": 4831652.011400682,
   "emp_T": 573.3266833698467,
   "emp_m": 30,
   "leak_exact": 9.438241683978887e-06,
@@ -6094,8 +6094,8 @@
   "steps": 222,
   "inf_trotter": 8.833716411871251e-05,
   "p_succ": 0.886121155830318,
-  "cnot_filter": 152856,
-  "cnot_per_success": 172500.11355024026
+  "cnot_filter": 74772,
+  "cnot_per_success": 84381.23783416134
  },
  {
   "family": "fixedJ2",
@@ -6111,7 +6111,7 @@
   "cert_T": 1165.1477758806561,
   "cert_m": 36,
   "cert_steps": 69546,
-  "cert_cnot_per_success": 2546209537.4766397,
+  "cert_cnot_per_success": 1243505433.12481,
   "emp_T": 970.9564799005468,
   "emp_m": 30,
   "leak_exact": 1.9277247353954863e-08,
@@ -6183,8 +6183,8 @@
   "steps": 365,
   "inf_trotter": 8.350611806351438e-05,
   "p_succ": 0.01771077660361917,
-  "cnot_filter": 251240,
-  "cnot_per_success": 14185713.344081111
+  "cnot_filter": 122820,
+  "cnot_per_success": 6934760.837924065
  },
  {
   "family": "fixedJ2",
@@ -6200,7 +6200,7 @@
   "cert_T": 764.4355778264623,
   "cert_m": 40,
   "cert_steps": 16784,
-  "cert_cnot_per_success": 16629948.199595122,
+  "cert_cnot_per_success": 8121835.708825682,
   "emp_T": 668.8811305981545,
   "emp_m": 35,
   "leak_exact": 9.009109134372473e-06,
@@ -6282,8 +6282,8 @@
   "steps": 259,
   "inf_trotter": 8.765265725019233e-05,
   "p_succ": 0.6916736235255497,
-  "cnot_filter": 178332,
-  "cnot_per_success": 257826.80434020134
+  "cnot_filter": 87234,
+  "cnot_per_success": 126120.17725261381
  },
  {
   "family": "fixedJ2",
@@ -6344,8 +6344,8 @@
   "steps": 202,
   "inf_trotter": 8.959395839414075e-05,
   "p_succ": 0.29213497499571056,
-  "cnot_filter": 139024,
-  "cnot_per_success": 475889.612334303
+  "cnot_filter": 67944,
+  "cnot_per_success": 232577.42418893057
  },
  {
   "family": "fixedJ2",
@@ -6361,7 +6361,7 @@
   "cert_T": 490.79904198066527,
   "cert_m": 12,
   "cert_steps": 8861,
-  "cert_cnot_per_success": 6843093.804594412,
+  "cert_cnot_per_success": 3342030.549555289,
   "emp_T": 204.4996008252772,
   "emp_m": 8,
   "leak_exact": 6.0151777973693754e-05,
@@ -6389,8 +6389,8 @@
   "steps": 93,
   "inf_trotter": 9.549482473292237e-05,
   "p_succ": 0.6980859416231999,
-  "cnot_filter": 64016,
-  "cnot_per_success": 91702.17616923933
+  "cnot_filter": 31296,
+  "cnot_per_success": 44831.156357668624
  },
  {
   "family": "matched",
@@ -6406,7 +6406,7 @@
   "cert_T": 175.403233838921,
   "cert_m": 16,
   "cert_steps": 2744,
-  "cert_cnot_per_success": 31506255.67317309,
+  "cert_cnot_per_success": 14926496.502468769,
   "emp_T": 163.70968491632624,
   "emp_m": 24,
   "leak_exact": 0.0003271510126506838,
@@ -6466,8 +6466,8 @@
   "steps": 32,
   "inf_trotter": 0.009178085696540328,
   "p_succ": 0.06209348634778235,
-  "cnot_filter": 9824,
-  "cnot_per_success": 158213.0522511861
+  "cnot_filter": 4752,
+  "cnot_per_success": 76529.76631694181
  },
  {
   "family": "matched",
@@ -6483,7 +6483,7 @@
   "cert_T": 131.55242537919077,
   "cert_m": 12,
   "cert_steps": 981,
-  "cert_cnot_per_success": 1133069.7011338125,
+  "cert_cnot_per_success": 536904.3667506456,
   "emp_T": 102.31855307270392,
   "emp_m": 15,
   "leak_exact": 0.0006982017845238442,
@@ -6525,8 +6525,8 @@
   "steps": 20,
   "inf_trotter": 0.009182749875866092,
   "p_succ": 0.3721716528722515,
-  "cnot_filter": 6140,
-  "cnot_per_success": 16497.763740505954
+  "cnot_filter": 2970,
+  "cnot_per_success": 7980.188649723565
  },
  {
   "family": "matched",
@@ -6542,7 +6542,7 @@
   "cert_T": 61.39113184362235,
   "cert_m": 9,
   "cert_steps": 315,
-  "cert_cnot_per_success": 114527.97206689935,
+  "cert_cnot_per_success": 54294.26409710392,
   "emp_T": 43.850808459730246,
   "emp_m": 4,
   "leak_exact": 0.001496790951865501,
@@ -6562,8 +6562,8 @@
   "steps": 11,
   "inf_trotter": 0.005630224204266843,
   "p_succ": 0.9213119460775205,
-  "cnot_filter": 3360,
-  "cnot_per_success": 3646.973225849483
+  "cnot_filter": 1608,
+  "cnot_per_success": 1745.3371866565383
  },
  {
   "family": "matched",
@@ -6579,7 +6579,7 @@
   "cert_T": 175.403233838921,
   "cert_m": 16,
   "cert_steps": 2456,
-  "cert_cnot_per_success": 21760888.027871795,
+  "cert_cnot_per_success": 10309703.314824834,
   "emp_T": 163.70968491632624,
   "emp_m": 24,
   "leak_exact": 0.0003875314096134508,
@@ -6639,8 +6639,8 @@
   "steps": 32,
   "inf_trotter": 0.009201611069593829,
   "p_succ": 0.044224418651177155,
-  "cnot_filter": 9824,
-  "cnot_per_success": 222139.72053510547
+  "cnot_filter": 4752,
+  "cnot_per_success": 107451.949509652
  },
  {
   "family": "matched",
@@ -6656,7 +6656,7 @@
   "cert_T": 40.92742122908156,
   "cert_m": 6,
   "cert_steps": 162,
-  "cert_cnot_per_success": 55213.45059801548,
+  "cert_cnot_per_success": 26181.34152808966,
   "emp_T": 40.92742122908156,
   "emp_m": 6,
   "leak_exact": 0.00029646121388315905,
@@ -6680,8 +6680,8 @@
   "steps": 8,
   "inf_trotter": 0.00925852453140874,
   "p_succ": 0.9868544939863246,
-  "cnot_filter": 2456,
-  "cnot_per_success": 2488.7154235668245
+  "cnot_filter": 1188,
+  "cnot_per_success": 1203.8248872953532
  },
  {
   "family": "matched",
@@ -6697,7 +6697,7 @@
   "cert_T": 63.13380110092001,
   "cert_m": 8,
   "cert_steps": 675,
-  "cert_cnot_per_success": 9016569.10530863,
+  "cert_cnot_per_success": 4272449.288381215,
   "emp_T": 52.61150091743334,
   "emp_m": 8,
   "leak_exact": 0.00275358133000414,
@@ -6725,8 +6725,8 @@
   "steps": 19,
   "inf_trotter": 0.009710641685560906,
   "p_succ": 0.030925177266676578,
-  "cnot_filter": 5808,
-  "cnot_per_success": 187808.13930073765
+  "cnot_filter": 2784,
+  "cnot_per_success": 90023.73619374202
  },
  {
   "family": "matched",
@@ -6742,7 +6742,7 @@
   "cert_T": 42.089200733946676,
   "cert_m": 8,
   "cert_steps": 222,
-  "cert_cnot_per_success": 369706.2937020171,
+  "cert_cnot_per_success": 175303.86106581427,
   "emp_T": 31.566900550460005,
   "emp_m": 6,
   "leak_exact": 0.007647803183781665,
@@ -6766,8 +6766,8 @@
   "steps": 9,
   "inf_trotter": 0.0018965999570028647,
   "p_succ": 0.19941705733051845,
-  "cnot_filter": 2760,
-  "cnot_per_success": 13840.340625553972
+  "cnot_filter": 1332,
+  "cnot_per_success": 6679.468736680395
  },
  {
   "family": "matched",
@@ -6783,7 +6783,7 @@
   "cert_T": 25.253520440367943,
   "cert_m": 6,
   "cert_steps": 81,
-  "cert_cnot_per_success": 46253.9030755048,
+  "cert_cnot_per_success": 21955.966649764938,
   "emp_T": 16.83568029357867,
   "emp_m": 4,
   "leak_exact": 0.0020696220163228807,
@@ -6803,8 +6803,8 @@
   "steps": 5,
   "inf_trotter": 0.001683446860896054,
   "p_succ": 0.5592733023783001,
-  "cnot_filter": 1536,
-  "cnot_per_success": 2746.4211030066813
+  "cnot_filter": 744,
+  "cnot_per_success": 1330.2977217688613
  },
  {
   "family": "matched",
@@ -6820,7 +6820,7 @@
   "cert_T": 219.25404229865126,
   "cert_m": 20,
   "cert_steps": 6620,
-  "cert_cnot_per_success": 69882380.71512581,
+  "cert_cnot_per_success": 33105031.290396784,
   "emp_T": 204.6371061454078,
   "emp_m": 30,
   "leak_exact": 3.421136526438051e-05,
@@ -6892,8 +6892,8 @@
   "steps": 70,
   "inf_trotter": 0.0008604864468855222,
   "p_succ": 0.03930104754654226,
-  "cnot_filter": 21400,
-  "cnot_per_success": 544514.7479760444
+  "cnot_filter": 10260,
+  "cnot_per_success": 261061.7436558045
  },
  {
   "family": "matched",
@@ -6909,7 +6909,7 @@
   "cert_T": 175.403233838921,
   "cert_m": 16,
   "cert_steps": 2612,
-  "cert_cnot_per_success": 2761874.789488855,
+  "cert_cnot_per_success": 1308484.9250491806,
   "emp_T": 163.70968491632624,
   "emp_m": 24,
   "leak_exact": 2.3616004417803538e-05,
@@ -6969,8 +6969,8 @@
   "steps": 56,
   "inf_trotter": 0.0008613924291956954,
   "p_succ": 0.32348652072352674,
-  "cnot_filter": 17120,
-  "cnot_per_success": 52923.379811030514
+  "cnot_filter": 8208,
+  "cnot_per_success": 25373.54564771837
  },
  {
   "family": "matched",
@@ -6986,7 +6986,7 @@
   "cert_T": 122.78226368724471,
   "cert_m": 18,
   "cert_steps": 1218,
-  "cert_cnot_per_success": 427821.2911321769,
+  "cert_cnot_per_success": 202737.55371680664,
   "emp_T": 87.7016169194605,
   "emp_m": 8,
   "leak_exact": 2.2693699677667212e-05,
@@ -7014,8 +7014,8 @@
   "steps": 30,
   "inf_trotter": 0.0009917899679805497,
   "p_succ": 0.9142908116574808,
-  "cnot_filter": 9152,
-  "cnot_per_success": 10009.944192054943
+  "cnot_filter": 4368,
+  "cnot_per_success": 4777.473364389859
  },
  {
   "family": "matched",
@@ -7031,7 +7031,7 @@
   "cert_T": 219.25404229865126,
   "cert_m": 20,
   "cert_steps": 5965,
-  "cert_cnot_per_success": 48206121.2135319,
+  "cert_cnot_per_success": 22836661.0486815,
   "emp_T": 204.6371061454078,
   "emp_m": 30,
   "leak_exact": 4.052775002116871e-05,
@@ -7103,8 +7103,8 @@
   "steps": 70,
   "inf_trotter": 0.0008644267996519295,
   "p_succ": 0.0411102092481282,
-  "cnot_filter": 21400,
-  "cnot_per_success": 520551.9599970017
+  "cnot_filter": 10260,
+  "cnot_per_success": 249573.0425032354
  },
  {
   "family": "matched",
@@ -7120,7 +7120,7 @@
   "cert_T": 87.7016169194605,
   "cert_m": 8,
   "cert_steps": 774,
-  "cert_cnot_per_success": 251217.65106767055,
+  "cert_cnot_per_success": 119032.89436297226,
   "emp_T": 81.85484245816313,
   "emp_m": 12,
   "leak_exact": 2.9885753357827838e-05,
@@ -7156,8 +7156,8 @@
   "steps": 28,
   "inf_trotter": 0.0008711043558102816,
   "p_succ": 0.9766572474372017,
-  "cnot_filter": 8560,
-  "cnot_per_success": 8764.589647455006
+  "cnot_filter": 4104,
+  "cnot_per_success": 4202.088307611605
  },
  {
   "family": "matched",
@@ -7173,7 +7173,7 @@
   "cert_T": 263.10485075838153,
   "cert_m": 24,
   "cert_steps": 15078,
-  "cert_cnot_per_success": 154863909.84162232,
+  "cert_cnot_per_success": 73359917.58299269,
   "emp_T": 245.5645273744894,
   "emp_m": 36,
   "leak_exact": 3.5766679709059446e-06,
@@ -7257,8 +7257,8 @@
   "steps": 156,
   "inf_trotter": 9.85278862464245e-05,
   "p_succ": 0.03278635096113367,
-  "cnot_filter": 47568,
-  "cnot_per_success": 1450847.6425567798
+  "cnot_filter": 22680,
+  "cnot_per_success": 691751.2725611286
  },
  {
   "family": "matched",
@@ -7274,7 +7274,7 @@
   "cert_T": 219.25404229865126,
   "cert_m": 20,
   "cert_steps": 6355,
-  "cert_cnot_per_success": 6530271.075504984,
+  "cert_cnot_per_success": 3093563.819433324,
   "emp_T": 204.6371061454078,
   "emp_m": 30,
   "leak_exact": 2.468939781175017e-06,
@@ -7346,8 +7346,8 @@
   "steps": 130,
   "inf_trotter": 9.827205985668552e-05,
   "p_succ": 0.3073228197998261,
-  "cnot_filter": 39640,
-  "cnot_per_success": 128984.88965388059
+  "cnot_filter": 18900,
+  "cnot_per_success": 61498.85001156264
  },
  {
   "family": "matched",
@@ -7363,7 +7363,7 @@
   "cert_T": 175.403233838921,
   "cert_m": 16,
   "cert_steps": 3284,
-  "cert_cnot_per_success": 1126580.0449793313,
+  "cert_cnot_per_success": 533717.2963089582,
   "emp_T": 131.55242537919077,
   "emp_m": 12,
   "leak_exact": 3.558732465380743e-07,
@@ -7399,8 +7399,8 @@
   "steps": 81,
   "inf_trotter": 9.266037161270724e-05,
   "p_succ": 0.904705287612782,
-  "cnot_filter": 24672,
-  "cnot_per_success": 27270.759149757207
+  "cnot_filter": 11736,
+  "cnot_per_success": 12972.180179213301
  },
  {
   "family": "matched",
@@ -7416,7 +7416,7 @@
   "cert_T": 263.10485075838153,
   "cert_m": 24,
   "cert_steps": 13662,
-  "cert_cnot_per_success": 107190634.76600601,
+  "cert_cnot_per_success": 50777053.99898091,
   "emp_T": 219.25404229865126,
   "emp_m": 20,
   "leak_exact": 5.106525979847731e-09,
@@ -7468,8 +7468,8 @@
   "steps": 145,
   "inf_trotter": 8.869282623191754e-05,
   "p_succ": 0.03980424149708071,
-  "cnot_filter": 44160,
-  "cnot_per_success": 1109429.5064820857
+  "cnot_filter": 21000,
+  "cnot_per_success": 527581.9663977311
  },
  {
   "family": "matched",
@@ -7485,7 +7485,7 @@
   "cert_T": 131.55242537919077,
   "cert_m": 12,
   "cert_steps": 2430,
-  "cert_cnot_per_success": 771337.6022297658,
+  "cert_cnot_per_success": 365421.8781533583,
   "emp_T": 122.78226368724471,
   "emp_m": 18,
   "leak_exact": 3.1237473879786037e-06,
@@ -7533,8 +7533,8 @@
   "steps": 78,
   "inf_trotter": 9.91394500364784e-05,
   "p_succ": 0.9713882737586729,
-  "cnot_filter": 23784,
-  "cnot_per_success": 24484.545101590124
+  "cnot_filter": 11340,
+  "cnot_per_success": 11674.01368365422
  },
  {
   "family": "matched",
@@ -7550,7 +7550,7 @@
   "cert_T": 126.26760220183999,
   "cert_m": 12,
   "cert_steps": 5766,
-  "cert_cnot_per_success": 59027851.93041584,
+  "cert_cnot_per_success": 27962220.33654341,
   "emp_T": 126.26760220184003,
   "emp_m": 12,
   "leak_exact": 2.211915073424553e-05,
@@ -7586,8 +7586,8 @@
   "steps": 99,
   "inf_trotter": 9.411736856890229e-05,
   "p_succ": 0.03163294432720428,
-  "cnot_filter": 30144,
-  "cnot_per_success": 952930.580479548
+  "cnot_filter": 14328,
+  "cnot_per_success": 452945.50680437114
  },
  {
   "family": "matched",
@@ -7603,7 +7603,7 @@
   "cert_T": 126.26760220183999,
   "cert_m": 10,
   "cert_steps": 3243,
-  "cert_cnot_per_success": 3319989.9672173737,
+  "cert_cnot_per_success": 1572765.068453177,
   "emp_T": 63.133801100920024,
   "emp_m": 8,
   "leak_exact": 8.328536767432393e-05,
@@ -7631,8 +7631,8 @@
   "steps": 121,
   "inf_trotter": 9.966508421521691e-05,
   "p_succ": 0.20436916026139423,
-  "cnot_filter": 36816,
-  "cnot_per_success": 180144.59692896542
+  "cnot_filter": 17472,
+  "cnot_per_success": 85492.35108493274
  },
  {
   "family": "matched",
@@ -7648,7 +7648,7 @@
   "cert_T": 52.61150091743335,
   "cert_m": 8,
   "cert_steps": 714,
-  "cert_cnot_per_success": 322613.59726649604,
+  "cert_cnot_per_success": 152865.77364580653,
   "emp_T": 42.089200733946676,
   "emp_m": 8,
   "leak_exact": 2.653636190097508e-05,
@@ -7676,8 +7676,8 @@
   "steps": 30,
   "inf_trotter": 5.494928557536749e-05,
   "p_succ": 0.5700382537824752,
-  "cnot_filter": 9152,
-  "cnot_per_success": 16055.062865118478
+  "cnot_filter": 4368,
+  "cnot_per_success": 7662.643640170182
  },
  {
   "family": "matched",
@@ -7693,7 +7693,7 @@
   "cert_T": 222.91872905291513,
   "cert_m": 20,
   "cert_steps": 3400,
-  "cert_cnot_per_success": 51324613.08580226,
+  "cert_cnot_per_success": 24638893.576835193,
   "emp_T": 222.91872905291513,
   "emp_m": 20,
   "leak_exact": 7.89873777495842e-08,
@@ -7745,8 +7745,8 @@
   "steps": 40,
   "inf_trotter": 0.0061777198410482015,
   "p_succ": 0.008859060771749987,
-  "cnot_filter": 16080,
-  "cnot_per_success": 1815090.8334748463
+  "cnot_filter": 7800,
+  "cnot_per_success": 880454.5087751121
  },
  {
   "family": "matched",
@@ -7762,7 +7762,7 @@
   "cert_T": 178.3349832423321,
   "cert_m": 16,
   "cert_steps": 1260,
-  "cert_cnot_per_success": 1947362.9650086474,
+  "cert_cnot_per_success": 934986.4210487811,
   "emp_T": 133.75123743174908,
   "emp_m": 12,
   "leak_exact": 3.6077130800560298e-06,
@@ -7798,8 +7798,8 @@
   "steps": 24,
   "inf_trotter": 0.007729674261473196,
   "p_succ": 0.20779740025212518,
-  "cnot_filter": 9648,
-  "cnot_per_success": 46429.83977804279
+  "cnot_filter": 4680,
+  "cnot_per_success": 22521.937205767023
  },
  {
   "family": "matched",
@@ -7815,7 +7815,7 @@
   "cert_T": 89.16749162116605,
   "cert_m": 8,
   "cert_steps": 388,
-  "cert_cnot_per_success": 192817.32806524736,
+  "cert_cnot_per_success": 92592.86038507395,
   "emp_T": 89.16749162116605,
   "emp_m": 8,
   "leak_exact": 5.7636770518509906e-06,
@@ -7843,8 +7843,8 @@
   "steps": 14,
   "inf_trotter": 0.00819701373234849,
   "p_succ": 0.6507162929195396,
-  "cnot_filter": 5632,
-  "cnot_per_success": 8655.077583398379
+  "cnot_filter": 2736,
+  "cnot_per_success": 4204.597348753189
  },
  {
   "family": "matched",
@@ -7860,7 +7860,7 @@
   "cert_T": 267.50247486349815,
   "cert_m": 24,
   "cert_steps": 4944,
-  "cert_cnot_per_success": 188169053.48324242,
+  "cert_cnot_per_success": 90330462.32816495,
   "emp_T": 222.91872905291513,
   "emp_m": 20,
   "leak_exact": 1.804997412646614e-06,
@@ -7912,8 +7912,8 @@
   "steps": 40,
   "inf_trotter": 0.00572994082150724,
   "p_succ": 0.012003739745661764,
-  "cnot_filter": 16080,
-  "cnot_per_success": 1339582.5251719095
+  "cnot_filter": 7800,
+  "cnot_per_success": 649797.4935535381
  },
  {
   "family": "matched",
@@ -7942,7 +7942,7 @@
   "cert_T": 267.50247486349815,
   "cert_m": 24,
   "cert_steps": 8442,
-  "cert_cnot_per_success": 116450953.53743002,
+  "cert_cnot_per_success": 55899834.43132461,
   "emp_T": 267.50247486349815,
   "emp_m": 24,
   "leak_exact": 3.4944486193566604e-09,
@@ -8002,8 +8002,8 @@
   "steps": 90,
   "inf_trotter": 0.0006598475796386616,
   "p_succ": 0.022026710644010312,
-  "cnot_filter": 36096,
-  "cnot_per_success": 1638737.6482750287
+  "cnot_filter": 17424,
+  "cnot_per_success": 791039.5828774407
  },
  {
   "family": "matched",
@@ -8019,7 +8019,7 @@
   "cert_T": 222.91872905291513,
   "cert_m": 20,
   "cert_steps": 3250,
-  "cert_cnot_per_success": 4520674.863496962,
+  "cert_cnot_per_success": 2170207.676301246,
   "emp_T": 178.3349832423321,
   "emp_m": 16,
   "leak_exact": 1.3590810521435515e-07,
@@ -8063,8 +8063,8 @@
   "steps": 60,
   "inf_trotter": 0.0006579095649250633,
   "p_succ": 0.2753696089069513,
-  "cnot_filter": 24064,
-  "cnot_per_success": 87388.00224004146
+  "cnot_filter": 11616,
+  "cnot_per_success": 42183.30427278597
  },
  {
   "family": "matched",
@@ -8080,7 +8080,7 @@
   "cert_T": 133.75123743174908,
   "cert_m": 12,
   "cert_steps": 1371,
-  "cert_cnot_per_success": 627610.2291007326,
+  "cert_cnot_per_success": 301308.93678733316,
   "emp_T": 133.75123743174908,
   "emp_m": 12,
   "leak_exact": 1.7179645150910972e-07,
@@ -8116,8 +8116,8 @@
   "steps": 45,
   "inf_trotter": 0.0006664383151309128,
   "p_succ": 0.8781431410816113,
-  "cnot_filter": 18048,
-  "cnot_per_success": 20552.457971453525
+  "cnot_filter": 8712,
+  "cnot_per_success": 9920.933834624508
  },
  {
   "family": "matched",
@@ -8133,7 +8133,7 @@
   "cert_T": 312.0862206740812,
   "cert_m": 28,
   "cert_steps": 11368,
-  "cert_cnot_per_success": 386372245.65652084,
+  "cert_cnot_per_success": 185468384.56498027,
   "emp_T": 267.50247486349815,
   "emp_m": 24,
   "leak_exact": 8.285444363931305e-08,
@@ -8193,8 +8193,8 @@
   "steps": 90,
   "inf_trotter": 0.0006599602866421694,
   "p_succ": 0.013130524923022573,
-  "cnot_filter": 36096,
-  "cnot_per_success": 2749014.2406043964
+  "cnot_filter": 17424,
+  "cnot_per_success": 1326984.2677385584
  },
  {
   "family": "matched",
@@ -8223,7 +8223,7 @@
   "cert_T": 356.6699664846642,
   "cert_m": 32,
   "cert_steps": 18880,
-  "cert_cnot_per_success": 255796724.81100863,
+  "cert_cnot_per_success": 122786850.08279487,
   "emp_T": 312.0862206740812,
   "emp_m": 28,
   "leak_exact": 1.5900392114076567e-10,
@@ -8291,8 +8291,8 @@
   "steps": 189,
   "inf_trotter": 8.27230738547069e-05,
   "p_succ": 0.027203408822986695,
-  "cnot_filter": 75712,
-  "cnot_per_success": 2783180.611395432
+  "cnot_filter": 36456,
+  "cnot_per_success": 1340126.1671733921
  },
  {
   "family": "matched",
@@ -8308,7 +8308,7 @@
   "cert_T": 267.50247486349815,
   "cert_m": 24,
   "cert_steps": 7920,
-  "cert_cnot_per_success": 10688772.202196833,
+  "cert_cnot_per_success": 5130941.027274965,
   "emp_T": 267.50247486349815,
   "emp_m": 24,
   "leak_exact": 2.5217661292487037e-10,
@@ -8368,8 +8368,8 @@
   "steps": 162,
   "inf_trotter": 8.272111256846237e-05,
   "p_succ": 0.29201577848000193,
-  "cnot_filter": 64896,
-  "cnot_per_success": 222234.56669977258
+  "cnot_filter": 31248,
+  "cnot_per_success": 107007.91636209463
  },
  {
   "family": "matched",
@@ -8385,7 +8385,7 @@
   "cert_T": 222.91872905291513,
   "cert_m": 20,
   "cert_steps": 4075,
-  "cert_cnot_per_success": 1839277.37961634,
+  "cert_cnot_per_success": 882945.2144050465,
   "emp_T": 178.3349832423321,
   "emp_m": 16,
   "leak_exact": 6.471815416908555e-09,
@@ -8429,8 +8429,8 @@
   "steps": 108,
   "inf_trotter": 8.268324925952975e-05,
   "p_succ": 0.8940574656337327,
-  "cnot_filter": 43264,
-  "cnot_per_success": 48390.62550563602
+  "cnot_filter": 20832,
+  "cnot_per_success": 23300.515683556987
  },
  {
   "family": "matched",
@@ -8446,7 +8446,7 @@
   "cert_T": 356.6699664846642,
   "cert_m": 32,
   "cert_steps": 25504,
-  "cert_cnot_per_success": 838780190.1777257,
+  "cert_cnot_per_success": 402625225.8531805,
   "emp_T": 312.0862206740812,
   "emp_m": 28,
   "leak_exact": 3.831743922155795e-09,
@@ -8514,8 +8514,8 @@
   "steps": 189,
   "inf_trotter": 8.27267101032314e-05,
   "p_succ": 0.012651725183046764,
-  "cnot_filter": 75712,
-  "cnot_per_success": 5984322.209389564
+  "cnot_filter": 36456,
+  "cnot_per_success": 2881504.2591069574
  },
  {
   "family": "matched",
@@ -8531,7 +8531,7 @@
   "cert_T": 89.16749162116605,
   "cert_m": 8,
   "cert_steps": 1064,
-  "cert_cnot_per_success": 431726.2023930727,
+  "cert_cnot_per_success": 207261.68448845696,
   "emp_T": 44.583745810583025,
   "emp_m": 4,
   "leak_exact": 1.4756958401918041e-06,
@@ -8551,8 +8551,8 @@
   "steps": 29,
   "inf_trotter": 8.190968184929037e-05,
   "p_succ": 0.9988942807589392,
-  "cnot_filter": 11616,
-  "cnot_per_success": 11628.85825232116
+  "cnot_filter": 5592,
+  "cnot_per_success": 5598.190026427335
  },
  {
   "family": "matched",
@@ -8568,7 +8568,7 @@
   "cert_T": 270.1834912826451,
   "cert_m": 24,
   "cert_steps": 4098,
-  "cert_cnot_per_success": 75595502.34436345,
+  "cert_cnot_per_success": 36582096.66437707,
   "emp_T": 270.1834912826451,
   "emp_m": 24,
   "leak_exact": 9.250504527047454e-06,
@@ -8628,8 +8628,8 @@
   "steps": 42,
   "inf_trotter": 0.006373313596595986,
   "p_succ": 0.007501498780871045,
-  "cnot_filter": 20928,
-  "cnot_per_success": 2789842.4849933684
+  "cnot_filter": 10224,
+  "cnot_per_success": 1362927.6360174026
  },
  {
   "family": "matched",
@@ -8645,7 +8645,7 @@
   "cert_T": 180.1223275217634,
   "cert_m": 16,
   "cert_steps": 1488,
-  "cert_cnot_per_success": 2657835.344947502,
+  "cert_cnot_per_success": 1286283.5322834027,
   "emp_T": 180.1223275217634,
   "emp_m": 16,
   "leak_exact": 8.05829577293915e-05,
@@ -8689,8 +8689,8 @@
   "steps": 28,
   "inf_trotter": 0.006284114524067852,
   "p_succ": 0.17016216415981078,
-  "cnot_filter": 13952,
-  "cnot_per_success": 81992.37514925313
+  "cnot_filter": 6816,
+  "cnot_per_success": 40055.90804309844
  },
  {
   "family": "matched",
@@ -8706,7 +8706,7 @@
   "cert_T": 90.0611637608817,
   "cert_m": 8,
   "cert_steps": 434,
-  "cert_cnot_per_success": 255748.3548909954,
+  "cert_cnot_per_success": 123787.82962284877,
   "emp_T": 90.0611637608817,
   "emp_m": 8,
   "leak_exact": 0.0005268159964881836,
@@ -8734,8 +8734,8 @@
   "steps": 14,
   "inf_trotter": 0.005546853640998717,
   "p_succ": 0.7147925230503616,
-  "cnot_filter": 6976,
-  "cnot_per_success": 9759.475337304973
+  "cnot_filter": 3408,
+  "cnot_per_success": 4767.817079921925
  },
  {
   "family": "matched",
@@ -8751,7 +8751,7 @@
   "cert_T": 315.21407316308597,
   "cert_m": 28,
   "cert_steps": 8141,
-  "cert_cnot_per_success": 821184709.220586,
+  "cert_cnot_per_success": 397370583.830281,
   "emp_T": 315.21407316308597,
   "emp_m": 28,
   "leak_exact": 1.763495576234675e-07,
@@ -8819,8 +8819,8 @@
   "steps": 49,
   "inf_trotter": 0.006392948679550647,
   "p_succ": 0.003510234787349939,
-  "cnot_filter": 24416,
-  "cnot_per_success": 6955660.085185619
+  "cnot_filter": 11928,
+  "cnot_per_success": 3398063.2984966445
  },
  {
   "family": "matched",
@@ -8836,7 +8836,7 @@
   "cert_T": 45.03058188044085,
   "cert_m": 4,
   "cert_steps": 119,
-  "cert_cnot_per_success": 66550.85754749838,
+  "cert_cnot_per_success": 32220.354202874216,
   "emp_T": 21.014271544205727,
   "emp_m": 3,
   "leak_exact": 0.005113957346572717,
@@ -8854,8 +8854,8 @@
   "steps": 4,
   "inf_trotter": 0.0026532097634751617,
   "p_succ": 0.9773850214917139,
-  "cnot_filter": 1996,
-  "cnot_per_success": 2042.183946049885
+  "cnot_filter": 978,
+  "cnot_per_success": 1000.6292080344627
  },
  {
   "family": "matched",
@@ -8871,7 +8871,7 @@
   "cert_T": 101.37143009922019,
   "cert_m": 8,
   "cert_steps": 1099,
-  "cert_cnot_per_success": 33635959.7545856,
+  "cert_cnot_per_success": 16277470.706278281,
   "emp_T": 84.47619174935016,
   "emp_m": 8,
   "leak_exact": 0.002066324545927034,
@@ -8899,8 +8899,8 @@
   "steps": 31,
   "inf_trotter": 0.007437125254081023,
   "p_succ": 0.02141846533996247,
-  "cnot_filter": 15408,
-  "cnot_per_success": 719379.2718310134
+  "cnot_filter": 7488,
+  "cnot_per_success": 349604.87976834294
  },
  {
   "family": "matched",
@@ -8916,7 +8916,7 @@
   "cert_T": 67.58095339948012,
   "cert_m": 8,
   "cert_steps": 332,
-  "cert_cnot_per_success": 940096.6709757126,
+  "cert_cnot_per_success": 455071.0813553503,
   "emp_T": 50.68571504961009,
   "emp_m": 6,
   "leak_exact": 0.0038214728947076892,
@@ -8940,8 +8940,8 @@
   "steps": 13,
   "inf_trotter": 0.004919116836656134,
   "p_succ": 0.17291724810331519,
-  "cnot_filter": 6472,
-  "cnot_per_success": 37428.307881311455
+  "cnot_filter": 3156,
+  "cnot_per_success": 18251.504893915164
  },
  {
   "family": "matched",
@@ -8957,7 +8957,7 @@
   "cert_T": 40.54857203968851,
   "cert_m": 6,
   "cert_steps": 117,
-  "cert_cnot_per_success": 108871.64544331538,
+  "cert_cnot_per_success": 52725.561238877206,
   "emp_T": 27.032381359792048,
   "emp_m": 4,
   "leak_exact": 0.0053968387701188725,
@@ -8977,8 +8977,8 @@
   "steps": 5,
   "inf_trotter": 0.006562266985938314,
   "p_succ": 0.625317343738881,
-  "cnot_filter": 2496,
-  "cnot_per_success": 3991.573278738732
+  "cnot_filter": 1224,
+  "cnot_per_success": 1957.4061270738011
  },
  {
   "family": "matched",
@@ -8994,7 +8994,7 @@
   "cert_T": 360.2446550435268,
   "cert_m": 32,
   "cert_steps": 9776,
-  "cert_cnot_per_success": 169049305.46637976,
+  "cert_cnot_per_success": 81802585.41184543,
   "emp_T": 315.21407316308597,
   "emp_m": 28,
   "leak_exact": 8.916140032955155e-07,
@@ -9062,8 +9062,8 @@
   "steps": 84,
   "inf_trotter": 0.0008467169755237425,
   "p_succ": 0.02097137903117813,
-  "cnot_filter": 41776,
-  "cnot_per_success": 1992048.3024932055
+  "cnot_filter": 20328,
+  "cnot_per_success": 969321.0908914659
  },
  {
   "family": "matched",
@@ -9079,7 +9079,7 @@
   "cert_T": 270.1834912826451,
   "cert_m": 24,
   "cert_steps": 3852,
-  "cert_cnot_per_success": 6618803.844597268,
+  "cert_cnot_per_success": 3202984.9384132335,
   "emp_T": 225.15290940220424,
   "emp_m": 20,
   "leak_exact": 7.209664878105038e-06,
@@ -9131,8 +9131,8 @@
   "steps": 60,
   "inf_trotter": 0.0008421859747407279,
   "p_succ": 0.2680512060301864,
-  "cnot_filter": 29840,
-  "cnot_per_success": 111322.01358810373
+  "cnot_filter": 14520,
+  "cnot_per_success": 54168.754601181834
  },
  {
   "family": "matched",
@@ -9148,7 +9148,7 @@
   "cert_T": 180.1223275217634,
   "cert_m": 16,
   "cert_steps": 1640,
-  "cert_cnot_per_success": 937407.3220703962,
+  "cert_cnot_per_success": 453659.1253021825,
   "emp_T": 135.09174564132255,
   "emp_m": 12,
   "leak_exact": 4.420547104755368e-05,
@@ -9184,8 +9184,8 @@
   "steps": 36,
   "inf_trotter": 0.0008085040773675445,
   "p_succ": 0.8669408847973759,
-  "cnot_filter": 17904,
-  "cnot_per_success": 20651.927154392517
+  "cnot_filter": 8712,
+  "cnot_per_success": 10049.128092552926
  },
  {
   "family": "matched",
@@ -9201,7 +9201,7 @@
   "cert_T": 405.27523692396767,
   "cert_m": 36,
   "cert_steps": 18090,
-  "cert_cnot_per_success": 1719680857.823383,
+  "cert_cnot_per_success": 832131684.3681169,
   "emp_T": 360.2446550435268,
   "emp_m": 32,
   "leak_exact": 2.059865134018679e-08,
@@ -9277,8 +9277,8 @@
   "steps": 96,
   "inf_trotter": 0.0008473855629169691,
   "p_succ": 0.005662982106752077,
-  "cnot_filter": 47744,
-  "cnot_per_success": 8430893.67050515
+  "cnot_filter": 23232,
+  "cnot_per_success": 4102432.1747900387
  },
  {
   "family": "matched",
@@ -9294,7 +9294,7 @@
   "cert_T": 90.0611637608817,
   "cert_m": 8,
   "cert_steps": 744,
-  "cert_cnot_per_success": 381046.036616868,
+  "cert_cnot_per_success": 184410.68701786603,
   "emp_T": 90.0611637608817,
   "emp_m": 8,
   "leak_exact": 5.2110623052881166e-05,
@@ -9322,8 +9322,8 @@
   "steps": 24,
   "inf_trotter": 0.0006577192036250068,
   "p_succ": 0.970340919928518,
-  "cnot_filter": 11936,
-  "cnot_per_success": 12300.83134170956
+  "cnot_filter": 5808,
+  "cnot_per_success": 5985.52517029567
  },
  {
   "family": "matched",
@@ -9339,7 +9339,7 @@
   "cert_T": 450.3058188044085,
   "cert_m": 40,
   "cert_steps": 22580,
-  "cert_cnot_per_success": 379444972.22525895,
+  "cert_cnot_per_success": 183607914.0663132,
   "emp_T": 360.2446550435268,
   "emp_m": 32,
   "leak_exact": 8.981713162103944e-08,
@@ -9415,8 +9415,8 @@
   "steps": 176,
   "inf_trotter": 8.901636213864972e-05,
   "p_succ": 0.0271015208757866,
-  "cnot_filter": 87424,
-  "cnot_per_success": 3225796.8252293733
+  "cnot_filter": 42432,
+  "cnot_per_success": 1565668.590869015
  },
  {
   "family": "matched",
@@ -9432,7 +9432,7 @@
   "cert_T": 360.2446550435268,
   "cert_m": 32,
   "cert_steps": 9472,
-  "cert_cnot_per_success": 15897185.565071004,
+  "cert_cnot_per_success": 7692626.656150623,
   "emp_T": 315.21407316308597,
   "emp_m": 28,
   "leak_exact": 6.434333166271955e-08,
@@ -9500,8 +9500,8 @@
   "steps": 154,
   "inf_trotter": 8.899504688686388e-05,
   "p_succ": 0.29126816628595575,
-  "cnot_filter": 76496,
-  "cnot_per_success": 262630.829092731
+  "cnot_filter": 37128,
+  "cnot_per_success": 127470.16082612054
  },
  {
   "family": "matched",
@@ -9517,7 +9517,7 @@
   "cert_T": 270.1834912826451,
   "cert_m": 24,
   "cert_steps": 4746,
-  "cert_cnot_per_success": 2654063.1707445895,
+  "cert_cnot_per_success": 1284334.0924737246,
   "emp_T": 225.15290940220424,
   "emp_m": 20,
   "leak_exact": 3.433197327540327e-07,
@@ -9569,8 +9569,8 @@
   "steps": 110,
   "inf_trotter": 8.62234168094167e-05,
   "p_succ": 0.8924958613268881,
-  "cnot_filter": 54640,
-  "cnot_per_success": 61221.572410168745
+  "cnot_filter": 26520,
+  "cnot_per_success": 29714.4235050819
  },
  {
   "family": "matched",
@@ -9586,7 +9586,7 @@
   "cert_T": 495.33640068484937,
   "cert_m": 44,
   "cert_steps": 40216,
-  "cert_cnot_per_success": 3719082865.941314,
+  "cert_cnot_per_success": 1799589569.095005,
   "emp_T": 450.3058188044085,
   "emp_m": 40,
   "leak_exact": 3.004562154629298e-10,
@@ -9678,8 +9678,8 @@
   "steps": 220,
   "inf_trotter": 9.016803589001476e-05,
   "p_succ": 0.005587763919836866,
-  "cnot_filter": 109280,
-  "cnot_per_success": 19557018.078743458
+  "cnot_filter": 53040,
+  "cnot_per_success": 9492169.096783977
  },
  {
   "family": "matched",
@@ -9695,7 +9695,7 @@
   "cert_T": 180.1223275217634,
   "cert_m": 16,
   "cert_steps": 2840,
-  "cert_cnot_per_success": 1440636.81335097,
+  "cert_cnot_per_success": 697148.8354644431,
   "emp_T": 135.09174564132255,
   "emp_m": 12,
   "leak_exact": 4.370734374870011e-06,
@@ -9731,8 +9731,8 @@
   "steps": 66,
   "inf_trotter": 7.238281845389771e-05,
   "p_succ": 0.9857158048848627,
-  "cnot_filter": 32784,
-  "cnot_per_success": 33259.07917630413
+  "cnot_filter": 15912,
+  "cnot_per_success": 16142.583816903103
  },
  {
   "family": "matched",
@@ -9748,7 +9748,7 @@
   "cert_T": 202.74286019844035,
   "cert_m": 12,
   "cert_steps": 8834,
-  "cert_cnot_per_success": 163259448.9506632,
+  "cert_cnot_per_success": 78998324.84826994,
   "emp_T": 202.74286019844035,
   "emp_m": 12,
   "leak_exact": 7.412470787160341e-05,
@@ -9784,8 +9784,8 @@
   "steps": 76,
   "inf_trotter": 7.438736735432272e-05,
   "p_succ": 0.025722760411192452,
-  "cnot_filter": 37744,
-  "cnot_per_success": 1467338.6291611565
+  "cnot_filter": 18312,
+  "cnot_per_success": 711898.7117740329
  },
  {
   "family": "matched",
@@ -9801,7 +9801,7 @@
   "cert_T": 202.74286019844035,
   "cert_m": 12,
   "cert_steps": 4846,
-  "cert_cnot_per_success": 8094158.325171089,
+  "cert_cnot_per_success": 3916692.4652973106,
   "emp_T": 84.47619174935014,
   "emp_m": 8,
   "leak_exact": 3.355495062673519e-05,
@@ -9829,8 +9829,8 @@
   "steps": 54,
   "inf_trotter": 9.03668037884886e-05,
   "p_succ": 0.004775069206644966,
-  "cnot_filter": 26816,
-  "cnot_per_success": 5615834.837049685
+  "cnot_filter": 13008,
+  "cnot_per_success": 2724148.9991177768
  },
  {
   "family": "matched",
@@ -9846,7 +9846,7 @@
   "cert_T": 84.47619174935012,
   "cert_m": 8,
   "cert_steps": 1072,
-  "cert_cnot_per_success": 812096.1335249398,
+  "cert_cnot_per_success": 392999.4016814589,
   "emp_T": 67.58095339948012,
   "emp_m": 8,
   "leak_exact": 7.814072776612946e-06,
@@ -9874,8 +9874,8 @@
   "steps": 35,
   "inf_trotter": 8.306056068629886e-05,
   "p_succ": 0.5733075110446627,
-  "cnot_filter": 17392,
-  "cnot_per_success": 30336.250031521216
+  "cnot_filter": 8448,
+  "cnot_per_success": 14735.54739341601
  },
  {
   "family": "matched",
@@ -9891,7 +9891,7 @@
   "cert_T": 362.7199124607285,
   "cert_m": 32,
   "cert_steps": 4952,
-  "cert_cnot_per_success": 112095749.31739654,
+  "cert_cnot_per_success": 54538027.52874643,
   "emp_T": 317.37992340313747,
   "emp_m": 28,
   "leak_exact": 0.0004527915937496685,
@@ -9959,8 +9959,8 @@
   "steps": 49,
   "inf_trotter": 0.0037746406954514145,
   "p_succ": 0.010532955752565763,
-  "cnot_filter": 29120,
-  "cnot_per_success": 2764656.0646480024
+  "cnot_filter": 14280,
+  "cnot_per_success": 1355744.800933155
  },
  {
   "family": "matched",
@@ -9976,7 +9976,7 @@
   "cert_T": 226.6999452879553,
   "cert_m": 20,
   "cert_steps": 1820,
-  "cert_cnot_per_success": 3882370.7683745413,
+  "cert_cnot_per_success": 1889013.0544615455,
   "emp_T": 226.6999452879553,
   "emp_m": 20,
   "leak_exact": 0.0006646835891697123,
@@ -10028,8 +10028,8 @@
   "steps": 35,
   "inf_trotter": 0.003750817243074911,
   "p_succ": 0.191580931492078,
-  "cnot_filter": 20800,
-  "cnot_per_success": 108570.30414250854
+  "cnot_filter": 10200,
+  "cnot_per_success": 53241.20683911476
  },
  {
   "family": "matched",
@@ -10045,7 +10045,7 @@
   "cert_T": 136.0199671727732,
   "cert_m": 12,
   "cert_steps": 555,
-  "cert_cnot_per_success": 405702.4742486375,
+  "cert_cnot_per_success": 197428.8333273935,
   "emp_T": 90.67997811518212,
   "emp_m": 8,
   "leak_exact": 0.0029653402177726162,
@@ -10073,8 +10073,8 @@
   "steps": 14,
   "inf_trotter": 0.0026724466871760333,
   "p_succ": 0.7727769214187321,
-  "cnot_filter": 8320,
-  "cnot_per_success": 10766.367071011138
+  "cnot_filter": 4080,
+  "cnot_per_success": 5279.660775207385
  },
  {
   "family": "matched",
@@ -10090,7 +10090,7 @@
   "cert_T": 453.3998905759106,
   "cert_m": 40,
   "cert_steps": 13090,
-  "cert_cnot_per_success": 3785357510.7440124,
+  "cert_cnot_per_success": 1841604486.6089222,
   "emp_T": 374.81057620941954,
   "emp_m": 20,
   "leak_exact": 2.088612095441089e-05,
@@ -10142,8 +10142,8 @@
   "steps": 48,
   "inf_trotter": 0.008796820131569016,
   "p_succ": 0.00035888916402584297,
-  "cnot_filter": 28496,
-  "cnot_per_success": 79400558.32376163
+  "cnot_filter": 13944,
+  "cnot_per_success": 38853220.98773624
  },
  {
   "family": "matched",
@@ -10159,7 +10159,7 @@
   "cert_T": 90.67997811518212,
   "cert_m": 8,
   "cert_steps": 280,
-  "cert_cnot_per_success": 191071.76151627876,
+  "cert_cnot_per_success": 92991.20761692662,
   "emp_T": 45.33998905759106,
   "emp_m": 4,
   "leak_exact": 0.003061094687986099,
@@ -10179,8 +10179,8 @@
   "steps": 7,
   "inf_trotter": 0.0025998169997111242,
   "p_succ": 0.9069260986137171,
-  "cnot_filter": 4160,
-  "cnot_per_success": 4586.922800389991
+  "cnot_filter": 2040,
+  "cnot_per_success": 2249.3563732681687
  },
  {
   "family": "matched",
@@ -10196,7 +10196,7 @@
   "cert_T": 453.3998905759106,
   "cert_m": 40,
   "cert_steps": 11920,
-  "cert_cnot_per_success": 246063101.62144074,
+  "cert_cnot_per_success": 119712028.18369946,
   "emp_T": 374.81057620941954,
   "emp_m": 20,
   "leak_exact": 2.4829435815165724e-05,
@@ -10248,8 +10248,8 @@
   "steps": 80,
   "inf_trotter": 0.0008215059332731256,
   "p_succ": 0.017905742532589967,
-  "cnot_filter": 47440,
-  "cnot_per_success": 2649429.361203825
+  "cnot_filter": 23160,
+  "cnot_per_success": 1293439.79775465
  },
  {
   "family": "matched",
@@ -10265,7 +10265,7 @@
   "cert_T": 362.7199124607285,
   "cert_m": 32,
   "cert_steps": 4776,
-  "cert_cnot_per_success": 9865284.884116411,
+  "cert_cnot_per_success": 4799780.411590816,
   "emp_T": 281.1079321570646,
   "emp_m": 15,
   "leak_exact": 5.605463595281801e-05,
@@ -10307,8 +10307,8 @@
   "steps": 81,
   "inf_trotter": 0.0009218065013419929,
   "p_succ": 0.2767179055480494,
-  "cnot_filter": 48012,
-  "cnot_per_success": 173505.2160969149
+  "cnot_filter": 23418,
+  "cnot_per_success": 84627.7003781878
  },
  {
   "family": "matched",
@@ -10324,7 +10324,7 @@
   "cert_T": 226.6999452879553,
   "cert_m": 20,
   "cert_steps": 2005,
-  "cert_cnot_per_success": 1368015.9269215805,
+  "cert_cnot_per_success": 665614.7044352575,
   "emp_T": 181.35995623036425,
   "emp_m": 16,
   "leak_exact": 0.0001430911342166219,
@@ -10368,8 +10368,8 @@
   "steps": 44,
   "inf_trotter": 0.0006760716957483481,
   "p_succ": 0.8579895467739951,
-  "cnot_filter": 26112,
-  "cnot_per_success": 30433.93721774354
+  "cnot_filter": 12768,
+  "cnot_per_success": 14881.300183676069
  },
  {
   "family": "matched",
@@ -10385,7 +10385,7 @@
   "cert_T": 544.0798686910928,
   "cert_m": 48,
   "cert_steps": 29616,
-  "cert_cnot_per_success": 7812681886.6154995,
+  "cert_cnot_per_success": 3800850872.825836,
   "emp_T": 468.51322026177434,
   "emp_m": 25,
   "leak_exact": 8.684288868021639e-07,
@@ -10447,8 +10447,8 @@
   "steps": 105,
   "inf_trotter": 0.0008507275398033087,
   "p_succ": 0.002173664369102913,
-  "cnot_filter": 62260,
-  "cnot_per_success": 28642876.46473
+  "cnot_filter": 30390,
+  "cnot_per_success": 13980999.289481925
  },
  {
   "family": "matched",
@@ -10464,7 +10464,7 @@
   "cert_T": 136.0199671727732,
   "cert_m": 12,
   "cert_steps": 1272,
-  "cert_cnot_per_success": 785178.7619210129,
+  "cert_cnot_per_success": 382029.5799046499,
   "emp_T": 136.0199671727732,
   "emp_m": 12,
   "leak_exact": 0.00013558537179281238,
@@ -10500,8 +10500,8 @@
   "steps": 33,
   "inf_trotter": 0.0006347612552705106,
   "p_succ": 0.9471048642792032,
-  "cnot_filter": 19584,
-  "cnot_per_success": 20677.752526278553
+  "cnot_filter": 9576,
+  "cnot_per_success": 10110.812816158263
  },
  {
   "family": "matched",
@@ -10517,7 +10517,7 @@
   "cert_T": 544.0798686910928,
   "cert_m": 48,
   "cert_steps": 27144,
-  "cert_cnot_per_success": 543668734.0936525,
+  "cert_cnot_per_success": 264494075.87619683,
   "emp_T": 453.3998905759106,
   "emp_m": 40,
   "leak_exact": 4.975713483457156e-06,
@@ -10609,8 +10609,8 @@
   "steps": 190,
   "inf_trotter": 8.89791269693685e-05,
   "p_succ": 0.026935408451794624,
-  "cnot_filter": 112640,
-  "cnot_per_success": 4181856.02054589
+  "cnot_filter": 54960,
+  "cnot_per_success": 2040436.8509339676
  },
  {
   "family": "matched",
@@ -10626,7 +10626,7 @@
   "cert_T": 453.3998905759106,
   "cert_m": 40,
   "cert_steps": 11550,
-  "cert_cnot_per_success": 23137688.746697202,
+  "cert_cnot_per_success": 11256721.629936233,
   "emp_T": 362.7199124607285,
   "emp_m": 32,
   "leak_exact": 7.258393435960464e-06,
@@ -10702,8 +10702,8 @@
   "steps": 152,
   "inf_trotter": 8.46445299366172e-05,
   "p_succ": 0.2903660178264134,
-  "cnot_filter": 90112,
-  "cnot_per_success": 310339.3457490289
+  "cnot_filter": 43968,
+  "cnot_per_success": 151422.67793294237
  },
  {
   "family": "matched",
@@ -10719,7 +10719,7 @@
   "cert_T": 317.37992340313747,
   "cert_m": 28,
   "cert_steps": 5642,
-  "cert_cnot_per_success": 3758122.3213184304,
+  "cert_cnot_per_success": 1828403.4410076037,
   "emp_T": 272.0399343455464,
   "emp_m": 24,
   "leak_exact": 7.018148353910014e-06,
@@ -10779,8 +10779,8 @@
   "steps": 114,
   "inf_trotter": 8.182546918944489e-05,
   "p_succ": 0.8906396489565666,
-  "cnot_filter": 67584,
-  "cnot_per_success": 75882.5413613445
+  "cnot_filter": 32976,
+  "cnot_per_success": 37025.07522389465
  },
  {
   "family": "matched",
@@ -10796,7 +10796,7 @@
   "cert_T": 655.918508366484,
   "cert_m": 35,
   "cert_steps": 64561,
-  "cert_cnot_per_success": 16552817267.591301,
+  "cert_cnot_per_success": 8052783365.953716,
   "emp_T": 544.0798686910928,
   "emp_m": 48,
   "leak_exact": 9.709068882202132e-09,
@@ -10904,8 +10904,8 @@
   "steps": 240,
   "inf_trotter": 7.133254531477284e-05,
   "p_succ": 0.0024058566134291526,
-  "cnot_filter": 142272,
-  "cnot_per_success": 59135693.79233066
+  "cnot_filter": 69408,
+  "cnot_per_success": 28849599.60314107
  },
  {
   "family": "matched",
@@ -10921,7 +10921,7 @@
   "cert_T": 272.0399343455464,
   "cert_m": 24,
   "cert_steps": 4212,
-  "cert_cnot_per_success": 2586303.401519636,
+  "cert_cnot_per_success": 1258302.569266772,
   "emp_T": 226.6999452879553,
   "emp_m": 20,
   "leak_exact": 6.623626150337181e-06,
@@ -10973,8 +10973,8 @@
   "steps": 95,
   "inf_trotter": 8.03329648765283e-05,
   "p_succ": 0.970889755616371,
-  "cnot_filter": 56320,
-  "cnot_per_success": 58008.64585726847
+  "cnot_filter": 27480,
+  "cnot_per_success": 28303.934448823467
  },
  {
   "family": "matched",
@@ -10990,7 +10990,7 @@
   "cert_T": 376.6980533759282,
   "cert_m": 20,
   "cert_steps": 5164,
-  "cert_cnot_per_success": 132010459.3441212,
+  "cert_cnot_per_success": 64473231.33951625,
   "emp_T": 364.54650326702733,
   "emp_m": 32,
   "leak_exact": 0.0029383108849254658,
@@ -11066,8 +11066,8 @@
   "steps": 56,
   "inf_trotter": 0.0023913577102997463,
   "p_succ": 0.01317436042957036,
-  "cnot_filter": 38656,
-  "cnot_per_success": 2934184.1834868216
+  "cnot_filter": 19008,
+  "cnot_per_success": 1442802.4875754735
  },
  {
   "family": "matched",
@@ -11083,7 +11083,7 @@
   "cert_T": 282.5235400319462,
   "cert_m": 15,
   "cert_steps": 1803,
-  "cert_cnot_per_success": 4660110.705525836,
+  "cert_cnot_per_success": 2276096.0338185257,
   "emp_T": 273.4098774502705,
   "emp_m": 24,
   "leak_exact": 0.001783991782052019,
@@ -11143,8 +11143,8 @@
   "steps": 42,
   "inf_trotter": 0.0022735581264431426,
   "p_succ": 0.2103061952954724,
-  "cnot_filter": 28992,
-  "cnot_per_success": 137856.138566281
+  "cnot_filter": 14256,
+  "cnot_per_success": 67786.8760830885
  },
  {
   "family": "matched",
@@ -11160,7 +11160,7 @@
   "cert_T": 188.34902668796414,
   "cert_m": 10,
   "cert_steps": 680,
-  "cert_cnot_per_success": 600603.2915478009,
+  "cert_cnot_per_success": 293369.8304059468,
   "emp_T": 136.70493872513524,
   "emp_m": 12,
   "leak_exact": 0.0022204281176111396,
@@ -11196,8 +11196,8 @@
   "steps": 21,
   "inf_trotter": 0.0015690039084738094,
   "p_succ": 0.7810796169412693,
-  "cnot_filter": 14496,
-  "cnot_per_success": 18558.927522352667
+  "cnot_filter": 7128,
+  "cnot_per_success": 9125.830255196592
  },
  {
   "family": "matched",
@@ -11213,7 +11213,7 @@
   "cert_T": 565.0470800638924,
   "cert_m": 30,
   "cert_steps": 18486,
-  "cert_cnot_per_success": 14951977903.598722,
+  "cert_cnot_per_success": 7302271457.168004,
   "emp_T": 470.8725667199103,
   "emp_m": 25,
   "leak_exact": 1.7921253168129425e-06,
@@ -11275,8 +11275,8 @@
   "steps": 60,
   "inf_trotter": 0.006666067321340674,
   "p_succ": 0.0002384999314339063,
-  "cnot_filter": 41380,
-  "cnot_per_success": 173501098.0976627
+  "cnot_filter": 20310,
+  "cnot_per_success": 85157257.18616551
  },
  {
   "family": "matched",
@@ -11292,7 +11292,7 @@
   "cert_T": 91.13662581675683,
   "cert_m": 8,
   "cert_steps": 330,
-  "cert_cnot_per_success": 250986.54448979336,
+  "cert_cnot_per_success": 122610.60547827913,
   "emp_T": 91.13662581675683,
   "emp_m": 8,
   "leak_exact": 0.002156241568843975,
@@ -11320,8 +11320,8 @@
   "steps": 10,
   "inf_trotter": 0.008886192185669772,
   "p_succ": 0.6176393378033838,
-  "cnot_filter": 6912,
-  "cnot_per_success": 11190.997038145799
+  "cnot_filter": 3408,
+  "cnot_per_success": 5517.783261863554
  },
  {
   "family": "matched",
@@ -11337,7 +11337,7 @@
   "cert_T": 115.03535881645527,
   "cert_m": 8,
   "cert_steps": 1895,
-  "cert_cnot_per_success": 989219754.4830502,
+  "cert_cnot_per_success": 483131883.47732073,
   "emp_T": 115.03535881645529,
   "emp_m": 8,
   "leak_exact": 0.006706597607933018,
@@ -11365,8 +11365,8 @@
   "steps": 26,
   "inf_trotter": 0.007536599472806937,
   "p_succ": 0.020835682201620492,
-  "cnot_filter": 17920,
-  "cnot_per_success": 860063.0316105644
+  "cnot_filter": 8784,
+  "cnot_per_success": 421584.46817339276
  },
  {
   "family": "matched",
@@ -11382,7 +11382,7 @@
   "cert_T": 92.02828705316422,
   "cert_m": 8,
   "cert_steps": 402,
-  "cert_cnot_per_success": 1578777.4791238427,
+  "cert_cnot_per_success": 771215.6299861668,
   "emp_T": 69.02121528987317,
   "emp_m": 8,
   "leak_exact": 0.00494844486535384,
@@ -11410,8 +11410,8 @@
   "steps": 13,
   "inf_trotter": 0.007277801231551528,
   "p_succ": 0.18573463213249902,
-  "cnot_filter": 8976,
-  "cnot_per_success": 48327.01309897186
+  "cnot_filter": 4416,
+  "cnot_per_success": 23775.856711793644
  },
  {
   "family": "matched",
@@ -11427,7 +11427,7 @@
   "cert_T": 55.21697223189854,
   "cert_m": 6,
   "cert_steps": 143,
-  "cert_cnot_per_success": 187016.7937698538,
+  "cert_cnot_per_success": 91379.92349839088,
   "emp_T": 36.81131482126568,
   "emp_m": 4,
   "leak_exact": 0.00531755304092163,
@@ -11447,8 +11447,8 @@
   "steps": 5,
   "inf_trotter": 0.005384966567213989,
   "p_succ": 0.6760436851681269,
-  "cnot_filter": 3456,
-  "cnot_per_success": 5112.095676391858
+  "cnot_filter": 1704,
+  "cnot_per_success": 2520.5471737765415
  },
  {
   "family": "matched",
@@ -11464,7 +11464,7 @@
   "cert_T": 470.8725667199103,
   "cert_m": 25,
   "cert_steps": 12555,
-  "cert_cnot_per_success": 298200374.98769504,
+  "cert_cnot_per_success": 145636233.63143757,
   "emp_T": 470.8725667199103,
   "emp_m": 25,
   "leak_exact": 1.4656574873761485e-06,
@@ -11526,8 +11526,8 @@
   "steps": 105,
   "inf_trotter": 0.0006463928769564475,
   "p_succ": 0.02108332175850968,
-  "cnot_filter": 72340,
-  "cnot_per_success": 3431148.1287715975
+  "cnot_filter": 35430,
+  "cnot_per_success": 1680475.2308871676
  },
  {
   "family": "matched",
@@ -11543,7 +11543,7 @@
   "cert_T": 376.6980533759282,
   "cert_m": 20,
   "cert_steps": 4856,
-  "cert_cnot_per_success": 11570809.581344806,
+  "cert_cnot_per_success": 5651140.776384028,
   "emp_T": 364.54650326702733,
   "emp_m": 32,
   "leak_exact": 0.00021262272003308436,
@@ -11619,8 +11619,8 @@
   "steps": 88,
   "inf_trotter": 0.0004075178346557573,
   "p_succ": 0.27165719931373195,
-  "cnot_filter": 60672,
-  "cnot_per_success": 223340.29855741467
+  "cnot_filter": 29760,
+  "cnot_per_success": 109549.8299886053
  },
  {
   "family": "matched",
@@ -11636,7 +11636,7 @@
   "cert_T": 282.5235400319462,
   "cert_m": 15,
   "cert_steps": 2202,
-  "cert_cnot_per_success": 1761592.2316510233,
+  "cert_cnot_per_success": 860383.060809746,
   "emp_T": 188.34902668796414,
   "emp_m": 10,
   "leak_exact": 6.971326197324768e-05,
@@ -11668,8 +11668,8 @@
   "steps": 32,
   "inf_trotter": 0.0005970813829702104,
   "p_succ": 0.7853216613077364,
-  "cnot_filter": 22056,
-  "cnot_per_success": 28085.307061659067
+  "cnot_filter": 10812,
+  "cnot_per_success": 13767.606998125582
  },
  {
   "family": "matched",
@@ -11685,7 +11685,7 @@
   "cert_T": 659.2215934078744,
   "cert_m": 35,
   "cert_steps": 41118,
-  "cert_cnot_per_success": 29828747359.27801,
+  "cert_cnot_per_success": 14567677115.001404,
   "emp_T": 565.0470800638924,
   "emp_m": 30,
   "leak_exact": 7.609348651183012e-08,
@@ -11757,8 +11757,8 @@
   "steps": 120,
   "inf_trotter": 0.0009558000883649331,
   "p_succ": 0.0009080355206532517,
-  "cnot_filter": 82680,
-  "cnot_per_success": 91053706.73222013
+  "cnot_filter": 40500,
+  "cnot_per_success": 44601779.422531635
  },
  {
   "family": "matched",
@@ -11774,7 +11774,7 @@
   "cert_T": 188.34902668796414,
   "cert_m": 10,
   "cert_steps": 1452,
-  "cert_cnot_per_success": 1064433.1396430621,
+  "cert_cnot_per_success": 519882.5551265631,
   "emp_T": 182.27325163351367,
   "emp_m": 16,
   "leak_exact": 0.00022689183804913693,
@@ -11818,8 +11818,8 @@
   "steps": 32,
   "inf_trotter": 0.0008734996070949297,
   "p_succ": 0.902383290067816,
-  "cnot_filter": 22080,
-  "cnot_per_success": 24468.53819549411
+  "cnot_filter": 10848,
+  "cnot_per_success": 12021.499200394934
  },
  {
   "family": "matched",
@@ -11835,7 +11835,7 @@
   "cert_T": 565.0470800638924,
   "cert_m": 30,
   "cert_steps": 28824,
-  "cert_cnot_per_success": 668630800.9632231,
+  "cert_cnot_per_success": 326544716.7391015,
   "emp_T": 565.0470800638924,
   "emp_m": 30,
   "leak_exact": 6.177964029241423e-08,
@@ -11907,8 +11907,8 @@
   "steps": 186,
   "inf_trotter": 9.783349341407899e-05,
   "p_succ": 0.02641370095065678,
-  "cnot_filter": 128088,
-  "cnot_per_success": 4849301.513607659
+  "cnot_filter": 62676,
+  "cnot_per_success": 2372859.4533982393
  },
  {
   "family": "matched",
@@ -11924,7 +11924,7 @@
   "cert_T": 470.8725667199103,
   "cert_m": 25,
   "cert_steps": 11855,
-  "cert_cnot_per_success": 27526462.862077776,
+  "cert_cnot_per_success": 13443497.691205427,
   "emp_T": 455.68312908378414,
   "emp_m": 40,
   "leak_exact": 2.551446245546707e-05,
@@ -12016,8 +12016,8 @@
   "steps": 150,
   "inf_trotter": 7.664386341277307e-05,
   "p_succ": 0.28914027334334336,
-  "cnot_filter": 103360,
-  "cnot_per_success": 357473.5501382882
+  "cnot_filter": 50640,
+  "cnot_per_success": 175139.9049826133
  },
  {
   "family": "matched",
@@ -12033,7 +12033,7 @@
   "cert_T": 376.6980533759282,
   "cert_m": 20,
   "cert_steps": 5952,
-  "cert_cnot_per_success": 4616593.7097945055,
+  "cert_cnot_per_success": 2254706.7700269134,
   "emp_T": 282.5235400319462,
   "emp_m": 15,
   "leak_exact": 2.8591470396799323e-06,
@@ -12075,8 +12075,8 @@
   "steps": 111,
   "inf_trotter": 9.1086978429189e-05,
   "p_succ": 0.8899639830729354,
-  "cnot_filter": 76428,
-  "cnot_per_success": 85877.63263868677
+  "cnot_filter": 37386,
+  "cnot_per_success": 42008.44158986161
  },
  {
   "family": "matched",
@@ -12092,7 +12092,7 @@
   "cert_T": 753.3961067518565,
   "cert_m": 40,
   "cert_steps": 88720,
-  "cert_cnot_per_success": 62228968184.405655,
+  "cert_cnot_per_success": 30391056453.459038,
   "emp_T": 659.2215934078744,
   "emp_m": 35,
   "leak_exact": 3.306910745237701e-09,
@@ -12174,8 +12174,8 @@
   "steps": 252,
   "inf_trotter": 8.701404289668258e-05,
   "p_succ": 0.001012563684030215,
-  "cnot_filter": 173516,
-  "cnot_per_success": 171363048.80041724
+  "cnot_filter": 84882,
+  "cnot_per_success": 83828801.42624897
  },
  {
   "family": "matched",
@@ -12191,7 +12191,7 @@
   "cert_T": 282.5235400319462,
   "cert_m": 15,
   "cert_steps": 4617,
-  "cert_cnot_per_success": 3317905.4937770315,
+  "cert_cnot_per_success": 1620435.8490316789,
   "emp_T": 273.4098774502705,
   "emp_m": 24,
   "leak_exact": 2.624903438708248e-05,
@@ -12251,8 +12251,8 @@
   "steps": 90,
   "inf_trotter": 6.807706510914002e-05,
   "p_succ": 0.9584017053549111,
-  "cnot_filter": 62016,
-  "cnot_per_success": 64707.731271236116
+  "cnot_filter": 30384,
+  "cnot_per_success": 31702.781652238747
  },
  {
   "family": "matched",
@@ -12268,7 +12268,7 @@
   "cert_T": 276.0848611594926,
   "cert_m": 12,
   "cert_steps": 14968,
-  "cert_cnot_per_success": 1440227894.7194483,
+  "cert_cnot_per_success": 703373902.4573255,
   "emp_T": 276.0848611594926,
   "emp_m": 12,
   "leak_exact": 3.692485265893719e-05,
@@ -12304,8 +12304,8 @@
   "steps": 141,
   "inf_trotter": 9.949829470112803e-05,
   "p_succ": 0.025803237212247043,
-  "cnot_filter": 97056,
-  "cnot_per_success": 3761388.51112581
+  "cnot_filter": 47448,
+  "cnot_per_success": 1838839.0421601697
  },
  {
   "family": "matched",
@@ -12321,7 +12321,7 @@
   "cert_T": 276.0848611594927,
   "cert_m": 12,
   "cert_steps": 5867,
-  "cert_cnot_per_success": 13592778.05668975,
+  "cert_cnot_per_success": 6638496.985666269,
   "emp_T": 276.08486115949256,
   "emp_m": 12,
   "leak_exact": 1.701878270032875e-05,
@@ -12357,8 +12357,8 @@
   "steps": 112,
   "inf_trotter": 9.593107963246084e-05,
   "p_succ": 0.2916831563727013,
-  "cnot_filter": 77104,
-  "cnot_per_success": 264341.6265746916
+  "cnot_filter": 37704,
+  "cnot_per_success": 129263.54908139876
  },
  {
   "family": "matched",
@@ -12374,7 +12374,7 @@
   "cert_T": 115.0353588164553,
   "cert_m": 8,
   "cert_steps": 1305,
-  "cert_cnot_per_success": 1396510.3105752126,
+  "cert_cnot_per_success": 682067.0134227672,
   "emp_T": 92.02828705316423,
   "emp_m": 8,
   "leak_exact": 5.660146400776611e-05,
@@ -12402,7 +12402,7 @@
   "steps": 42,
   "inf_trotter": 9.367894634781937e-05,
   "p_succ": 0.5753430120064141,
-  "cnot_filter": 28928,
-  "cnot_per_success": 50279.57131019695
+  "cnot_filter": 14160,
+  "cnot_per_success": 24611.40520438291
  }
 ]

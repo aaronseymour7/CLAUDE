@@ -14,18 +14,16 @@ sys.path.insert(0, os.path.dirname(HERE))
 sys.path.insert(0, HERE)
 
 from sbpipe import j1j2_chain
-from sbpipe.resources import per_step_counts
+from sbpipe.resources import per_block_counts
 
 import run_study as RS
 
 
 def counts(H, steps, pulses, anc):
     """filter_counts() for a second-order schedule given only the totals (it is linear in them)."""
-    s = per_step_counts(H)
-    G, cw = s["terms"], s["cnot_per_term"]
-    inner = cw[1:-1].sum()
-    cnot = steps * (2 * inner + cw[0] + cw[-1]) + pulses * cw[0]
-    rot = steps * (2 * G - 2) + pulses + anc * pulses
+    cw, rw = per_block_counts(H)
+    cnot = steps * (2 * cw[1:-1].sum() + cw[0] + cw[-1]) + pulses * cw[0]
+    rot = steps * (2 * rw[1:-1].sum() + rw[0] + rw[-1]) + pulses * rw[0] + anc * pulses
     return int(cnot), int(rot)
 
 

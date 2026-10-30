@@ -16,37 +16,33 @@
 
 \begin{document}
 
-\title{Stetcu--Baroni--Carlson projection filters for the $J_1$--$J_2$ chain:\\
-resource estimates, regimes of advantage, and the separate roles of gap and overlap}
+\title{Scaling of matrix-product-state plus cosine-filter ground-state preparation:\\
+gap, overlap and target in the $J_1$--$J_2$ model, with a comparison to QETU}
 
 \author{Authors to be added}
 \date{\today}
 
 \begin{abstract}
-The projection filter of Stetcu, Baroni and Carlson (SBC) refines an approximate ground state with one
-ancilla, controlled time evolution and post-selection. We give a resource study of this filter for the
-open spin-$\tfrac12$ $J_1$--$J_2$ chain. A modular pipeline turns classical inputs (DMRG energies, a gap
-estimate and a matrix-product trial state) into a Trotterized circuit with an a-priori, input-conditional
-bound on the infidelity and a transparent gate count; the bound held in all \nSimOK{} simulated circuits.
-To separate the two physical inputs that set the cost, we hold the spectral gap fixed across system size by
-tuning $J_2$, and the trial overlap fixed by a sublattice rotation of the trial circuit, and measure the
-cost by exact simulation and by the certificate (\goNcases{} cases, $N=8$--14,
-$\epsilon=10^{-2}$--$10^{-4}$). The gap sets the circuit: the filter's evolution time follows
-$T\propto\Delta^{-1}\ln[(1-\gamma)/(\gamma\epsilon)]$ with no dependence on $N$, and narrowing the gap by
-1.8$\times$ raises the CNOTs per shot \fBMDcnot$\times$. The overlap sets the number of repetitions: lowering
-it thirtyfold raises the CNOTs per shot only \fAMDcnot$\times$, but the cost per success by a further
-$1/\gamma$. $R_z$ rotations track CNOTs exactly ($R_z/\mathrm{CNOT}=\fRzCnot$). For the dyadic schedule the certified cost lies
-\goCertRatioMin--\goCertRatioMax$\times$ (median \goCertRatioMed) above the measured one; the certified filter
-length is within \fCMDtime$\times$ of what is needed, so almost all of the overhead sits in the a-priori
-Trotter bound. The optimized SBC design is the cheapest filter in most cases, a median \odMMed$\times$ the
-dyadic cost measured and \odCMed$\times$ certified, at the price of a numerical design that occasionally
-fails. Both SBC schedules beat a Chebyshev (QETU) filter at $\epsilon\ge10^{-3}$, because their long pulses
-tolerate Trotter steps of order $1/J_1$; QETU catches up at $10^{-4}$, where those steps shrink.
-Measured end to end on nine chains, compiling a better matrix-product state is cheaper than filtering
-a worse one in \actOneLoss{} of \actOneTot{} cases; the filter wins, by up to
-\actOneRatioMax$\times$, only when the trial misses the target by at most a factor \actOneFarMax{} and one or
-two pulses suffice, whereas on $4\times3$ and $4\times4$ cylinders the filtered route
-is as cheap or cheaper from $\epsilon\approx3\times10^{-3}$ on, by up to \actRatioMax$\times$.
+A common route to a ground state on a quantum computer compiles a classical trial state and removes its
+residual excited weight with a quantum filter. We study how the cost of this workflow scales, with a matrix-product
+state (MPS) as the trial and the one-ancilla cosine filter of Stetcu, Baroni and Carlson (SBC) as the refinement,
+on the spin-$\tfrac12$ $J_1$--$J_2$ model. A modular pipeline turns DMRG inputs into a Trotterized circuit with an
+input-conditional bound on the infidelity and a gate count; the bound held in all \nSimOK{} simulated circuits.
+Each controlled Heisenberg bond compiles exactly into 6 CNOTs, half the per-term count. To separate the inputs
+that set the cost, we hold the spectral gap fixed across system size by tuning $J_2$ and the trial overlap fixed
+by a sublattice rotation of the trial circuit, and measure every resource by exact simulation
+(\goNcases{} cases, $N=8$--14, $\epsilon=10^{-2}$--$10^{-4}$). The cost factorizes into filter length, Trotter
+step and gates per step. The gap sets the circuit: the evolution time follows
+$T\propto\Delta^{-1}\ln[(1-\gamma)/(\gamma\epsilon)]$ independently of $N$, and narrowing the gap by 1.8$\times$
+raises the CNOTs per shot \fBMDcnot$\times$. The overlap sets the repetitions: lowering it thirtyfold raises the
+CNOTs per shot only \fAMDcnot$\times$, but the cost per success by a further $1/\gamma$. A-priori certification
+sizes the filter to within \fCMDtime$\times$ but asks for Trotter steps 60--75 times finer than needed. Under
+identical accounting both SBC schedules, a halving ladder and an optimized design, beat a Chebyshev (QETU)
+filter at $\epsilon\ge10^{-3}$, because their long pulses tolerate Trotter steps of order $1/J_1$; QETU catches
+up at $10^{-4}$. Measured end to end, compiling a better MPS is the cheaper route on chains in
+\actOneLoss{} of \actOneTot{} cases, and the filter wins, by up to \actOneRatioMax$\times$, only as a last-mile
+polisher of a nearly sufficient trial; on $4\times3$ and $4\times4$ cylinders, where a snake MPS converges
+slowly, the filtered route is cheaper at 27 of 28 targets from $10^{-2}$ to $10^{-5}$, by up to \actRatioMax$\times$.
 \end{abstract}
 
 \maketitle
@@ -85,19 +81,32 @@ step counts from commutator bounds, and returns an a-priori bound on the infidel
 count. Section~\ref{sec:application} introduces the model and validates the bound. Section~\ref{sec:gapov}
 is the core of the paper: the controlled gap/overlap study, which yields the cost laws and explains them
 through a factorization into filter length, Trotter step and gates per step. Section~\ref{sec:regime}
-turns to resources at larger $N$, robustness to wrong inputs, and the regimes where the filter beats a
-compiled MPS. Section~\ref{sec:qetu} compares with a Chebyshev polynomial filter (QETU)~\cite{Dong2022}
-under identical accounting, and Sec.~\ref{sec:twod} adds a short note on $4\times L_x$ cylinders.
+follows the natural chains to $N=48$, tests robustness to wrong inputs and measures where the filter beats
+a compiled MPS. Section~\ref{sec:twod} repeats that comparison on $4\times L_x$ cylinders, where it comes out
+the other way, and Sec.~\ref{sec:qetu} compares with a Chebyshev polynomial filter (QETU)~\cite{Dong2022}
+under identical accounting.
 
-The filter is SBC's, the Trotter bounds are those of Childs \emph{et al.}~\cite{Childs2021}, and the
-certificate follows the standard argument also used for polynomial filters~\cite{Lin2020,Dong2022}.
-End-to-end resource studies that compile an MPS trial state and then filter or project it exist for quantum
-chemistry~\cite{Fomichev2024,Berry2025}. What is new here is a controlled separation of gap and overlap
-at fixed size, a measured (not only bounded) account of every resource, a closed-form dyadic energy
-schedule with $O(\Delta^{-1}\log\eta^{-1})$ total time, and a map of where the filter is the better tool.
-The code is the \texttt{sbpipe} package, available with all data at
-\url{https://github.com/aaronseymour7/FilterPipeline}; every number below is produced by the scripts named
-in Appendix~\ref{app:repro}.
+\emph{Relation to prior work.} The filter is SBC's~\cite{Stetcu2023}; it shares its circuit with the rodeo
+algorithm~\cite{Choi2021,Qian2021}, which draws the times at random. Our closed-form ``dyadic'' schedule, a
+halving ladder of times, is the one SBC and Rule \emph{et al.} use for quantum-number
+projection~\cite{Stetcu2023,Rule2024}, and for energy it is a finite form of the rodeo
+super-iteration of Cohen and Oh~\cite{CohenOh2023}, recently generalized to other geometric
+ratios~\cite{Patkowski2026}; what we add is its certified bound on the scaled spectral window and its measured
+cost. The optimized schedule is SBC's energy recipe with a certified constraint. The Trotter bounds are those
+of Childs \emph{et al.}~\cite{Childs2021}, and the certificate follows the standard argument for polynomial
+filters~\cite{Lin2020,Dong2022}. QETU has been costed with Trotterized evolution for lattice gauge
+theories~\cite{Kane2023} and run on small Hubbard models~\cite{Muller2024,Karacan2024}. Resource studies that
+compile an MPS or other classical trial and then refine it exist for quantum
+chemistry~\cite{Fomichev2024,Berry2025,Lee2025}, and Watanabe \emph{et al.}~\cite{Watanabe2026} stop an MPS
+encoder early and finish with probabilistic imaginary-time evolution on Heisenberg chains. For the
+two-dimensional $J_1$--$J_2$ model, the quantum--classical crossover has been estimated for phase estimation
+against DMRG with state preparation taken as negligible~\cite{Yoshioka2024}. What is new here is (i) a
+controlled separation of gap and overlap at fixed size, (ii) a measured, not only bounded, account of every
+resource and its factorization, which shows where the certificate's overhead sits, (iii) a like-for-like
+measured comparison of cosine and Chebyshev filters, and (iv) a measured map of where filtering a cheap MPS
+beats compiling a better one, in one and two dimensions. The code is the \texttt{sbpipe} package, available
+with all data at \url{https://github.com/aaronseymour7/FilterPipeline}; every number below is produced by
+the scripts named in Appendix~\ref{app:repro}.
 
 %=====================================================================================================
 \section{The SBC filter and the resource pipeline}
@@ -179,7 +188,8 @@ It is the baseline that any design should beat.
 
 \emph{Dyadic}: $r$ repetitions of the halving ladder $t=\tau,2\tau,\dots,2^{K-1}\tau$,
 $\tau=\pi/(1+\Delta)$, $\phi=0$. This is the schedule SBC use for quantum-number
-projection~\cite{Stetcu2023}, here applied to the energy. One block is a Dirichlet kernel,
+projection~\cite{Stetcu2023,Rule2024}, and for the energy it is a finite rodeo
+super-iteration~\cite{CohenOh2023} (whose infinite form gives $\sin x/x$). One block is a Dirichlet kernel,
 \begin{equation}
 \prod_{k=0}^{K-1}\cos(2^kE\tau)=\frac{\sin(2^KE\tau)}{2^K\sin(E\tau)},
 \label{eq:dirichlet}
@@ -195,7 +205,8 @@ $T=r\tau(2^K-1)$; choosing $2^K\sin\theta\approx e$ gives
 T_{\rm dyadic}\approx\frac{e\,\tau}{\sin\theta}\ln\frac1\eta\;\approx\;\frac{e}{\Delta}\ln\frac1\eta ,
 \end{equation}
 the optimal $O(\Delta^{-1}\log\eta^{-1})$ scaling~\cite{Lin2020} with an explicit constant and no
-optimization. The pipeline searches $K$ and $r$ for the smallest $T$. Both closed-form schedules are
+optimization; Cohen and Oh reach the same conclusion for super-iterations on a generic gapped
+spectrum~\cite{CohenOh2023}. The pipeline searches $K$ and $r$ for the smallest $T$. Both closed-form schedules are
 certified by the inequalities just given (with $F_{\rm pass}=\cos^m(w_0t)$ and $1-Lw_0$,
 respectively), which avoids interval arithmetic on filters with $L\sim10^{3}$--$10^{5}$; the
 test suite checks them against a $2\times10^6$-point grid.
@@ -279,10 +290,28 @@ is cheaper.
 
 \subsection{Resource model}
 
-All-to-all connectivity and the Clifford+$R_z$ gate set are assumed. A term $cP\otimes Z_a$ with
-$|P|=w$ is a weight-$(w+1)$ Pauli rotation: $2w$ CNOTs in a ladder and one $R_z$. A Lie step costs one
-rotation per term; $k$ Strang steps cost $k(2\Gamma-2)+1$ rotations for $\Gamma$ terms because the two
-middle half-steps and the outer half-steps of adjacent steps merge. Each pulse adds one ancilla $R_z$.
+All-to-all connectivity and the Clifford+$R_z$ gate set are assumed. Every Trotter factor of a pulse
+is controlled by the ancilla. For a Heisenberg bond $(i,j)$ the three commuting terms form one exact
+three-qubit block,
+\begin{align}
+e^{-ict(X_iX_j+Y_iY_j+Z_iZ_j)\otimes Z_a}
+&=V^\dagger e^{-ict(Z_iZ_a+Z_jZ_a-Z_iZ_jZ_a)}V,\nonumber\\
+V&=\mathsf H_i\,\mathrm{CNOT}_{ij},
+\label{eq:bond}
+\end{align}
+since the Bell-basis change $V$ maps $XX,YY,ZZ$ to $Z_i,-Z_iZ_j,Z_j$. The diagonal factor is a phase
+polynomial on the parities $i\oplus a$, $i\oplus j\oplus a$, $j\oplus a$, applied by
+$\mathrm{CNOT}_{ia}\,R_z\,\mathrm{CNOT}_{ja}\,R_z\,\mathrm{CNOT}_{ia}\,R_z\,\mathrm{CNOT}_{ja}$ on the
+ancilla wire~\cite{Amy2014}. One controlled bond thus costs 6 CNOTs and 3 $R_z$, against 12 CNOTs for three
+separate weight-3 Pauli rotations and 8 for qiskit's \texttt{PauliEvolutionGate} synthesis (both checked in
+the test suite, as is Eq.~\eqref{eq:bond}); it is the controlled analogue of the 3-CNOT two-qubit
+gate~\cite{Vatan2004,Vidal2004}. A numerical search over 300 four-CNOT layouts found no exact circuit. The
+block is the same unitary as its three term rotations, so the Trotterized circuit and its error are those of
+the term-wise product formula. The cheaper control by an anticommuting Pauli string, used by
+controlled-reversal rodeo circuits~\cite{BeeLindgren2025} and control-free QETU~\cite{Dong2022}, is not
+available: no product of single-qubit Paulis anticommutes with all of $XX$, $YY$ and $ZZ$ on a bond. A Lie step
+costs one block per bond; $k$ Strang steps cost $k(2B-2)+1$ blocks for $B$ bonds, because the two middle
+half-steps and the outer half-steps of adjacent steps merge. Each pulse adds one ancilla $R_z$.
 An arbitrary rotation at accuracy $\delta$ costs $3\log_2(1/\delta)$ $T$ gates, the leading term of
 Ross--Selinger synthesis~\cite{Ross2016}. The cost of one attempt is the trial circuit plus the
 filter, and the expected cost per success is the attempt cost divided by the certified lower bound
@@ -293,10 +322,7 @@ $\epsilon_U=(\sqrt\epsilon-\sqrt\ell)\sqrt{p_g}$, so this denominator is
 $p_g(1-\sqrt\epsilon+\sqrt\ell)^2\ge(1-\sqrt\epsilon)^2p_g$, i.e.\ at least $0.81\,p_g$ at
 $\epsilon=10^{-2}$. Without a filter nothing is post-selected and every attempt succeeds. Alongside
 each $T$ count we report the number of arbitrary rotations per attempt and their common synthesis
-accuracy $\delta$. The ladder CNOT count is an upper bound: qiskit's
-synthesis shares CNOTs between the $XX$, $YY$, $ZZ$ terms of a bond and needs 8 instead of 12 per
-controlled bond per Lie step (checked in the test suite), so CNOT numbers below can be read as upper
-bounds that a compiler lowers by about one third.
+accuracy $\delta$.
 
 %=====================================================================================================
 \section{Model, inputs and validation}
@@ -310,7 +336,7 @@ H=J_1\sum_{i=1}^{N-1}\mathbf S_i\cdot\mathbf S_{i+1}+J_2\sum_{i=1}^{N-2}\mathbf 
 \end{equation}
 $J_1=1$, at $J_2=0$ (Heisenberg), $J_2=0.2411$ (close to the critical point of the
 gapless-to-dimerized transition~\cite{Okamoto1992,Eggert1996}) and $J_2=0.4$ (dimerized), for $N=8$ to
-48. Its Pauli form has $3(N-1)$ terms of weight 2 at $J_2=0$ and $3(2N-3)$ otherwise. Terms are ordered by bond: nearest-neighbor bonds
+48. Its Pauli form has $B=N-1$ bonds ($3B$ terms of weight 2) at $J_2=0$ and $B=2N-3$ otherwise. Terms are ordered by bond: nearest-neighbor bonds
 with even then odd left site, then next-nearest-neighbor bonds likewise.
 
 The front end (\texttt{sbpipe/frontends/dmrg\_quimb.py}) builds the MPO from the Pauli sum and runs
@@ -380,7 +406,8 @@ a worst case over the whole stop band while the trial state's excited weight sit
 band. The
 Trotter term overestimates the measured Trotter distance by a median \trotRatioMed$\times$ (range
 \trotRatioMin--$\trotRatioMax$): commutator bounds are worst-case over all states, while the filtered state lives in the low-energy
-subspace, where Trotter errors are much smaller~\cite{Sahinoglu2021}. The measured success probability
+subspace, where Trotter errors are much smaller~\cite{Sahinoglu2021,Mizuta2025}, and empirical Trotter errors
+are known to lie far below the bounds~\cite{Childs2018}. The measured success probability
 equals $p_g$ to two digits in every case, because after filtering almost all of the surviving norm is
 ground-state weight.
 
@@ -498,9 +525,8 @@ overlap enters as a power. The practical reading is direct: the gap decides the 
 circuit, and with it whether the filter fits within a coherence or error budget at all; the overlap decides
 how many times that circuit has to be run.
 
-\emph{$R_z$ counts follow CNOT counts exactly.} A second-order step over the chain's Pauli terms has a
-fixed mix of weight-3 Pauli rotations (one $R_z$ each) and CNOT ladders, plus one ancilla rotation per pulse,
-so $R_z/\mathrm{CNOT}=\fRzCnot$ in every case. Every statement about CNOTs below therefore holds for the
+\emph{$R_z$ counts follow CNOT counts exactly.} Every controlled bond block has 3 $R_z$ and 6 CNOTs, and
+each pulse adds one ancilla rotation, so $R_z/\mathrm{CNOT}=\fRzCnot$ in every case. Every statement about CNOTs below therefore holds for the
 arbitrary rotations, and so for the $T$ count of a fault-tolerant implementation up to the synthesis
 factor $3\log_2(1/\delta)$.
 
@@ -546,7 +572,8 @@ shrinking as the total time grows. As a result the certified step count grows as
 $L^{\fitMDSL}$ measured, and is a median \fCMDsteps$\times$ (range \fCMDstepsLo--\fCMDstepsHi) the
 measured one. Almost all of the certificate's overhead is in the Trotter bound, not in the filter.
 
-\emph{Gates per step.} One Strang step costs a median $\fCps\,N$ CNOTs for the two-neighbor chain. The
+\emph{Gates per step.} One Strang step costs a median $\fCps\,N$ CNOTs for the two-neighbor chain
+($6(2B-2)$ with $B=2N-3$ bonds). The
 measured dyadic step count barely grows with $N$ (exponent \fitMDSN), so its CNOTs grow as
 $N^{\fitMDCN}$; the certified step count grows as $N^{\fitCDSN}$ through the commutator constant and the
 scaled time, giving $N^{\fitCDCN}$.
@@ -626,13 +653,13 @@ needs no design and never fails.
 
 Two maps make the interplay visible. At fixed $N$ and $\epsilon=10^{-2}$ (Fig.~\ref{fig:gridmap}), the
 contours of the dyadic cost per success run nearly parallel to the gap axis for $g\gtrsim0.40$: there the
-overlap alone sets the cost, from $\sim4\times10^3$ CNOTs at $\gamma=0.9$ to $\sim3\times10^5$ at
-$\gamma=0.03$; below $g\approx0.40$ the gap starts to matter, and $g=0.30$ costs about twice $g=0.40$ at the
+overlap alone sets the cost, from $2$--$6\times10^3$ CNOTs at $\gamma=0.9$ to $1$--$4\times10^5$ at
+$\gamma=0.03$; below $g\approx0.40$ the gap starts to matter, and $g=0.30$ costs 1.3--2.7 times $g=0.40$ at the
 same overlap. The optimized filter is cheaper over most of the map, and its contours tilt toward the gap axis
 over the whole range, as its steeper gap exponent implies. Per shot (not shown) the contours of both turn by
 ninety degrees and the gap alone sets the circuit. At fixed gap and overlap (Fig.~\ref{fig:heat}), the
-measured cost per success grows 7--18$\times$ (dyadic) from $\epsilon=10^{-2}$ to $10^{-5}$ and 2--4$\times$
-from $N=8$ to 14; the contours tilt toward the $\epsilon$ axis, so over this range the target matters more
+measured cost per success grows 7--21$\times$ (dyadic) from $\epsilon=10^{-2}$ to $10^{-5}$ and
+1.8--4.6$\times$ from $N=8$ to 14; the contours tilt toward the $\epsilon$ axis, so over this range the target matters more
 than the size. The optimized filter's lead is largest at loose targets and at $\gamma=0.5$, and shrinks
 toward $\epsilon=10^{-5}$.
 
@@ -819,29 +846,30 @@ filter (shortest exact ladder or design, then the coarsest passing Strang step),
 filter)$/p$.
 
 Figure~\ref{fig:actual1d} shows the result on nine chains. Compiling the MPS directly is the cheaper route
-in most cases: the filtered route wins in \actOneWins{} of the \actOneTot{} (chain, $\epsilon$) targets, by at
-most \actOneRatioMax$\times$. The wins share a single mechanism. Because MPS compilation cost jumps with
+in most cases: the filtered route wins in \actOneWins{} of the \actOneTot{} (chain, $\epsilon$) targets, by
+1.1--\actOneRatioMax$\times$. The wins share a single mechanism. Because MPS compilation cost jumps with
 $\chi$ (here by a factor of about four from $\chi=4$ to 8 and from 8 to 16), a target lying just below what a
 given $\chi$ reaches forces the MPS-alone route up to the next bond dimension, while the trial at the lower
 $\chi$ misses the target only slightly. All \actOneNearWins{} wins filter such a trial, with
-$(1-\gamma)/\epsilon\le\actOneFarMax$, using a dyadic ladder of one or two pulses ($K\le2$, 1--9 Strang
-steps) that succeeds with $p>0.997$. Of the \actOneNear{} filtered routes with
+$(1-\gamma)/\epsilon\le\actOneFarMax$ (13 of them below 3), using a dyadic ladder of one to four pulses ($K\le3$,
+$r\le2$, 1--21 Strang steps) that succeeds with $p\ge0.988$. Of the \actOneNear{} filtered routes with
 $(1-\gamma)/\epsilon\le\actOneFarMax$, \actOneNearWins{} beat the MPS alone; all \actOneFar{} with a larger
 ratio lose, by a median factor of \actOneFarMed. In this regime the filter acts as a last-mile polisher: it
 removes the residual infidelity of a nearly sufficient trial, but recovering a larger factor is cheaper by
 doubling $\chi$. The location of the wins in $\epsilon$ therefore depends on the system through where each
 $\chi$ lands, not on $N$ or $J_2$ in any simple way, and an MPS with intermediate bond dimension (not tried
 here) would compete with some of them. The optimized design never wins. A single dyadic pulse lasts only
-$\pi/(1+\delta)$ and keeps $f(E_0)=1$; it does not resolve the gap, but it removes 17--68\% of the residual
+$\pi/(1+\Delta)$ and keeps $f(E_0)=1$; it does not resolve the gap, but it removes 17--68\% of the residual
 weight, which suffices for a trial this close to the target. The optimized design certifies suppression on the
 whole band above $\Delta$ and so needs $T\gtrsim\pi/\Delta$: rerunning the competitive cases
 ($(1-\gamma)/\epsilon\le20$; 32 of 40 completed) with one- to three-pulse designs and the design target loosened up
-to $10\epsilon$ lowered its cost by up to $3\times$ but left $T=35$--66 against 3--21 for the dyadic ladder, and it
-beat the dyadic route in 1 of the 15 cases with $(1-\gamma)/\epsilon\le\actOneFarMax$ and the MPS alone in none
-(\texttt{results/emp\_actual1d\_opt.jsonl}). QETU, though it also beats the MPS alone in a few of these cases, is never the cheapest route. Because the bond dimension a
-chain needs for fixed $\epsilon$ grows only slowly with $N$, we expect this picture to hold for longer chains;
-the contrast with cylinders, where a snake MPS converges far more slowly in $\chi$, is drawn in
-Sec.~\ref{sec:twod}.
+to $10\epsilon$ lowered its cost by up to $3\times$ but left $T=35$--66 against 3--21 for the winning dyadic
+ladders, and it beat the dyadic route in 3 of the 23 cases with $(1-\gamma)/\epsilon\le\actOneFarMax$ and the MPS
+alone in none (\texttt{results/emp\_actual1d\_opt.jsonl}). QETU beats the MPS alone in 11 of the targets but is
+never the cheapest route. This matches the observation for rodeo filters that a ratio-2 time series is optimal
+when the total time is short and longer series favor other designs~\cite{Patkowski2026}. Because the bond
+dimension a chain needs for fixed $\epsilon$ grows only slowly with $N$, we expect this picture to hold for longer
+chains; on cylinders it reverses (Sec.~\ref{sec:twod}).
 
 \begin{figure*}[t]
 \includegraphics[width=\textwidth]{figs/fig_actual1d.pdf}
@@ -852,6 +880,46 @@ optimized SBC (designed at $\epsilon=10^{-2},10^{-3},10^{-4}$ only); purple: QET
 cheaper. Cost is (trial $+$ filter CNOTs)$/p$. Sources: \texttt{results/emp\_actual1d.jsonl} and, for
 $N=16$, $J_2=0.2411$, \texttt{results/emp\_actual.json}.}
 \label{fig:actual1d}
+\end{figure*}
+
+%=====================================================================================================%=====================================================================================================
+\section{Two dimensions: where the filter pays}
+\label{sec:twod}
+
+The pipeline is generic in $H$, so we ran the measured crossover of Sec.~\ref{sec:crossover1d} on the
+$J_1$--$J_2$ model on $4\times3$ and $4\times4$ cylinders (periodic around the four-site circumference, open
+along $L_x$) at $J_2=0$ and 0.3, with snake-path MPS trials up to $\chi=64$ and exact spectra
+(Fig.~\ref{fig:actual}). Cylinders are much harder for a snake MPS than chains. At $4\times4$, $J_2=0$, the
+$\chi=16$ trial still misses $\epsilon=10^{-2}$ ($1-\gamma=1.1\times10^{-2}$), $\chi=32$ stalls at
+$7\times10^{-4}$, and no $\chi\le64$ trial reaches $10^{-5}$ ($1-\gamma\approx2\times10^{-5}$ at $\chi=64$), while
+the compile cost grows about fourfold per doubling of $\chi$ (5\,328, 20\,548 and 76\,600 CNOTs for
+$\chi=16$, 32, 64). On $4\times3$, $\chi=64$ is exact, but only at 45\,960 CNOTs.
+
+The result is the opposite of the chain. The filtered route is cheaper at 27 of the 28 cylinder targets
+from $\epsilon=10^{-2}$ to $10^{-5}$, by 1.1--\actRatioMax$\times$ where both routes exist, and it is
+the only route at $10^{-5}$ on $4\times4$. The exception is $\epsilon=10^{-2}$ on $4\times4$, $J_2=0.3$, where the
+$\chi=16$ MPS alone already reaches $8.3\times10^{-3}$. Every win uses the dyadic ladder, on a $\chi=16$ trial
+in 24 of the 27 (otherwise $\chi=4$, 8 or 32), with $p\ge0.77$ and 1--46 Strang steps. Unlike the chain, the filter here recovers large factors:
+the trials miss the target by $(1-\gamma)/\epsilon$ up to $10^3$, and the advantage grows toward tight targets
+(up to $8.8\times$ at $4\times4$, $J_2=0$, $\epsilon=3\times10^{-4}$, where $\chi=16$ plus 10 Strang steps replaces
+$\chi=64$). Two properties of the filter carry this: its depth grows only with $\ln(1/\epsilon)$ at a
+fixed gap, while the MPS needed to reach $\epsilon$ alone grows by a factor of four per bond-dimension step,
+and its cost in the overlap is the logarithm of Sec.~\ref{sec:gapov}. On the 16-site chain in the same
+comparison the filter wins only at $\epsilon=3\times10^{-5}$ and $10^{-5}$. These are small cylinders, at sizes where exact
+simulation is possible, and we leave a systematic two-dimensional study to future work; with certified plans
+in place of measured ones, the same comparison extended to $4\times12$ finds the filter to be the only route at
+$\epsilon=10^{-4}$ on the larger cylinders. For the two-dimensional $J_1$--$J_2$ model, resource estimates
+for phase estimation have assumed the state preparation to be negligible~\cite{Yoshioka2024}; these results
+suggest that a compiled low-$\chi$ MPS plus a short filter is a practical way to meet that assumption.
+
+\begin{figure*}[t]
+\includegraphics[width=\textwidth]{figs/fig_actual.pdf}
+\caption{Measured cheapest route to infidelity $\epsilon$ on the 16-site chain and on small cylinders. Grey:
+the cheapest MPS that meets the target alone (number: $\chi$). Orange: the cheapest smaller MPS followed
+by the dyadic SBC filter (number: trial $\chi$); blue squares: optimized SBC; purple: QETU. Shaded:
+the filtered route is cheaper; hatched: no MPS with $\chi\le64$ reaches $\epsilon$. Every cost is (trial $+$
+filter CNOTs)$/p$ from exact simulation. Source: \texttt{results/emp\_actual.json}.}
+\label{fig:actual}
 \end{figure*}
 
 %=====================================================================================================
@@ -971,31 +1039,6 @@ $\epsilon=10^{-3}$, with the gap held at 0.40 or $J_2$ held at 0.2411. Source:
 
 
 %=====================================================================================================
-\section{A note on two dimensions}
-\label{sec:twod}
-
-The pipeline is generic in $H$, so we ran the measured crossover of Sec.~\ref{sec:crossover1d} on the
-$J_1$--$J_2$ model on $4\times3$ and $4\times4$ cylinders (periodic around the four-site circumference, open
-along $L_x$) at $J_2=0$ and 0.3, with snake-path MPS trials up to $\chi=64$ and exact spectra
-(Fig.~\ref{fig:actual}). Cylinders are much harder for a snake MPS than chains: at $4\times4$, $J_2=0$, the $\chi=16$
-trial still misses $\epsilon=10^{-2}$, and no $\chi\le64$ trial reaches $10^{-5}$. Accordingly, the filtered
-route wins in \actWins{} of the 35 (system, $\epsilon$) targets measured, including all four cylinders from
-$\epsilon\approx3\times10^{-3}$ on, by up to \actRatioMax$\times$; on the 16-site chain it wins only at
-$\epsilon=3\times10^{-5}$. With certified plans instead of measured ones the same comparison, extended to
-$4\times12$, finds the filter to be the only route at $\epsilon=10^{-4}$ on the larger cylinders. We leave a
-systematic two-dimensional study to future work.
-
-\begin{figure*}[t]
-\includegraphics[width=\textwidth]{figs/fig_actual.pdf}
-\caption{Measured cheapest route to infidelity $\epsilon$ on the 16-site chain and on small cylinders. Grey:
-the cheapest MPS that meets the target alone (number: $\chi$). Orange: the cheapest smaller MPS followed
-by the dyadic SBC filter (number: trial $\chi$); blue squares: optimized SBC; purple: QETU. Shaded:
-the filtered route is cheaper; hatched: no MPS with $\chi\le64$ reaches $\epsilon$. Every cost is (trial $+$
-filter CNOTs)$/p$ from exact simulation. Source: \texttt{results/emp\_actual.json}.}
-\label{fig:actual}
-\end{figure*}
-
-%=====================================================================================================
 \section{Discussion}
 
 \emph{What makes the filter advantageous.} The controlled study separates three regimes. (i) The gap
@@ -1008,8 +1051,8 @@ where it has an edge over compiling a better trial, whose cost grows with the bo
 reach $\epsilon$ directly. (iii) The target enters through $L$ and, for SBC, through the Trotter step,
 $\delta t\propto\epsilon^{0.3}$; tight targets are where a compiled MPS runs out first. For the chain, the MPS
 infidelity falls quickly with $\chi$, so the filter pays off only as a last-mile polisher, on a trial within a
-factor of about four of the target (Sec.~\ref{sec:crossover1d}); for cylinders, where a
-snake MPS struggles, it pays off from $\epsilon\approx3\times10^{-3}$.
+factor of about \actOneFarMax{} of the target (Sec.~\ref{sec:crossover1d}); for cylinders, where a
+snake MPS struggles, it pays off at 27 of the 28 targets we measured (Sec.~\ref{sec:twod}).
 
 \emph{Dyadic, optimized or Chebyshev.} Both SBC schedules beat the Chebyshev filter at
 $\epsilon\ge10^{-3}$, measured, because their long smooth pulses tolerate Trotter steps of order $1/J_1$;
@@ -1031,11 +1074,11 @@ Eckart inequality $1-\gamma\le(\langle H\rangle_\psi-E_0)/(E_1-E_0)$ would remov
 \emph{Where the certified cost goes.} The certified filter length is within a factor of about two of what
 simulation needs; the certified Trotter step is 60--75 times finer than needed, and the certified step
 count grows as $L^{2}$ rather than $L$. Tighter Trotter bounds, for example restricted to the low-energy
-subspace~\cite{Sahinoglu2021}, or a posteriori error estimates, would recover most of the \goCertRatioMed-fold
+subspace~\cite{Sahinoglu2021,Mizuta2025}, or a posteriori error estimates, would recover most of the \goCertRatioMed-fold
 median gap between certified and measured cost; a better filter design would not.
 
-\emph{Limitations.} Noiseless simulation; repeat-until-success rather than early abort; ladder CNOT counts (an
-upper bound, about $1.5\times$ a compiler's); all-to-all connectivity; trial circuits costed by a generic
+\emph{Limitations.} Noiseless simulation; repeat-until-success rather than early abort; all-to-all
+connectivity (a nearest-neighbor layout would add SWAPs, mostly for the ancilla, which couples to every bond); trial circuits costed by a generic
 decomposition bound rather than compiled; exact simulation and the controlled study only up to $N=14$--16, so
 the fitted exponents are descriptive; the gap range that can be held fixed across $N$ is narrow
 (0.30--0.55); $E_1$ is taken as the lowest $S^z=1$ state, which is the first excitation in every ED case here
@@ -1104,7 +1147,9 @@ The code, raw results and paper sources are at \url{https://github.com/aaronseym
 \texttt{python sbpipe\_study/run\_study.py all} runs the DMRG front end (cached), the validation (A),
 scaling (B), sensitivity (C), ansatz (D) and oracle (E) studies and writes \texttt{results/*.json};
 \texttt{python sbpipe\_study/make\_figures.py} writes every figure, table and the numerical macros used
-in this text. \texttt{python -m pytest sbpipe/tests} runs the component checks (Pauli algebra, Weyl
+in this text. The stored results were produced with per-term CNOT counts and converted to the bond compile of
+Eq.~\eqref{eq:bond} by \texttt{sbpipe\_study/recompile\_results.py}, which checks every stored count against the
+per-term formula before replacing it; a fresh run counts bonds directly. \texttt{python -m pytest sbpipe/tests} runs the component checks (Pauli algebra, Weyl
 bound, Trotter bounds against dense matrix exponentials, the Dirichlet identity~\eqref{eq:dirichlet},
 filter certificates against a dense grid, gate counts against an explicit merged sequence and against
 qiskit, and an end-to-end certificate check).
@@ -1153,6 +1198,38 @@ qiskit, and an end-to-end certificate check).
   J.\ Open Source Softw.\ \textbf{3}, 819 (2018).
 \bibitem{Sahinoglu2021} B.~\c{S}ahino\u{g}lu and R.~D. Somma, Hamiltonian simulation in the low-energy
   subspace, npj Quantum Inf.\ \textbf{7}, 119 (2021).
+\bibitem{Qian2021} Z.~Qian, J.~Watkins, G.~Given, J.~Bonitati, K.~Choi, and D.~Lee, Demonstration of the rodeo
+  algorithm on a quantum computer, arXiv:2110.07747.
+\bibitem{Rule2024} E.~Rule, I.~Stetcu, and J.~Carlson, Simplified projection on total spin zero for state
+  preparation on quantum computers, arXiv:2410.02848 (2024).
+\bibitem{CohenOh2023} T.~D. Cohen and H.~Oh, Optimizing rodeo projection, arXiv:2305.19952 (2023).
+\bibitem{Patkowski2026} M.~Patkowski, O.~Ayyildiz, K.~Hunt, N.~Jansen, and D.~Lee, Improved rodeo algorithm
+  performance for spectral functions and state preparation, arXiv:2602.05978 (2026).
+\bibitem{Kane2023} C.~F. Kane, N.~Gomes, and M.~Kreshchuk, Nearly-optimal state preparation for quantum
+  simulations of lattice gauge theories, arXiv:2310.13757 (2023).
+\bibitem{Muller2024} T.~R. M\"uller, M.~Geiger, and C.~B. Mendl, Ground-state preparation of the Fermi-Hubbard
+  model on a quantum computer with 2D topology via quantum eigenvalue transformation of unitary matrices,
+  arXiv:2411.18535 (2024).
+\bibitem{Karacan2024} E.~Karacan, Y.~Chen, and C.~B. Mendl, Enhancing scalability of quantum eigenvalue
+  transformation of unitary matrices for ground state preparation through adaptive finer filtering,
+  arXiv:2401.09091.
+\bibitem{Lee2025} G.~Lee, M.~Kang, J.~Hong, S.~Fomichev, and J.~Huh, Filtered quantum phase estimation,
+  arXiv:2510.04294 (2025).
+\bibitem{Watanabe2026} M.~Watanabe, H.~Nishi, T.~Kosugi, S.~Tsuneyuki, and Y.~Matsushita, Overcoming the
+  matrix-product-state encoding barrier via DMRG-guided probabilistic imaginary-time evolution,
+  arXiv:2605.30141 (2026).
+\bibitem{Yoshioka2024} N.~Yoshioka, T.~Okubo, Y.~Suzuki, Y.~Koizumi, and W.~Mizukami, Hunting for
+  quantum-classical crossover in condensed matter problems, npj Quantum Inf.\ (2024), arXiv:2210.14109.
+\bibitem{Childs2018} A.~M. Childs, D.~Maslov, Y.~Nam, N.~J. Ross, and Y.~Su, Toward the first quantum
+  simulation with quantum speedup, Proc.\ Natl.\ Acad.\ Sci.\ \textbf{115}, 9456 (2018).
+\bibitem{Mizuta2025} K.~Mizuta and T.~Kuwahara, Trotterization is substantially efficient for low-energy
+  states, arXiv:2504.20746 (2025).
+\bibitem{Vatan2004} F.~Vatan and C.~Williams, Optimal quantum circuits for general two-qubit gates,
+  Phys.\ Rev.\ A \textbf{69}, 032315 (2004).
+\bibitem{Vidal2004} G.~Vidal and C.~M. Dawson, Universal quantum circuit for two-qubit transformations with
+  three controlled-NOT gates, Phys.\ Rev.\ A \textbf{69}, 010301 (2004).
+\bibitem{Amy2014} M.~Amy, D.~Maslov, and M.~Mosca, Polynomial-time $T$-depth optimization of Clifford+$T$
+  circuits via matroid partitioning, IEEE Trans.\ Comput.-Aided Des.\ \textbf{33}, 1476 (2014).
 \end{thebibliography}
 
 \end{document}

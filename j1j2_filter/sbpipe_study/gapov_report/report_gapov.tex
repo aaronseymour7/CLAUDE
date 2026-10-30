@@ -103,12 +103,12 @@ reaches $\varepsilon$ with commutator Trotter bounds, without simulating it.
 \caption{Dyadic filter at $\Delta=0.40$, $\varepsilon=10^{-3}$: measured / certified CNOTs per success.}
 \begin{tabular}{lcccc}\toprule
 $\gamma$ & $N=8$ & $N=10$ & $N=12$ & $N=14$ \\\midrule
-0.03 & $4.8\times10^{5}$ / $7.0\times10^{7}$ & $6.6\times10^{5}$ / $1.2\times10^{8}$ & $8.0\times10^{5}$ / $1.7\times10^{8}$ & $1.3\times10^{6}$ / $2.5\times10^{8}$ \\
-0.1 & $1.8\times10^{5}$ / $1.4\times10^{7}$ & $2.0\times10^{5}$ / $2.2\times10^{7}$ & $2.4\times10^{5}$ / $3.2\times10^{7}$ & $3.7\times10^{5}$ / $4.6\times10^{7}$ \\
-0.3 & $4.6\times10^{4}$ / $2.8\times10^{6}$ & $6.9\times10^{4}$ / $4.5\times10^{6}$ & $7.2\times10^{4}$ / $6.6\times10^{6}$ & $1.1\times10^{5}$ / $9.9\times10^{6}$ \\
-0.5 & $2.8\times10^{4}$ / $1.4\times10^{6}$ & $3.6\times10^{4}$ / $2.2\times10^{6}$ & $4.3\times10^{4}$ / $3.2\times10^{6}$ & $6.7\times10^{4}$ / $4.5\times10^{6}$ \\
-0.7 & $1.9\times10^{4}$ / $7.1\times10^{5}$ & $2.1\times10^{4}$ / $1.2\times10^{6}$ & $3.1\times10^{4}$ / $1.7\times10^{6}$ & $3.7\times10^{4}$ / $2.5\times10^{6}$ \\
-0.9 & $1.4\times10^{4}$ / $4.3\times10^{5}$ & $1.6\times10^{4}$ / $6.3\times10^{5}$ & $1.7\times10^{4}$ / $9.4\times10^{5}$ & $2.5\times10^{4}$ / $1.4\times10^{6}$ \\
+0.03 & $2.6\times10^{5}$ / $3.3\times10^{7}$ & $3.6\times10^{5}$ / $5.6\times10^{7}$ & $4.5\times10^{5}$ / $8.2\times10^{7}$ & $7.2\times10^{5}$ / $1.2\times10^{8}$ \\
+0.1 & $9.5\times10^{4}$ / $6.6\times10^{6}$ & $1.1\times10^{5}$ / $1.1\times10^{7}$ & $1.4\times10^{5}$ / $1.5\times10^{7}$ & $2.1\times10^{5}$ / $2.3\times10^{7}$ \\
+0.3 & $2.5\times10^{4}$ / $1.3\times10^{6}$ & $3.8\times10^{4}$ / $2.2\times10^{6}$ & $4.1\times10^{4}$ / $3.2\times10^{6}$ & $6.2\times10^{4}$ / $4.8\times10^{6}$ \\
+0.5 & $1.5\times10^{4}$ / $6.5\times10^{5}$ & $2.0\times10^{4}$ / $1.0\times10^{6}$ & $2.5\times10^{4}$ / $1.5\times10^{6}$ & $3.7\times10^{4}$ / $2.2\times10^{6}$ \\
+0.7 & $1.0\times10^{4}$ / $3.4\times10^{5}$ & $1.2\times10^{4}$ / $5.6\times10^{5}$ & $1.8\times10^{4}$ / $8.4\times10^{5}$ & $2.1\times10^{4}$ / $1.2\times10^{6}$ \\
+0.9 & $7.9\times10^{3}$ / $2.0\times10^{5}$ & $9.5\times10^{3}$ / $3.0\times10^{5}$ & $1.1\times10^{4}$ / $4.6\times10^{5}$ & $1.5\times10^{4}$ / $6.7\times10^{5}$ \\
 \bottomrule\end{tabular}
 \end{table}
 
@@ -117,7 +117,7 @@ of 30) raises the measured dyadic cost by 33--62$\times$ and the certified cost 
 rise is the repetition $1/p\approx1/\gamma$: each success needs about $1/\gamma$ attempts. The rest comes from the
 longer filter needed to remove more excited weight (larger $L$). The curves for different $N$ run nearly parallel,
 so the effect of the overlap does not depend on size over this range. Across all cases the certificate lies
-19--290$\times$ (median 75$\times$) above the measured dyadic cost. The excess is largest at small $\gamma$, because the bound grows faster in
+14--258$\times$ (median 62$\times$) above the measured dyadic cost. The excess is largest at small $\gamma$, because the bound grows faster in
 $L$ than the measured cost does (Table~\ref{tab:fit}).
 
 \section{Study B: overlap fixed, gap varied}
@@ -150,10 +150,10 @@ $\varepsilon$, it must suppress the excited weight by $\eta^2=\gamma\varepsilon/
 factor by which a case differs from the fit.}\label{tab:fit}
 \begin{tabular}{lcccccccc}\toprule
  & $a$ & $\alpha$ ($N$) & $\beta$ ($\Delta$) & $\lambda$ ($L$) & $g$ ($\gamma$) & rms & max & cases \\\midrule
-dyadic, measured & $1.03\times10^{1}$ & 1.42 & 1.36 & 1.71 & 0.74 & 1.26$\times$ & 2.1$\times$ & 222 \\
-QETU, measured & $1.61\times10^{1}$ & 2.13 & 0.83 & 0.78 & 0.99 & 1.04$\times$ & 1.2$\times$ & 222 \\
-dyadic, certified & $3.38\times10^{1}$ & 2.03 & 1.27 & 2.44 & 0.98 & 1.22$\times$ & 2.2$\times$ & 222 \\
-QETU, certified & $2.01\times10^{1}$ & 1.98 & 1.12 & 2.20 & 0.98 & 1.22$\times$ & 1.9$\times$ & 222 \\
+dyadic, measured & $1.01\times10^{1}$ & 1.50 & 1.15 & 1.41 & 0.78 & 1.23$\times$ & 1.9$\times$ & 222 \\
+QETU, measured & $1.31\times10^{1}$ & 2.09 & 0.74 & 0.68 & 0.99 & 1.04$\times$ & 1.2$\times$ & 222 \\
+dyadic, certified & $1.50\times10^{1}$ & 2.07 & 1.27 & 2.43 & 0.98 & 1.22$\times$ & 2.2$\times$ & 222 \\
+QETU, certified & $9.53$ & 2.03 & 1.11 & 2.17 & 0.99 & 1.22$\times$ & 2.0$\times$ & 222 \\
 \bottomrule\end{tabular}
 \end{table}
 
@@ -164,28 +164,28 @@ QETU, certified & $2.01\times10^{1}$ & 1.98 & 1.12 & 2.20 & 0.98 & 1.22$\times$ 
 
 \paragraph{The cost rules.} With $L=\ln[(1-\gamma)/(\gamma\varepsilon)]$, the expected CNOTs per success are
 \begin{align}
-C^{\text{meas}}_{\text{dyadic}}&\approx 1.03\times10^{1}\;N^{1.42}\,\Delta^{-1.36}\,L^{1.71}\,\gamma^{-0.74}
-&&(\text{within } 1.26\times\text{ typical, } 2.1\times\text{ worst}),\\
-C^{\text{meas}}_{\text{QETU}}&\approx 1.61\times10^{1}\;N^{2.13}\,\Delta^{-0.83}\,L^{0.78}\,\gamma^{-0.99}
+C^{\text{meas}}_{\text{dyadic}}&\approx 1.01\times10^{1}\;N^{1.50}\,\Delta^{-1.15}\,L^{1.41}\,\gamma^{-0.78}
+&&(\text{within } 1.23\times\text{ typical, } 1.9\times\text{ worst}),\\
+C^{\text{meas}}_{\text{QETU}}&\approx 1.31\times10^{1}\;N^{2.09}\,\Delta^{-0.74}\,L^{0.68}\,\gamma^{-0.99}
 &&(1.04\times,\ 1.2\times),\\
-C^{\text{cert}}_{\text{dyadic}}&\approx 3.38\times10^{1}\;N^{2.03}\,\Delta^{-1.27}\,L^{2.44}\,\gamma^{-0.98}
+C^{\text{cert}}_{\text{dyadic}}&\approx 1.50\times10^{1}\;N^{2.07}\,\Delta^{-1.27}\,L^{2.43}\,\gamma^{-0.98}
 &&(1.22\times,\ 2.2\times),\\
-C^{\text{cert}}_{\text{QETU}}&\approx 2.01\times10^{1}\;N^{1.98}\,\Delta^{-1.12}\,L^{2.20}\,\gamma^{-0.98}
-&&(1.22\times,\ 1.9\times).
+C^{\text{cert}}_{\text{QETU}}&\approx 9.53\;N^{2.03}\,\Delta^{-1.11}\,L^{2.17}\,\gamma^{-0.99}
+&&(1.22\times,\ 2.0\times).
 \end{align}
 Three of the four rules have $\gamma^{-1}$ almost exactly, which is the post-selection repetition. The measured
-dyadic rule has $\gamma^{-0.74}$, because its success probability ranges from 0.76 to 1.24 times $\gamma$:
+dyadic rule has $\gamma^{-0.78}$, because its success probability ranges from 0.76 to 1.24 times $\gamma$:
 the ladders over-suppress, so part of its $\gamma$ dependence is absorbed into $L$. The certified rules grow
 as $L^{2.2\text{--}2.4}$, where the measured ones grow as $L^{0.8\text{--}1.7}$. That difference is why the
 certificate's overhead grows at small $\gamma$ and small $\varepsilon$. The certified $N^{2}$ is one factor of
 $N$ from the CNOTs per Trotter step and one from the spectral width $W\propto N$, which sets the filter length at a
 fixed gap.
 
-\paragraph{Dyadic versus QETU, measured.} Over all cases, QETU costs a median 1.31$\times$ the dyadic filter.
+\paragraph{Dyadic versus QETU, measured.} Over all cases, QETU costs a median 1.26$\times$ the dyadic filter.
 The dyadic filter is cheaper in every case at $\varepsilon=10^{-2}$ and in all but 9 at $10^{-3}$. At
 $\varepsilon=10^{-4}$ QETU is cheaper in 56 of 74 cases, because the dyadic ladder lengthens in coarse
-power-of-two steps. The fits show the same thing: the dyadic cost grows as $L^{1.71}$ against $L^{0.78}$ for
-QETU, while the dyadic cost grows more slowly with $N$ ($N^{1.42}$ against $N^{2.13}$).
+power-of-two steps. The fits show the same thing: the dyadic cost grows as $L^{1.41}$ against $L^{0.68}$ for
+QETU, while the dyadic cost grows more slowly with $N$ ($N^{1.50}$ against $N^{2.09}$).
 
 \section{Caveats}
 \begin{itemize}
