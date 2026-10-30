@@ -834,9 +834,75 @@ def run_actual1d():
                   f"1-gamma={1 - r['gamma']:.1e} mps={r['trial_cnot']:.2e} {msg}", flush=True)
 
 
+
+def _act_opt_case(args):
+    """Optimized SBC for one crossover case with the short designs included (m = 1, 2, 3 as well as 4-8) and
+    the design target loosened up to 10x eps, keeping the cheapest that passes eps when simulated: the same
+    measured treatment the dyadic ladder gets."""
+    kind, size, J2, chi, eps = args
+    import run_extended as RX
+    from sbpipe.resources import filter_counts
+    z = np.load(os.path.join(CACHEE, _act_key(kind, size, J2) + ".npz"))
+    E, w, psi, g = z["E"], z[f"w{chi}"], z[f"trial{chi}"], z["ground"]
+    trial_cnot = float(z[f"cost{chi}"])
+    gamma = float(w[0])
+    out = dict(kind=kind, size=size, J2=J2, chi=chi, eps=eps)
+    if 1 - gamma <= eps:
+        return out
+    H = RX.model(kind, size, J2)
+    lo, hi = sbpipe.weyl_bounds(H)
+    Wr = hi - E[0]
+    gap = float(E[np.argmax(E > E[0] + 1e-8)] - E[0])
+    delta = gap / Wr
+    Hs = H.shifted_scaled(E[0], Wr)
+    best = None
+    for f in (10.0, 3.0, 1.0):
+        for ml in ((1, 2, 3), (4, 6, 8)):
+            try:
+                des = D.design_filter("optimized", delta, 0.0, min(f * eps, 0.5 * (1 - gamma)), gamma, m_list=ml)
+            except Exception:
+                des = None
+            if des is None or des.m == 0:
+                continue
+            tr = _sbc_trotter(H, Hs, psi, g, des, eps)
+            if tr:
+                dt, k, inf, p = tr
+                c = (filter_counts(Hs, k, 2)["cnot"] + trial_cnot) / p
+                if best is None or c < best["cnot"]:
+                    best = dict(cnot=c, T=des.T, m=des.m, steps=int(k.sum()), inf=inf, p=p, dt=dt, frac=f)
+    out["optimized"] = best
+    return out
+
+
+def run_actual1d_opt():
+    """_act_opt_case on the competitive filtered crossover cases of the nine chains; results/emp_actual1d_opt.jsonl."""
+    import json
+    path = os.path.join(RES, "emp_actual1d_opt.jsonl")
+    done = set()
+    if os.path.exists(path):
+        done = {(r["size"], r["J2"], r["chi"], r["eps"]) for r in map(json.loads, open(path))}
+    systems = ACT1D_SYSTEMS + [("chain", 16, 0.2411)]
+    gam = {}                                  # trial overlaps from the crossover runs: only the competitive
+    for p in ("emp_actual1d.jsonl",):         # cases, (1 - gamma) / eps <= 20, are rerun
+        for r in map(json.loads, open(os.path.join(RES, p))):
+            gam[(r["size"], r["J2"], r["chi"])] = r["gamma"]
+    for r in json.load(open(os.path.join(RES, "emp_actual.json"))):
+        if r["kind"] == "chain":
+            gam[(r["size"], r["J2"], r["chi"])] = r["gamma"]
+    cases = [(k, s, J2, chi, eps) for k, s, J2 in systems for chi in ACT_CHIS for eps in EPS_ACT
+             if (s, J2, chi, eps) not in done and eps < 1 - gam[(s, J2, chi)] <= 20 * eps]
+    print(f"[actual1d_opt] {len(cases)} cases", flush=True)
+    with ProcessPoolExecutor(JOBS) as ex, open(path, "a") as fh:
+        for r in ex.map(_act_opt_case, cases):
+            fh.write(json.dumps(r, default=float) + "\n")
+            fh.flush()
+            o = r.get("optimized")
+            print(f"[actual1d_opt] chain{r['size']} J2={r['J2']} chi={r['chi']} eps={r['eps']:g} "
+                  + (f"m={o['m']} p={o['p']:.3f} cnot={o['cnot']:.3e}" if o else "-"), flush=True)
+
 if __name__ == "__main__":
     what = sys.argv[1] if len(sys.argv) > 1 else "match,spectra,filters,trotter"
-    steps = dict(match=run_match, gapscan=run_gapscan, spectra=run_spectra, filters=run_filters, trotter=run_trotter, emp_regime=run_emp_regime, frontier=run_frontier, sbc=run_sbc, sbc_regime=run_sbc_regime, actual=run_actual, actual1d=run_actual1d)
+    steps = dict(match=run_match, gapscan=run_gapscan, spectra=run_spectra, filters=run_filters, trotter=run_trotter, emp_regime=run_emp_regime, frontier=run_frontier, sbc=run_sbc, sbc_regime=run_sbc_regime, actual=run_actual, actual1d=run_actual1d, actual1d_opt=run_actual1d_opt)
     for k in what.split(","):
         t = time.time()
         steps[k]()

@@ -831,8 +831,14 @@ ratio lose, by a median factor of \actOneFarMed. In this regime the filter acts 
 removes the residual infidelity of a nearly sufficient trial, but recovering a larger factor is cheaper by
 doubling $\chi$. The location of the wins in $\epsilon$ therefore depends on the system through where each
 $\chi$ lands, not on $N$ or $J_2$ in any simple way, and an MPS with intermediate bond dimension (not tried
-here) would compete with some of them. The optimized design never wins: at a trial this close to the target
-the one-pulse dyadic ladder is already minimal, and QETU, though it also beats the MPS alone in a few of these cases, is never the cheapest route. Because the bond dimension a
+here) would compete with some of them. The optimized design never wins. A single dyadic pulse lasts only
+$\pi/(1+\delta)$ and keeps $f(E_0)=1$; it does not resolve the gap, but it removes 17--68\% of the residual
+weight, which suffices for a trial this close to the target. The optimized design certifies suppression on the
+whole band above $\Delta$ and so needs $T\gtrsim\pi/\Delta$: rerunning the competitive cases
+($(1-\gamma)/\epsilon\le20$; 32 of 40 completed) with one- to three-pulse designs and the design target loosened up
+to $10\epsilon$ lowered its cost by up to $3\times$ but left $T=35$--66 against 3--21 for the dyadic ladder, and it
+beat the dyadic route in 1 of the 15 cases with $(1-\gamma)/\epsilon\le\actOneFarMax$ and the MPS alone in none
+(\texttt{results/emp\_actual1d\_opt.jsonl}). QETU, though it also beats the MPS alone in a few of these cases, is never the cheapest route. Because the bond dimension a
 chain needs for fixed $\epsilon$ grows only slowly with $N$, we expect this picture to hold for longer chains;
 the contrast with cylinders, where a snake MPS converges far more slowly in $\chi$, is drawn in
 Sec.~\ref{sec:twod}.
