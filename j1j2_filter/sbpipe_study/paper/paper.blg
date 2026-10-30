@@ -21,16 +21,34 @@ Warning--I didn't find a database entry for "Gilyen2019"
 Warning--I didn't find a database entry for "Dong2022"
 Warning--I didn't find a database entry for "Stetcu2023"
 Warning--I didn't find a database entry for "Choi2021"
+Warning--I didn't find a database entry for "Qian2021"
+Warning--I didn't find a database entry for "Rule2024"
+Warning--I didn't find a database entry for "CohenOh2023"
+Warning--I didn't find a database entry for "Patkowski2026"
 Warning--I didn't find a database entry for "Childs2021"
+Warning--I didn't find a database entry for "Kane2023"
+Warning--I didn't find a database entry for "Muller2024"
+Warning--I didn't find a database entry for "Karacan2024"
 Warning--I didn't find a database entry for "Fomichev2024"
 Warning--I didn't find a database entry for "Berry2025"
+Warning--I didn't find a database entry for "Lee2025"
+Warning--I didn't find a database entry for "Watanabe2026"
+Warning--I didn't find a database entry for "Yoshioka2024"
+Warning--I didn't find a database entry for "Amy2014"
+Warning--I didn't find a database entry for "Vatan2004"
+Warning--I didn't find a database entry for "Vidal2004"
+Warning--I didn't find a database entry for "BeeLindgren2025"
 Warning--I didn't find a database entry for "Ross2016"
 Warning--I didn't find a database entry for "Okamoto1992"
 Warning--I didn't find a database entry for "Eggert1996"
 Warning--I didn't find a database entry for "Gray2018"
 Warning--I didn't find a database entry for "Shende2006"
 Warning--I didn't find a database entry for "Sahinoglu2021"
-Warning--I didn't find a database entry for "BeeLindgren2025"
+Warning--I didn't find a database entry for "Mizuta2025"
+Warning--I didn't find a database entry for "Childs2018"
+Warning--I didn't find a database entry for "Iten2016"
+Warning--I didn't find a database entry for "Brassard2002"
+Warning--I didn't find a database entry for "Yoder2014"
 control{REVTEX42Control}, control.key{N/A}, control.author{N/A}, control.editor{N/A}, control.title{N/A}, control.pages{N/A}, control.year{N/A}, control.eprint{N/A}, 
 control{apsrev42Control}, control.key{N/A}, control.author{08}, control.editor{1}, control.title{0}, control.pages{0}, control.year{1}, control.eprint{N/A}, 
 Warning--jnrlst (dependency: not reversed) set 1
@@ -46,7 +64,7 @@ Control: year (1) truncated
 Control: production of eprint (0) enabled
 You've used 2 entries,
             6079 wiz_defined-function locations,
-            1673 strings with 15389 characters,
+            1709 strings with 15737 characters,
 and the built_in function-call counts, 991 in all, are:
 = -- 12
 > -- 16
@@ -85,4 +103,4 @@ warning$ -- 1
 while$ -- 11
 width$ -- 0
 write$ -- 52
-(There were 20 warnings)
+(There were 38 warnings)

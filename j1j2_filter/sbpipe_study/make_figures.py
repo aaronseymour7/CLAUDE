@@ -1260,8 +1260,146 @@ def oracle():
         fh.write("\n".join(lines) + "\n")
 
 
+# ----------------------------------------------------------------------------- measured vs certified, robustness
+CYLS = [("cyl", 3, 0.0), ("cyl", 3, 0.3), ("cyl", 4, 0.0), ("cyl", 4, 0.3)]
+CHAINS9 = [("chain", N, J2) for N in (12, 14, 16) for J2 in (0.0, 0.2411, 0.4)]
+
+
+def _qsd(n):
+    return round((23 / 48) * 4 ** n - 1.5 * 2 ** n + 4 / 3)
+
+
+def _iso_lb(n):
+    """Lower bound on CNOTs for an isometry from n-1 to n qubits (Iten et al., PRA 93, 032318 (2016))."""
+    b = n - 1
+    return int(np.ceil((3 * 4 ** b - b - 2) / 4))
+
+
+def _mps_cnot(N, chi, model="qsd", f=1.0):
+    b = int(np.ceil(np.log2(max(chi, 1))))
+    if b == 0:
+        return 0.0
+    return f * (N - b) * (_qsd(b + 1) if model == "qsd" else _iso_lb(b + 1))
+
+
+def _crossover_counts(A, systems, f=1.0, model="qsd"):
+    """Measured crossover with the MPS circuits re-costed (model, factor f): (wins, targets, max finite ratio)."""
+    wins, tot, rat = 0, 0, []
+    for sys_ in systems:
+        R = [r for r in A if (r["kind"], r["size"], r["J2"]) == sys_]
+        for e in sorted({r["eps"] for r in R}):
+            Q = [r for r in R if r["eps"] == e]
+            N = Q[0].get("N", Q[0]["size"])
+            m = min([_mps_cnot(N, r["chi"], model, f) for r in Q if r["mps_alone"]] or [np.inf])
+            best = np.inf
+            for r in Q:
+                if r["mps_alone"]:
+                    continue
+                for k in ("dyadic", "optimized"):
+                    d = r.get(k)
+                    if d:
+                        filt = d["cnot"] * d["p"] - r["trial_cnot"]
+                        best = min(best, (filt + _mps_cnot(N, r["chi"], model, f)) / d["p"])
+            tot += 1
+            if best < m:
+                wins += 1
+                if np.isfinite(m):
+                    rat.append(m / best)
+    return wins, tot, (max(rat) if rat else np.nan)
+
+
+def _cert_crossover(systems):
+    """Certified crossover from results/cert_crossover.jsonl: wins of the certified SBC ('auto') and QETU
+    routes against the cheapest MPS alone, per target."""
+    p = os.path.join(RES, "cert_crossover.jsonl")
+    if not os.path.exists(p):
+        return None
+    C = [json.loads(l) for l in open(p)]
+    A = [json.loads(l) for l in open(os.path.join(RES, "emp_actual1d.jsonl"))] + load("emp_actual.json")
+    out = dict(sbc=0, qetu=0, tot=0, ratios=[], missing=0, best_sbc_over_mps=[])
+    for sys_ in systems:
+        R = [r for r in A if (r["kind"], r["size"], r["J2"]) == sys_]
+        for e in sorted({r["eps"] for r in R}):
+            m = min([r["trial_cnot"] for r in R if r["eps"] == e and r["mps_alone"]] or [np.inf])
+            c = {s: [q["plan"]["res_expected_cnot"] for q in C if (q["kind"], q["size"], q["J2"]) == sys_
+                     and q["eps"] == e and q["schedule"] == s and q.get("plan")] for s in ("auto", "qetu")}
+            out["tot"] += 1
+            bs = min(c["auto"] or [np.inf]); bq = min(c["qetu"] or [np.inf])
+            out["sbc"] += bs < m; out["qetu"] += bq < m
+            if np.isfinite(m) and np.isfinite(bs):
+                out["best_sbc_over_mps"].append(bs / m)
+            if bs < m and np.isfinite(m):
+                out["ratios"].append(m / bs)
+    return out
+
+
+def meas_cert():
+    """Table: every comparison measured (oracle-tuned) and certified (implementable)."""
+    from derive_gapov_filter import load_cases
+    rows = load_cases()
+    lines = []
+    for e, tag in ((1e-2, "Two"), (1e-3, "Three"), (1e-4, "Four")):
+        rs = [r for r in rows if r["eps"] == e]
+        mb = {"d": 0, "o": 0, "q": 0}; cb = {"d": 0, "o": 0, "q": 0}
+        for r in rs:
+            mc = {"d": r["meas_dyadic"]["cnot"], "q": (r["meas_qetu"] or {}).get("cnot", np.inf),
+                  "o": (r["meas_optimized"] or {}).get("cnot", np.inf)}
+            cc = {"d": r["cert_dyadic"]["cnot"], "q": r["cert_qetu"]["cnot"],
+                  "o": (r["cert_optimized"] or {}).get("cnot", np.inf)}
+            mb[min(mc, key=mc.get)] += 1; cb[min(cc, key=cc.get)] += 1
+        macro(f"cbestDy{tag}", str(cb["d"])); macro(f"cbestOp{tag}", str(cb["o"])); macro(f"cbestQe{tag}", str(cb["q"]))
+        lines.append(f"Cheapest filter, $\\epsilon={sci(e, 0)}$ (dy/opt/QETU) & {mb['d']}/{mb['o']}/{mb['q']} & "
+                     f"{cb['d']}/{cb['o']}/{cb['q']} \\\\")
+    macro("cQetuBestTot", str(sum(
+        min({"d": r["cert_dyadic"]["cnot"], "q": r["cert_qetu"]["cnot"],
+             "o": (r["cert_optimized"] or {}).get("cnot", np.inf)}.items(), key=lambda x: x[1])[0] == "q"
+        for r in rows)))
+    qd = [r["cert_qetu"]["cnot"] / r["cert_dyadic"]["cnot"] for r in rows]
+    macro("cQetuOverDyMed", f"{np.median(qd):.2f}")
+    macro("cQetuWinsDy", str(sum(x < 1 for x in qd)))
+    A2 = load("emp_actual.json")
+    A1 = [json.loads(l) for l in open(os.path.join(RES, "emp_actual1d.jsonl"))] + [r for r in A2 if r["kind"] == "chain"]
+    m1 = _crossover_counts(A1, CHAINS9); m2 = _crossover_counts(A2, CYLS)
+    c1 = _cert_crossover(CHAINS9); c2 = _cert_crossover(CYLS)
+    def cc(c):
+        return "--" if c is None else f"{c['sbc']} of {c['tot']} (QETU {c['qetu']})"
+    lines.insert(0, f"Optimized vs dyadic SBC, median ratio per success & {MEAS_OD[0]} & {MEAS_OD[1]} \\\\") if MEAS_OD else None
+    lines.append(f"MPS + filter beats MPS alone, 9 chains & {m1[0]} of {m1[1]} & {cc(c1)} \\\\")
+    lines.append(f"MPS + filter beats MPS alone, 4 cylinders & {m2[0]} of {m2[1]} & {cc(c2)} \\\\")
+    with open(os.path.join(GEN, "tab_meascert.tex"), "w") as fh:
+        fh.write("\n".join(lines) + "\n")
+    for c, t in ((c1, "One"), (c2, "Two")):
+        if c:
+            macro(f"cert{t}Wins", str(c["sbc"])); macro(f"cert{t}QWins", str(c["qetu"])); macro(f"cert{t}Tot", str(c["tot"]))
+            r = np.array(c["best_sbc_over_mps"])
+            macro(f"cert{t}OverMed", f"{np.median(r):.1f}" if len(r) else "--")
+            macro(f"cert{t}OverMin", f"{np.min(r):.1f}" if len(r) else "--")
+            macro(f"cert{t}RatioMax", f"{max(c['ratios']):.1f}" if c["ratios"] else "--")
+    print("meas/cert:", m1, m2, c1 and {k: v for k, v in c1.items() if k not in ('ratios', 'best_sbc_over_mps')},
+          c2 and {k: v for k, v in c2.items() if k not in ('ratios', 'best_sbc_over_mps')})
+    # robustness of the measured crossovers to the MPS compiler
+    rl = []
+    for model, name in (("qsd", "QSD bound (used)"), ("lb", "isometry lower bound")):
+        cells1, cells2 = [], []
+        for f in (1, 1 / 2, 1 / 4, 1 / 8, 1 / 16):
+            w2 = _crossover_counts(A2, CYLS, f, model); w1 = _crossover_counts(A1, CHAINS9, f, model)
+            cells2.append(f"{w2[0]}"); cells1.append(f"{w1[0]}")
+            if model == "lb" and f == 1:
+                macro("robLbTwo", str(w2[0])); macro("robLbOne", str(w1[0]))
+            if model == "qsd":
+                macro("robQ" + {1: "One", 0.5: "Half", 0.25: "Quarter", 0.125: "Eighth", 0.0625: "Sixteenth"}[f] + "Two", str(w2[0]))
+                macro("robQ" + {1: "One", 0.5: "Half", 0.25: "Quarter", 0.125: "Eighth", 0.0625: "Sixteenth"}[f] + "One", str(w1[0]))
+        rl.append(f"{name}, cylinders (of 28) & " + " & ".join(cells2) + " \\\\")
+        rl.append(f"{name}, chains (of 63) & " + " & ".join(cells1) + " \\\\")
+    with open(os.path.join(GEN, "tab_robust.tex"), "w") as fh:
+        fh.write("\n".join(rl) + "\n")
+
+
+MEAS_OD = None
+
+
 if __name__ == "__main__":
-    for f in (inputs_table, validation, scaling, qetu, drivers, empirical, regime, fid_plane, crossover, actual_crossover, actual1d, gapov, gapov_filter, sens_wide, sensitivity, ansatz, oracle):
+    for f in (inputs_table, validation, scaling, qetu, drivers, empirical, regime, fid_plane, crossover, actual_crossover, actual1d, gapov, gapov_filter, sens_wide, sensitivity, ansatz, oracle, meas_cert):
         f()
     with open(os.path.join(GEN, "macros.tex"), "w") as fh:
         fh.write("% generated by sbpipe_study/make_figures.py -- do not edit\n" + "\n".join(MACROS) + "\n")
