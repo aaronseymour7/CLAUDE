@@ -1005,7 +1005,7 @@ def actual1d():
     macro("actOneRatioMax", f"{max(ratios):.1f}")
     macro("actOneFarMax", f"{pts[win, 0].max():.1f}")
     macro("actOneNearWins", str(int(win.sum()))); macro("actOneNear", str(int((~far).sum())))
-    macro("actOneFar", str(int(far.sum())))
+    macro("actOneFar", str(int(far.sum()))); macro("actOneNearPlusFar", str(len(far)))
     macro("actOneFarMed", f"{1 / np.median(pts[far, 1]):.0f}")
     print("actual1d: SBC cheaper in", wins, "of", tot, "; ratios", np.round(sorted(ratios), 2),
           "; win (1-g)/eps <=", pts[win, 0].max(), "; far cases", far.sum(), "median MPS advantage", 1 / np.median(pts[far, 1]))
@@ -1266,20 +1266,49 @@ CHAINS9 = [("chain", N, J2) for N in (12, 14, 16) for J2 in (0.0, 0.2411, 0.4)]
 
 
 def _qsd(n):
-    return round((23 / 48) * 4 ** n - 1.5 * 2 ** n + 4 / 3)
+    return 0 if n <= 1 else round((23 / 48) * 4 ** n - 1.5 * 2 ** n + 4 / 3)
+
+
+def _iso(m, n):
+    """Lower bound on CNOTs for an isometry from m to n qubits (Iten et al., PRA 93, 032318 (2016))."""
+    return max(0, int(np.ceil((2 ** (n + m + 1) - 4 ** m - 3 * n - 1) / 4)))
 
 
 def _iso_lb(n):
-    """Lower bound on CNOTs for an isometry from n-1 to n qubits (Iten et al., PRA 93, 032318 (2016))."""
-    b = n - 1
-    return int(np.ceil((3 * 4 ** b - b - 2) / 4))
+    return _iso(n - 1, n)
+
+
+def _pb(n):
+    """CNOTs of generic n-qubit state preparation (Plesch and Brukner, PRA 83, 032302 (2011))."""
+    if n % 2 == 0:
+        return round(23 / 24 * 2 ** n - 1.5 * 2 ** (n // 2) + 4 / 3)
+    return round(115 / 96 * 2 ** n - 2 ** ((n + 1) // 2) + 4 / 3)
+
+
+def _bonds(N, chi):
+    """Qubits carried across each cut of an open MPS with bond dimension <= chi."""
+    return [0] + [int(np.ceil(np.log2(min(chi, 2 ** k, 2 ** (N - k))))) for k in range(1, N)] + [0]
 
 
 def _mps_cnot(N, chi, model="qsd", f=1.0):
+    """CNOTs of a chi-MPS circuit. qsd: the uniform staircase bound used in the study, (N - b) site unitaries
+    on b + 1 qubits; ach: each site unitary sized by its actual bonds, capped by generic state preparation
+    (both constructive); lb: the isometry lower bound per site with actual bonds, capped by the lower bound
+    for generic state preparation (no compiler of these circuits can do better)."""
     b = int(np.ceil(np.log2(max(chi, 1))))
     if b == 0:
         return 0.0
-    return f * (N - b) * (_qsd(b + 1) if model == "qsd" else _iso_lb(b + 1))
+    if model == "qsd":
+        return f * (N - b) * _qsd(b + 1)
+    q = _bonds(N, chi)
+    if model == "ach":
+        return f * min(sum(_qsd(q[k] + 1) for k in range(N)), _pb(N))
+    return f * min(sum(_iso(q[k + 1], q[k] + 1) for k in range(N)), _iso(0, N))
+
+
+def _generic(N, model):
+    """Exact (eps = 0) state preparation as a baseline; none under the study's uniform model."""
+    return {"qsd": np.inf, "ach": _pb(N), "lb": _iso(0, N)}[model]
 
 
 def _crossover_counts(A, systems, f=1.0, model="qsd"):
@@ -1290,7 +1319,7 @@ def _crossover_counts(A, systems, f=1.0, model="qsd"):
         for e in sorted({r["eps"] for r in R}):
             Q = [r for r in R if r["eps"] == e]
             N = Q[0].get("N", Q[0]["size"])
-            m = min([_mps_cnot(N, r["chi"], model, f) for r in Q if r["mps_alone"]] or [np.inf])
+            m = min([_mps_cnot(N, r["chi"], model, f) for r in Q if r["mps_alone"]] + [f * _generic(N, model)])
             best = np.inf
             for r in Q:
                 if r["mps_alone"]:
@@ -1395,11 +1424,289 @@ def meas_cert():
         fh.write("\n".join(rl) + "\n")
 
 
+def _cert_counts(systems, model="qsd"):
+    """Certified crossover with every MPS circuit (trial and MPS alone) re-costed under `model`:
+    (SBC wins, QETU wins, targets, certified best filtered / best alternative per finite target)."""
+    C = [json.loads(l) for l in open(os.path.join(RES, "cert_crossover.jsonl"))]
+    A = [json.loads(l) for l in open(os.path.join(RES, "emp_actual1d.jsonl"))] + load("emp_actual.json")
+    ws = wq = tot = 0
+    over = []
+    for sys_ in systems:
+        R = [r for r in A if (r["kind"], r["size"], r["J2"]) == sys_]
+        N = R[0]["N"]
+        for e in sorted({r["eps"] for r in R}):
+            m = min([_mps_cnot(N, r["chi"], model) for r in R if r["eps"] == e and r["mps_alone"]]
+                    + [_generic(N, model)])
+            b = {}
+            for q in C:
+                if (q["kind"], q["size"], q["J2"]) == sys_ and q["eps"] == e and q.get("plan"):
+                    P = q["plan"]
+                    c = (P["res_filter_cnot"] + _mps_cnot(N, q["chi"], model)) / P["res_p_succ"]
+                    b[q["schedule"]] = min(b.get(q["schedule"], np.inf), c)
+            tot += 1
+            ws += b.get("auto", np.inf) < m
+            wq += b.get("qetu", np.inf) < m
+            if np.isfinite(m):
+                over.append(min(b.values()) / m)
+    return ws, wq, tot, over
+
+
+def baselines():
+    """Table: measured and certified crossovers under three MPS cost models, with exact generic state
+    preparation as an extra baseline in the two bond-aware models."""
+    A2 = load("emp_actual.json")
+    A1 = [json.loads(l) for l in open(os.path.join(RES, "emp_actual1d.jsonl"))] + [r for r in A2 if r["kind"] == "chain"]
+    groups = (("One", A1, CHAINS9), ("Three", A2, CYLS[:2]), ("Four", A2, CYLS[2:]))
+    names = {"qsd": "uniform QSD bound (study)", "ach": "bond-aware QSD, or generic prep.",
+             "lb": "lower bounds (isometry, generic state)"}
+    rows = []
+    for model in ("qsd", "ach", "lb"):
+        cells = []
+        for tag, A, S in groups:
+            w = _crossover_counts(A, S, 1.0, model)
+            c = _cert_counts(S, model)
+            cells.append(f"{w[0]}/{w[1]}" + (f" ({w[2]:.1f}$\\times$)" if np.isfinite(w[2]) else ""))
+            cells.append(f"{c[0]}/{c[2]}")
+            M = model.capitalize()
+            macro(f"bl{M}{tag}", str(w[0])); macro(f"bl{M}{tag}Max", f"{w[2]:.1f}" if np.isfinite(w[2]) else "--")
+            macro(f"bl{M}{tag}Cert", str(c[0])); macro(f"bl{M}{tag}CertQ", str(c[1]))
+            macro(f"bl{M}{tag}CertMed", f"{np.median(c[3]):.1f}")
+            print("baseline", model, tag, w, c[:3], f"cert/alt median {np.median(c[3]):.2f} min {np.min(c[3]):.2f}")
+        rows.append(names[model] + " & " + " & ".join(cells) + " \\\\")
+    with open(os.path.join(GEN, "tab_baselines.tex"), "w") as fh:
+        fh.write("\n".join(rows) + "\n")
+    for N in (12, 14, 16):
+        macro("pb" + {12: "Twelve", 14: "Fourteen", 16: "Sixteen"}[N], f"{_pb(N):,}".replace(",", "\\,"))
+        macro("gl" + {12: "Twelve", 14: "Fourteen", 16: "Sixteen"}[N], f"{_iso(0, N):,}".replace(",", "\\,"))
+
+
+def qetu_tau():
+    """QETU query-length sweep (results/qetu_tau.jsonl): cost ratio to tau = pi/2, cheapest measured filter in the
+    controlled study with QETU at its best tau, and the measured crossovers with it."""
+    p = os.path.join(RES, "qetu_tau.jsonl")
+    if not os.path.exists(p):
+        return
+    Q = [json.loads(l) for l in open(p)]
+    from derive_gapov_filter import load_cases
+    rows = {(r["N"], round(r["J2"], 7), r["gamma_target"], r["eps"]): r for r in load_cases()}
+    best = lambda q: min([x["cnot"] for x in (q["tau_pi2"], q["3pi/4"], q["pi/(1+delta)"]) if x] or [np.inf])
+    G = [q for q in Q if q["src"] == "gapov"]
+    rpi = [q["pi/(1+delta)"]["cnot"] / q["tau_pi2"]["cnot"] for q in Q if q["pi/(1+delta)"] and q["tau_pi2"]]
+    r34 = [q["3pi/4"]["cnot"] / q["tau_pi2"]["cnot"] for q in Q if q["3pi/4"] and q["tau_pi2"]]
+    macro("tauPiMed", f"{np.median(rpi):.2f}"); macro("tauPiMin", f"{np.min(rpi):.2f}"); macro("tauPiMax", f"{np.max(rpi):.2f}")
+    macro("tauTqMed", f"{np.median(r34):.2f}")
+    macro("tauNcases", str(len(Q))); macro("tauNgo", str(len(G)))
+    lines = []
+    for e, tag in ((1e-2, "Two"), (1e-3, "Three"), (1e-4, "Four")):
+        old = {"d": 0, "o": 0, "q": 0}; new = {"d": 0, "o": 0, "q": 0}
+        for q in G:
+            if q["eps"] != e:
+                continue
+            r = rows[(q["N"], round(q["J2"], 7), q["gamma_target"], q["eps"])]
+            mc = {"d": r["meas_dyadic"]["cnot"], "o": (r["meas_optimized"] or {}).get("cnot", np.inf),
+                  "q": (r["meas_qetu"] or {}).get("cnot", np.inf)}
+            old[min(mc, key=mc.get)] += 1
+            mc["q"] = min(mc["q"], best(q))
+            new[min(mc, key=mc.get)] += 1
+        for k, n in (("d", "Dy"), ("o", "Op"), ("q", "Qe")):
+            macro(f"tauBest{n}{tag}", str(new[k]))
+        lines.append(f"$\\epsilon={sci(e, 0)}$ & {old['d']}/{old['o']}/{old['q']} & {new['d']}/{new['o']}/{new['q']} \\\\")
+    with open(os.path.join(GEN, "tab_qetutau.tex"), "w") as fh:
+        fh.write("\n".join(lines) + "\n")
+    # measured crossovers: is QETU at its best tau ever the cheapest route?
+    A2 = load("emp_actual.json")
+    A = [json.loads(l) for l in open(os.path.join(RES, "emp_actual1d.jsonl"))] + A2
+    qa = {(q["kind"], q["size"], round(q["J2"], 9), q["chi"], q["eps"]): best(q) for q in Q if q["src"] == "actual"}
+    out = {}
+    for name, S in (("One", CHAINS9), ("Two", CYLS)):
+        qwin = qbest = 0
+        for sys_ in S:
+            R = [r for r in A if (r["kind"], r["size"], r["J2"]) == sys_]
+            for e in sorted({r["eps"] for r in R}):
+                Rq = [r for r in R if r["eps"] == e]
+                m = min([r["trial_cnot"] for r in Rq if r["mps_alone"]] or [np.inf])
+                sb = min([r[k]["cnot"] for r in Rq if not r["mps_alone"] for k in ("dyadic", "optimized") if r.get(k)] or [np.inf])
+                qb = min([qa.get((r["kind"], r["size"], round(r["J2"], 9), r["chi"], e), np.inf) for r in Rq
+                          if not r["mps_alone"]] + [(r.get("qetu") or {}).get("cnot", np.inf) for r in Rq if not r["mps_alone"]])
+                qwin += qb < m
+                qbest += qb < min(m, sb)
+        macro(f"tauX{name}Wins", str(qwin)); macro(f"tauX{name}Best", str(qbest))
+        out[name] = (qwin, qbest)
+    print("qetu tau:", len(Q), "pi/(1+d) med", np.median(rpi), "3pi/4 med", np.median(r34), lines, out)
+
+
+def aposteriori():
+    """Planned filters with an a-posteriori Trotter step (results/aposteriori.jsonl): reliability and cost of the
+    energy-convergence and size-transfer rules against the certified step and the oracle step."""
+    p = os.path.join(RES, "aposteriori.jsonl")
+    if not os.path.exists(p):
+        return
+    import run_aposteriori as AP
+    rows = [json.loads(l) for l in open(p)]
+    for r in rows:
+        r["curve"] = AP.dedupe(r["curve"])
+    R = {(r["kind"], r["size"], r["J2"], r["eps"], r["schedule"]): r for r in rows}
+    cost = lambda r, q: (q["filter_cnot"] + r["trial_cnot"]) / q["p"]
+    lines, agg = [], {k: [] for k in ("e_ok", "e_cert", "e_or", "shots", "t_ok", "t_cert", "t_or", "or_cert", "e_ckcnot")}
+    groups = ((("chain", 12), "chain, $N=12$"), (("chain", 14), "chain, $N=14$"), (("chain", 16), "chain, $N=16$"),
+              (("cyl", 3), "$4\\times3$"), (("cyl", 4), "$4\\times4$"))
+    for sched, sname in (("auto", "SBC"), ("qetu", "QETU")):
+        for g, gname in groups:
+            G = [r for r in rows if (r["kind"], r["size"]) == g and r["schedule"] == sched]
+            if not G:
+                continue
+            st = {k: [] for k in agg}
+            for r in G:
+                c = r["curve"]
+                o = AP.coarsest_pass(r)
+                if o is not None:
+                    st["or_cert"].append(cost(r, c[o]) / r["cert_cnot"])
+                tol = r["eps"] * r["gap"] / 2
+                i = next((i for i in range(1, len(c)) if abs(c[i]["E"] - c[i - 1]["E"]) <= tol), None)
+                if i is not None:
+                    st["e_ok"].append(c[i]["inf"] <= r["eps"])
+                    st["e_cert"].append(cost(r, c[i]) / r["cert_cnot"])
+                    if o is not None:
+                        st["e_or"].append(cost(r, c[i]) / cost(r, c[o]))
+                    sh = sum(2 * np.sqrt(q["var"]).sum() ** 2 / tol ** 2 / q["p"] for q in c[:i + 1])
+                    st["shots"].append(sh)
+                    st["e_ckcnot"].append(sum(2 * np.sqrt(q["var"]).sum() ** 2 / tol ** 2 / q["p"]
+                                              * (q["filter_cnot"] + r["trial_cnot"]) for q in c[:i + 1]) / cost(r, c[i]))
+                else:
+                    st["e_ok"].append(False)
+                dt = AP.transfer_dt(R, r)
+                if dt is not None:
+                    j = [q for q in c if q["dt"] <= dt + 1e-12]
+                    if j:
+                        q = max(j, key=lambda q: q["dt"])
+                        st["t_ok"].append(q["inf"] <= r["eps"])
+                        st["t_cert"].append(cost(r, q) / r["cert_cnot"])
+                        if o is not None:
+                            st["t_or"].append(cost(r, q) / cost(r, c[o]))
+            for k in agg:
+                agg[k] += [(sched, v) for v in st[k]]
+            med = lambda k: f"{np.median(st[k]):.2f}" if st[k] else "--"
+            tr = f"{sum(st['t_ok'])}/{len(st['t_ok'])}" if st["t_ok"] else "--"
+            lines.append(f"{sname}, {gname} & {len(G)} & {med('or_cert')} & {sum(st['e_ok'])}/{len(st['e_ok'])} & "
+                         f"{med('e_cert')} & {('$' + sci(np.median(st['shots']), 0) + '$') if st['shots'] else '--'} & {tr} & {med('t_cert')} \\\\")
+    with open(os.path.join(GEN, "tab_apost.tex"), "w") as fh:
+        fh.write("\n".join(lines) + "\n")
+    v = lambda k, s=None: [x for t, x in agg[k] if s is None or t == s]
+    macro("apN", str(len(rows)))
+    macro("apEok", str(sum(v("e_ok")))); macro("apEtot", str(len(v("e_ok"))))
+    macro("apTok", str(sum(v("t_ok")))); macro("apTtot", str(len(v("t_ok"))))
+    for s_, n in (("auto", "S"), ("qetu", "Q")):
+        macro(f"apOrCert{n}", f"{np.median(v('or_cert', s_)):.2f}")
+        macro(f"apEcert{n}", f"{np.median(v('e_cert', s_)):.2f}")
+        macro(f"apEor{n}", f"{np.median(v('e_or', s_)):.1f}")
+        if v("t_cert", s_):
+            macro(f"apTcert{n}", f"{np.median(v('t_cert', s_)):.2f}")
+            macro(f"apTor{n}", f"{np.median(v('t_or', s_)):.1f}")
+    sh = v("shots")
+    macro("apShotsMin", sci(np.min(sh), 0)); macro("apShotsMax", sci(np.max(sh), 0)); macro("apShotsMed", sci(np.median(sh), 0))
+    macro("apCkMed", sci(np.median(v("e_ckcnot")), 0))
+    # end to end: the planned filter with the a-posteriori step against the MPS alone (and generic preparation)
+    A = [json.loads(l) for l in open(os.path.join(RES, "emp_actual1d.jsonl"))] + load("emp_actual.json")
+    for model, M in (("qsd", "Q"), ("ach", "A")):
+        for name, S in (("One", CHAINS9), ("Three", CYLS[:2]), ("Four", CYLS[2:])):
+            w = {"e": 0, "t": 0}; tot = 0; ntr = 0; rat = []; ratt = []
+            for sys_ in S:
+                Rs = [r for r in A if (r["kind"], r["size"], r["J2"]) == sys_]
+                N = Rs[0]["N"]
+                for e in sorted({r["eps"] for r in Rs}):
+                    m = min([_mps_cnot(N, r["chi"], model) for r in Rs if r["eps"] == e and r["mps_alone"]]
+                            + [_generic(N, model)])
+                    be = bt = np.inf
+                    for sch in ("auto", "qetu"):
+                        r = R.get(sys_ + (e, sch))
+                        if r is None:
+                            continue
+                        c = r["curve"]
+                        tr = _mps_cnot(N, r["chi"], model)
+                        tol = r["eps"] * r["gap"] / 2
+                        i = next((i for i in range(1, len(c)) if abs(c[i]["E"] - c[i - 1]["E"]) <= tol), None)
+                        if i is not None and c[i]["inf"] <= e:
+                            be = min(be, (c[i]["filter_cnot"] + tr) / c[i]["p"])
+                        dt = AP.transfer_dt(R, r)
+                        j = [q for q in c if dt is not None and q["dt"] <= dt + 1e-12]
+                        if j:
+                            q = max(j, key=lambda q: q["dt"])
+                            if q["inf"] <= e:
+                                bt = min(bt, (q["filter_cnot"] + tr) / q["p"])
+                    tot += 1
+                    w["e"] += be < m
+                    if np.isfinite(bt):
+                        ntr += 1
+                        w["t"] += bt < m
+                    if np.isfinite(m) and np.isfinite(be):
+                        rat.append(m / be)
+                    if np.isfinite(m) and np.isfinite(bt):
+                        ratt.append(m / bt)
+            macro(f"apX{M}{name}E", str(w["e"])); macro(f"apX{M}{name}T", str(w["t"]))
+            macro(f"apX{M}{name}Tot", str(tot)); macro(f"apX{M}{name}Ttot", str(ntr))
+            macro(f"apX{M}{name}Max", f"{max(rat):.1f}" if rat and max(rat) > 1 else "--")
+            macro(f"apX{M}{name}TMax", f"{max(ratt):.1f}" if ratt and max(ratt) > 1 else "--")
+            print("apost crossover", model, name, w, tot, ntr, f"max {max(rat) if rat else np.nan:.2f}", f"tmax {max(ratt) if ratt else np.nan:.2f}")
+    print("aposteriori:", lines)
+
+
+def ext_transfer():
+    """Larger cylinders (4x6, 4x8, 4x12; DMRG inputs, planned filters from ext_regime_cyl*.json) with the Trotter
+    step transferred from 4x4 (half its coarsest passing step, same J2, eps, schedule). Estimate, unvalidated at these
+    sizes: S <= T/dt + m Strang steps (SBC) or m ceil(tau/dt) (QETU), success probability p_g = gamma F_pass^2."""
+    import math
+    import run_aposteriori as AP
+    import run_extended as RX
+    p = os.path.join(RES, "aposteriori.jsonl")
+    if not os.path.exists(p):
+        return
+    rows = [json.loads(l) for l in open(p)]
+    for r in rows:
+        r["curve"] = AP.dedupe(r["curve"])
+    Dd = {(r["kind"], r["size"], r["J2"], r["eps"], r["schedule"]): r for r in rows}
+    E = load("ext_regime_cyl.json") + load("ext_regime_cyl_12.json")
+    lines, wins = [], {"qsd": 0, "ach": 0}
+    tot = only = 0
+    for s in (6, 8, 12):
+        for J2 in (0.0, 0.3):
+            Bn = len(RX.model("cyl", s, J2).without_identity()) // 3
+            N = 4 * s
+            cells = []
+            for e in (1e-2, 1e-3, 1e-4):
+                Q = [r for r in E if r["size"] == s and r["J2"] == J2 and r["eps"] == e and r["plan"]]
+                tot += 1
+                res = {}
+                for model in ("qsd", "ach"):
+                    alone = min([_mps_cnot(N, r["chi"], model) for r in Q if r["plan"]["m"] == 0] or [np.inf])
+                    best = np.inf
+                    for r in Q:
+                        P = r["plan"]
+                        if P["m"] == 0:
+                            continue
+                        sm = Dd[("cyl", 4, J2, e, r["schedule"])]
+                        dt = sm["curve"][AP.coarsest_pass(sm)]["dt"] / 2
+                        if r["schedule"] == "qetu":
+                            S = P["m"] * math.ceil(math.pi / 2 / P["W"] / dt - 1e-12)
+                        else:
+                            S = math.ceil(P["T_phys"] / dt) + P["m"]
+                        best = min(best, (S * (12 * Bn - 12) + 6 * P["m"] + _mps_cnot(N, r["chi"], model)) / P["p_g"])
+                    wins[model] += best < alone
+                    res[model] = (alone, best)
+                only += not np.isfinite(res["qsd"][0])
+                a, b = res["ach"]
+                cells.append(f"${sci(b, 1)}$ & " + (f"{a / b:.2f}" if np.isfinite(a) else "only"))
+            lines.append(f"$4\\times{s}$, $J_2={J2:g}$ & " + " & ".join(cells) + " \\\\")
+    with open(os.path.join(GEN, "tab_exttransfer.tex"), "w") as fh:
+        fh.write("\n".join(lines) + "\n")
+    macro("extTrQ", str(wins["qsd"])); macro("extTrA", str(wins["ach"])); macro("extTrTot", str(tot)); macro("extTrOnly", str(only))
+    print("ext transfer:", wins, tot, only)
+
+
 MEAS_OD = None
 
 
 if __name__ == "__main__":
-    for f in (inputs_table, validation, scaling, qetu, drivers, empirical, regime, fid_plane, crossover, actual_crossover, actual1d, gapov, gapov_filter, sens_wide, sensitivity, ansatz, oracle, meas_cert):
+    for f in (inputs_table, validation, scaling, qetu, drivers, empirical, regime, fid_plane, crossover, actual_crossover, actual1d, gapov, gapov_filter, sens_wide, sensitivity, ansatz, oracle, meas_cert, baselines, qetu_tau, aposteriori, ext_transfer):
         f()
     with open(os.path.join(GEN, "macros.tex"), "w") as fh:
         fh.write("% generated by sbpipe_study/make_figures.py -- do not edit\n" + "\n".join(MACROS) + "\n")
