@@ -45,8 +45,8 @@ chains only as a last-mile polisher, but on the $4\times4$ cylinder it wins \blA
 \apTok{} of \apTtot{} tested cases, at \apTcertS--\apTcertQ{} of the certified cost; with it the implementable route still
 wins \apXAFourT{} of the 14 $4\times4$ targets, and estimates for $4\times6$ to $4\times12$ favor it at \extTrA{} of
 \extTrTot. An energy-convergence rule is equally reliable but costs $10^{7}$--$10^{13}$ calibration shots. Measured,
-SBC beats QETU at $\epsilon\approx10^{-2}$, and QETU, run with its longest admissible query, wins from about
-$10^{-3}$.
+SBC beats QETU at $\epsilon\approx10^{-2}$, and QETU, run with its longest admissible query, ties at
+$10^{-3}$ and wins from $10^{-4}$.
 \end{abstract}
 
 \maketitle
@@ -1057,12 +1057,14 @@ barely changes, but the query count falls and one Strang step per query still su
 to a median \tauPiMed{} (range \tauPiMin--\tauPiMax) of the $\tau=\pi/2$ cost at $\tau=\pi/(1+\Delta)$, and
 \tauTqMed{} at $3\pi/4$. That is enough to change the measured ranking (Table~\ref{tab:qetutau}): with QETU at its
 best $\tau$ the SBC filters keep $\epsilon=10^{-2}$ (\tauBestDyTwo{} dyadic and \tauBestOpTwo{} optimized against
-\tauBestQeTwo{} QETU of 74), but QETU is the cheapest filter in \tauBestQeThree{} of 74 cases at $10^{-3}$ and
-\tauBestQeFour{} at $10^{-4}$. The statement that SBC wins measured at $\epsilon\ge10^{-3}$ therefore holds only for
-$\tau=\pi/2$; the fair statement is that SBC wins at loose targets, $\epsilon\approx10^{-2}$, and the Chebyshev
-filter from about $10^{-3}$ on. In the crossovers, QETU at its best $\tau$ beats the MPS alone at \tauXOneWins{} of
-63 chain and \tauXTwoWins{} of 28 cylinder targets and is the cheapest route at \tauXOneBest{} and \tauXTwoBest,
-so the crossover results of Secs.~\ref{sec:crossover1d} and~\ref{sec:twod} do not depend on which filter is used.
+\tauBestQeTwo{} QETU of 74), the two families split $\epsilon=10^{-3}$ (QETU cheapest in \tauBestQeThree{} of 74
+cases), and QETU is the cheapest filter in \tauBestQeFour{} of 74 at $10^{-4}$. The statement that SBC wins measured
+at $\epsilon\ge10^{-3}$ therefore holds only for $\tau=\pi/2$; the fair statement is that SBC wins at loose
+targets, $\epsilon\approx10^{-2}$, the two are even at $10^{-3}$, and the Chebyshev filter wins from $10^{-4}$ on.
+In the crossovers, QETU at its best $\tau$ beats the MPS alone at \tauXOneWins{} of 63 chain and \tauXTwoWins{} of
+28 cylinder targets but is the cheapest route at only \tauXOneBest{} chain and \tauXTwoBest{} cylinder targets, so
+the crossover results of Secs.~\ref{sec:crossover1d} and~\ref{sec:twod} change at three targets of 91 when QETU is
+given its best $\tau$.
 Two remaining differences in accounting favor neither side much: we cost QETU in the controlled form, because no
 Pauli string anticommutes with a Heisenberg bond (Sec.~\ref{sec:pipeline}), and we leave out the classical
 phase-finding step, which costs no quantum gates.
@@ -1284,8 +1286,8 @@ exact generic preparation is already cheap enough to compete (Sec.~\ref{sec:twod
 
 \emph{Dyadic, optimized or Chebyshev.} Measured, the SBC schedules beat the Chebyshev filter at
 $\epsilon\approx10^{-2}$, because their long smooth pulses tolerate Trotter steps of order $1/J_1$; with its longest
-admissible query, $\tau=\pi/(1+\Delta)$, the shorter Chebyshev filter wins from about $10^{-3}$ on
-(Table~\ref{tab:qetutau}), and certified it is usually the cheaper one (Sec.~\ref{sec:meascert}). The optimized SBC design is the cheapest of the three at
+admissible query, $\tau=\pi/(1+\Delta)$, the shorter Chebyshev filter ties at $10^{-3}$ and wins from $10^{-4}$ on
+(Table~\ref{tab:qetutau}), and certified it is usually the cheaper one (Sec.~\ref{sec:meascert}). Among the SBC schedules, the optimized design is the cheaper at
 $\epsilon\le10^{-3}$ in most cases, measured (median \odMMed$\times$ dyadic) and even more so certified
 (\odCMed$\times$), but it needs a numerical design that occasionally fails and must be repeated; the dyadic
 ladder is the robust default and the natural fallback, which is how the pipeline's ``auto'' mode uses
