@@ -23,6 +23,8 @@ sys.path.insert(0, HERE)
 
 import json
 import time
+
+import numpy as np
 from concurrent.futures import ProcessPoolExecutor
 
 import run_extended as RX
@@ -69,5 +71,90 @@ def main():
             json.dump(res, open(OUT, "w"), indent=1)
 
 
+# ----------------------------------------------------------------------------- what the filter does with each margin
+BOUT = os.path.join(RES, "margin_behave.jsonl")
+
+
+def _filter_values(des, Es):
+    if des.schedule == "qetu":
+        from sbpipe.design import _cheb
+        dm = des.meta
+        x = np.cos(dm["tau"] * Es)
+        return _cheb(dm["degree"], x / dm["x_s"]) / _cheb(dm["degree"], np.array([1.0 / dm["x_s"]]))[0]
+    f = np.ones_like(Es)
+    for t, ph in zip(des.times, des.phases):
+        f = f * np.cos(Es * t + ph)
+    return f
+
+
+def _behave(args):
+    """Plan from DMRG energies at one rung of the ladder with error bars c * (last change), and apply the exact
+    filter function to the exact spectrum and spectral weights of the trial (no Trotter error)."""
+    import run_empirical as RE
+    from sbpipe import Ansatz, EnergyEstimates
+    from sbpipe.pipeline import Config, refine
+    import sbpipe.pipeline as PL
+    r, i, c, chi, base = args
+    sys_ = (r["kind"], r["size"], r["J2"])
+    c0 = float(RX.model(*sys_).without_identity().coeffs[0])
+    # beta2 is homogeneous of degree 3 in the coefficients (identity excluded): rescale the unshifted value
+    PL.trotter_constant = lambda Hs, order: base * (float(Hs.without_identity().coeffs[0]) / c0) ** 3
+    z = np.load(os.path.join(RE.CACHEE, RE._act_key(*sys_) + ".npz"))
+    E, w = z["E"], z[f"w{chi}"]
+    H = RX.model(*sys_)
+    d0 = abs(r["E0"][i] - r["E0"][i - 1]); d1 = abs(r["E1"][i] - r["E1"][i - 1])
+    est = EnergyEstimates(E0=r["E0"][i], E1=r["E1"][i], E0_err=max(c * d0, 1e-10), E1_err=max(c * d1, 1e-10))
+    gam = float(w[0])
+    out = []
+    for eps in (1e-2, 1e-3, 1e-4):
+        if 1 - gam <= eps:
+            continue
+        for s in ("dyadic", "optimized", "qetu"):
+            row = dict(kind=r["kind"], size=r["size"], J2=r["J2"], chi_dmrg=r["chis"][i], c=c, chi=chi, eps=eps,
+                       schedule=s, gap_plan=(est.E1 - est.E1_err) - (est.E0 - est.E0_err), gap_exact=r["gap_exact"])
+            try:
+                pl = refine(H, est, Ansatz(gamma=gam, statevector=None, cost=dict(cnot=0), name="t", meta={}),
+                            Config(eps=eps, schedule=s, order=2))
+            except (RuntimeError, ValueError) as e:
+                row["error"] = str(e)[:80]
+                out.append(row)
+                continue
+            Es = (E - pl.window["shift"]) / pl.window["W"]
+            f = _filter_values(pl.design, Es)
+            q = w * f ** 2
+            row.update(inf=float(1 - q[0] / q.sum()), cert_cnot=pl.resources["expected_cnot"], m=pl.design.m)
+            out.append(row)
+    return out
+
+
+def _beta(sys_):
+    from sbpipe.pipeline import beta2
+    return list(sys_), beta2(RX.model(*sys_).shifted_scaled(0.0, 1.0))
+
+
+def behave():
+    import run_empirical as RE
+    R = [r for r in json.load(open(OUT)) if (r["kind"], r["size"], r["J2"]) in RE.ACT_SYSTEMS]
+    bp = os.path.join(RES, "margin_beta2.json")
+    B = {tuple(k): v for k, v in json.load(open(bp))} if os.path.exists(bp) else {}
+    with ProcessPoolExecutor(int(os.environ.get("JOBS", 2))) as ex:
+        for k, v in ex.map(_beta, [s for s in RE.ACT_SYSTEMS if s not in B]):
+            B[tuple(k)] = v
+            print("beta2", k, v, flush=True)
+            json.dump([[list(k), v] for k, v in B.items()], open(bp, "w"))
+    done = set()
+    if os.path.exists(BOUT):
+        done = {(x["kind"], x["size"], x["J2"], x["chi_dmrg"], x["c"], x["chi"]) for x in map(json.loads, open(BOUT))}
+    todo = [(r, i, c, chi, B[(r["kind"], r["size"], r["J2"])]) for r in R for i in range(1, len(r["chis"]))
+            for c in (0, 1, 2) for chi in (16, 32)
+            if (r["kind"], r["size"], r["J2"], r["chis"][i], c, chi) not in done]
+    print(len(todo), "tasks", flush=True)
+    with ProcessPoolExecutor(int(os.environ.get("JOBS", 2))) as ex, open(BOUT, "a") as fh:
+        for rows in ex.map(_behave, todo):
+            fh.write("".join(json.dumps(x) + "\n" for x in rows)); fh.flush()
+            if rows:
+                print(rows[0]["kind"], rows[0]["size"], rows[0]["J2"], rows[0]["chi_dmrg"], rows[0]["c"], len(rows), flush=True)
+
+
 if __name__ == "__main__":
-    main()
+    behave() if sys.argv[1:] == ["behave"] else main()

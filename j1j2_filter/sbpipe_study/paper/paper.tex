@@ -34,13 +34,16 @@ bound: the planned filter is within \fCMDtime$\times$ of the length simulation n
 at 20 qubits. (ii) Filtering pays only where the trial is hard to improve. On chains it wins only as a last-mile
 polisher, and those wins disappear when the MPS alone may use any bond dimension. On the $4\times4$ cylinder,
 filtering a cheap snake MPS beats compiling a better snake MPS or exact generic state preparation at \cmLFourAll{}
-of 14 targets measured, even against a lower bound on the MPS circuits, and at \apXAFourT{} of 14 with the
-transferred step and constructive MPS costs, but at none certified. (iii) Against a Chebyshev (QETU) filter with its
+of 14 targets measured, even against a lower bound on the MPS circuits; the implementable version, with the
+transferred step, wins \apXAFourT{} of 14 with constructive MPS costs but \cmLFourAllT{} against that lower
+bound with any bond dimension, and none certified; on a $4\times5$ cylinder (20 qubits) it wins \xfAGrid{} and
+\xfLBig{} of 14. The measured advantage is robust; the implementable one is fragile, though it grows from $4\times4$ to $4\times5$. (iii) Against a Chebyshev (QETU) filter with its
 longest admissible query, SBC wins at $\epsilon\approx10^{-2}$, ties at $10^{-3}$ and loses from $10^{-4}$.
 A controlled study that holds the gap (0.30--0.55, a large-gap regime) and the overlap fixed separately at
 $N=8$--14 shows that the gap sets the circuit depth and the overlap the repetitions. The infidelity bound held in
 all \nSimOK{} simulated circuits, all at $N\le14$ with exact inputs; for larger systems it is conditional on DMRG
-estimates of the gap and overlap, and a 10--25\% gap overestimate breaks the optimized and Chebyshev plans.
+estimates of the gap and overlap, and a 10--25\% gap overestimate breaks the optimized and Chebyshev plans; error bars taken from the DMRG
+bond-dimension ladder covered the exact gap in all \mgN{} tests.
 \end{abstract}
 
 \maketitle
@@ -745,6 +748,22 @@ mechanism: the inflated $\gamma$ crossed $1-\epsilon$, so the pipeline dropped t
 should be a sizeable fraction of the gap when $E_1$ is not certified, and the empty filter should be
 accepted only on a certified (for example Eckart) lower bound on $\gamma$.
 
+\emph{A margin from DMRG convergence.} A rule that uses only DMRG data is to set $\delta E_0$ and $\delta E_1$ to
+the change of $E_0$ and $E_1$ between the last two bond dimensions of the DMRG ladder, which is the pipeline's
+default error bar. We tested it on \mgSys{} systems with exact energies (chains $N=12$--16, cylinders
+$4\times3$--$4\times5$, all $J_2$), stopping the ladder at each of $\chi=8$, 16, 32, 64, 128 (\mgN{} cases;
+\texttt{run\_margin.py}). Without error bars the DMRG energies are consistent with the exact ones in only \mgCovRaw{} of
+\mgN{} cases (the DMRG gap is up to \mgOverMax\% too large); with them the intervals contain both exact energies in
+\mgCov{} of \mgN. On the four cylinders with full spectra we then planned every schedule at
+$\epsilon=10^{-2}$--$10^{-4}$ from each stopped ladder and applied the exact filter function to the trial's
+spectral weights: all \mbPlans{} plans met the target. Once DMRG has converged ($\chi\ge64$) the margin costs a
+median \mbHiMed$\times$ (at most \mbHiMax$\times$); at $\chi=32$ a median \mbMidMed$\times$; at $\chi\le16$ it
+makes the energy window inconsistent in \mbLoInf{} of \mbLoN{} plans, which the pipeline reports instead of returning a
+plan. The rule therefore either covers the gap at small cost or says that DMRG is not converged enough to plan
+from. In these instances the plans without margin also passed, because their gap errors at $\chi\ge8$ were below
+the 10\% at which Table~\ref{tab:senswide} starts to fail; the test shows that the margin is valid and cheap, not
+that it was needed.
+
 \begin{table*}[t]
 \caption{Gap and overlap overestimation for every $N\in\{8,10,12,14\}$ and $J_2$ (12 instances),
 $\epsilon=10^{-2}$, second order: number of plans that miss the target and the worst measured
@@ -905,7 +924,16 @@ $4\times3$ wins from \cmLThreeGrid{} to \cmLThreeAll, while on $4\times4$ the me
 \cmLFourAll{} of 14; with the transferred step (Sec.~\ref{sec:apost}) it wins \cmLFourGridT{} of 14 on the
 $\chi=2^k$ grid and \cmLFourAllT{} with every $\chi$. The measured $4\times4$ advantage is therefore robust to the
 MPS cost model and bond-dimension grid, and the implementable one is not: it holds with constructive MPS costs and
-disappears against a lower bound.
+disappears against a lower bound. \emph{A third cylinder.} The $4\times4$ result rests on one system size, so we repeated the implementable
+comparison on $4\times5$ (20 qubits; \texttt{run\_cross20.py}) for the same 14 targets: the variational MPS alone
+at every $\chi\le256$ against the exact ground state, and the planned filter on the trial $\chi$ with the cheapest
+certified plan, simulated at the step transferred from $4\times4$. The measured crossover, which needs the full
+spectrum, is out of reach at this size. The transferred step met the target in all \xfTot{} circuits (and in
+\xfPrev{} without halving). The filtered route wins \xfQGrid{} of 14 targets under the uniform model and \xfAGrid{}
+under the bond-aware one, against \apXQFourT{} and \apXAFourT{} on $4\times4$; against the dimension lower bound it
+wins \xfLGrid{} on the $\chi=2^k$ grid, \xfLAll{} with every $\chi\le64$ and \xfLBig{} with every $\chi\le256$.
+The implementable advantage therefore grows from $4\times4$ to $4\times5$ under constructive costs, and against
+the lower bound it is small but no longer zero.
 
 \emph{Other trials.} All trials here are snake MPS, a deliberately simple and, in two dimensions, weak choice; the
 statements above compare filtering a snake MPS with compiling a better snake MPS. MPS with explicit $U(1)$ or
@@ -1129,7 +1157,8 @@ the target in \apEok{} of \apEtot{} cases, at a median \apEcertS{} (SBC) and \ap
 cost, \apEorS{} and \apEorQ{} times the oracle step. Its price is the calibration: resolving $\epsilon\Delta/2$ with
 the three measurement bases takes a median $\apShotsMed$ post-selected shots per case (about $10^{7}$ at $\epsilon=10^{-2}$ and $10^{9}$ at $10^{-3}$, growing as $\epsilon^{-2}$ to
 $\sim10^{13}$ at $10^{-5}$), which pays off only if the same circuit is then used for
-$\gtrsim\apCkMed$ preparations. It is a reliable rule whose cost is in shots rather than gates.
+$\gtrsim\apCkMed$ preparations. It is a reliable rule whose cost is in shots rather than gates, and at tight targets it is not a practical alternative to the transferred step: from $\epsilon=10^{-3}$ on, the
+calibration needs $\gtrsim10^{9}$ post-selected shots before the circuit is used once.
 
 \emph{Size transfer.} Use half the coarsest passing step of the next-smaller system with the same $J_2$, $\epsilon$
 and schedule ($N=12\to14\to16$, $4\times3\to4\times4$), which needs exact simulation only at the smaller size. The
@@ -1288,9 +1317,11 @@ count grows as $L^{2}$ rather than $L$. Tighter Trotter bounds, for example rest
 subspace~\cite{Sahinoglu2021,Mizuta2025}, would recover most of the \goCertRatioMed-fold median gap between
 certified and measured cost; a better filter design would not. The a-posteriori rules of Sec.~\ref{sec:apost}
 already recover most of it in practice: transferring the step from a smaller, classically simulable system costs
-about twice the oracle step and was never wrong in our tests, including across $J_2$ and one 25\% size step to 20
-qubits, but the step does shrink with $N$ (as $N^{-1/4}$ to $N^{-1/2}$ by the argument of Sec.~\ref{sec:apost}),
-so the rule is a heuristic whose safety factor must grow with the size ratio; checking energy convergence on the device is rigorous in
+about twice the oracle step and met the target in every case we simulated, across $J_2$ and for one 25\% size
+step to 20 qubits. That record covers size ratios of at most 1.33 and is not evidence for the $4\times6$--$4\times12$
+projections: the step shrinks with $N$ (as $N^{-1/4}$ to $N^{-1/2}$ by the argument of Sec.~\ref{sec:apost}), so
+the factor of two runs out at a size ratio between 4 and 16, and the projections rest on the bracket of
+Table~\ref{tab:exttransfer}, not on the simulations; checking energy convergence on the device is rigorous in
 spirit but costs $\epsilon^{-2}$ shots.
 
 \emph{Limitations.} Noiseless simulation; repeat-until-success rather than early abort; all-to-all
