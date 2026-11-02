@@ -1804,6 +1804,84 @@ def chi_mid():
     print("chi mid:", out)
 
 
+def cross20():
+    """Implementable crossover on the 4x5 cylinder (results/cross20.jsonl, cross20_mps.json): planned filter with the
+    transferred step against the MPS alone, for the 14 targets of the 4x4 crossover."""
+    p = os.path.join(RES, "cross20.jsonl")
+    if not os.path.exists(p):
+        return
+    rows = [json.loads(l) for l in open(p)]
+    M = json.load(open(os.path.join(RES, "cross20_mps.json")))
+    grid = {2, 4, 8, 16, 32, 64}
+    ok = [r["curve"][1]["inf"] <= r["eps"] for r in rows if len(r["curve"]) > 1]
+    macro("xfOk", str(sum(ok))); macro("xfTot", str(len(ok)))
+    macro("xfPrev", str(sum(r["curve"][0]["inf"] <= r["eps"] for r in rows if r["curve"])))
+    trial = lambda model, c: _mps_cnot(20, c, "lb" if model == "lbd" else model)
+    cost = lambda model, c: _mps_lbd(20, c) if model == "lbd" else _mps_cnot(20, c, model)
+    gen = lambda model: _generic(20, "lb" if model == "lbd" else model)
+    out = {}
+    for model, Mn in (("qsd", "Q"), ("ach", "A"), ("lbd", "L")):
+        for tag, allchi, cap in (("Grid", False, 64), ("All", True, 64), ("Big", True, 256)):
+            w = tot = 0
+            for J2 in (0.0, 0.3):
+                inf = {int(c): v for c, v in M[f"{J2:g}"].items()}
+                for e in sorted({r["eps"] for r in rows}):
+                    ch = [c for c in inf if inf[c] <= e and c <= cap and (allchi or c in grid)]
+                    m = min([cost(model, c) for c in ch] + [gen(model)])
+                    bt = np.inf
+                    for r in rows:
+                        if r["J2"] == J2 and r["eps"] == e and len(r["curve"]) > 1 and r["curve"][1]["inf"] <= e:
+                            q = r["curve"][1]
+                            bt = min(bt, (q["filter_cnot"] + trial(model, r["chi"])) / q["p"])
+                    tot += 1
+                    w += bt < m
+            macro(f"xf{Mn}{tag}", str(w))
+            out[(model, tag)] = (w, tot)
+    macro("xfTargets", str(tot))
+    print("cross20:", out, sum(ok), len(ok))
+
+
+def margin():
+    """Gap margin from DMRG convergence (results/margin.json, margin_behave.jsonl): error bars equal to the last change
+    along the bond-dimension ladder, tested against exact energies and, on the systems with a full spectrum, by the
+    exact filter function."""
+    p = os.path.join(RES, "margin.json")
+    if not os.path.exists(p):
+        return
+    R = json.load(open(p))
+    E0x = {}
+    for l in open(os.path.join(RES, "aposteriori.jsonl")):
+        r = json.loads(l)
+        E0x[(r["kind"], r["size"], r["J2"])] = r["E0"]
+    for J2 in (0.0, 0.3):
+        E0x[("cyl", 5, J2)] = json.load(open(os.path.join(RES, "cache_t20", f"cyl5_J2{J2:g}.json")))["E01"][0]
+    cov = {0: 0, 1: 0}; n = 0; over = []
+    for r in R:
+        e0 = E0x[(r["kind"], r["size"], r["J2"])]; e1 = e0 + r["gap_exact"]
+        for i in range(1, len(r["chis"])):
+            d0 = abs(r["E0"][i] - r["E0"][i - 1]); d1 = abs(r["E1"][i] - r["E1"][i - 1])
+            n += 1
+            over.append((r["E1"][i] - r["E0"][i]) / r["gap_exact"])
+            for c in cov:
+                cov[c] += (r["E1"][i] - c * d1 <= e1 + 1e-9) and (r["E0"][i] - c * d0 <= e0 + 1e-9)
+    macro("mgN", str(n)); macro("mgSys", str(len(R))); macro("mgCovRaw", str(cov[0])); macro("mgCov", str(cov[1]))
+    macro("mgOverMax", f"{100 * (max(over) - 1):.0f}")
+    B = [json.loads(l) for l in open(os.path.join(RES, "margin_behave.jsonl"))]
+    D = {(r["kind"], r["size"], r["J2"], r["chi_dmrg"], r["c"], r["chi"], r["eps"], r["schedule"]): r for r in B}
+    ok = [r["inf"] <= r["eps"] for r in B if "inf" in r]
+    macro("mbPlans", str(len(ok))); macro("mbPass", str(sum(ok)))
+    def ratios(lo, hi):
+        x = [r["cert_cnot"] / D[k[:4] + (0,) + k[5:]]["cert_cnot"] for k, r in D.items()
+             if r["c"] == 1 and lo <= r["chi_dmrg"] <= hi and "cert_cnot" in r]
+        return x
+    hi = ratios(64, 10 ** 6); mid = ratios(32, 32)
+    macro("mbHiMed", f"{np.median(hi):.2f}"); macro("mbHiMax", f"{max(hi):.1f}"); macro("mbMidMed", f"{np.median(mid):.1f}")
+    lo = [r for r in B if r["c"] == 1 and r["chi_dmrg"] <= 16]
+    macro("mbLoInf", str(sum("error" in r for r in lo))); macro("mbLoN", str(len(lo)))
+    macro("mbSys", str(len({(r["kind"], r["size"], r["J2"]) for r in B})))
+    print("margin:", cov, n, len(ok), sum(ok), np.median(hi), max(hi), np.median(mid))
+
+
 def transfer20():
     """Size transfer one step beyond any earlier simulation: chain 16 -> 20 and cylinder 4x4 -> 4x5, simulated
     (results/transfer20.jsonl). Also the cross-J2 test of the same rule on results/aposteriori.jsonl."""
@@ -1868,7 +1946,7 @@ MEAS_OD = None
 
 
 if __name__ == "__main__":
-    for f in (inputs_table, validation, scaling, qetu, drivers, empirical, regime, fid_plane, crossover, actual_crossover, actual1d, gapov, gapov_filter, sens_wide, sensitivity, ansatz, oracle, meas_cert, baselines, qetu_tau, aposteriori, ext_transfer, chi_mid, transfer20):
+    for f in (inputs_table, validation, scaling, qetu, drivers, empirical, regime, fid_plane, crossover, actual_crossover, actual1d, gapov, gapov_filter, sens_wide, sensitivity, ansatz, oracle, meas_cert, baselines, qetu_tau, aposteriori, ext_transfer, chi_mid, transfer20, cross20, margin):
         f()
     with open(os.path.join(GEN, "macros.tex"), "w") as fh:
         fh.write("% generated by sbpipe_study/make_figures.py -- do not edit\n" + "\n".join(MACROS) + "\n")
