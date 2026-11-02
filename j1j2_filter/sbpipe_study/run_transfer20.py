@@ -171,7 +171,8 @@ def main():
     if os.path.exists(OUT):
         done = {(r["kind"], r["size"], r["J2"], r["eps"], r["schedule"]) for r in map(json.loads, open(OUT))}
     todo = [c for c in cases() if c[:5] not in done
-            and os.path.exists(os.path.join(CACHE, _key(*c[:3]) + ".json"))]
+            and os.path.exists(os.path.join(CACHE, _key(*c[:3]) + ".json"))
+            and c[0] == os.environ.get("KIND", c[0])]
     todo.sort(key=lambda c: (-c[3], c[0]))
     print(len(todo), "cases", flush=True)
     with ProcessPoolExecutor(int(os.environ.get("JOBS", 4))) as ex, open(OUT, "a") as fh:

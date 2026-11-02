@@ -1155,7 +1155,8 @@ passing step differs in \jtChanged{} of the \jtTot{} pairs, and the halved step 
 the planned circuits on a 20-site chain (step from $N=16$) and on a $4\times5$ cylinder (step from $4\times4$),
 for every $J_2$, $\epsilon=10^{-2}$, $10^{-3}$, $10^{-4}$ and both schedules, with DMRG inputs, the trial $\chi$
 used at the smaller size and the exact ground state (\twTot{} circuits, statevector simulation of 20 qubits;
-\texttt{run\_transfer20.py}). The transferred step met the target in \twOk{} of \twTot{} cases at a median
+\texttt{run\_transfer20.py}, with each bond's three commuting rotations applied as one exact SWAP power, which
+agrees with the term-by-term product formula to $10^{-14}$). The transferred step met the target in \twOk{} of \twTot{} cases at a median
 \twCert{} of the certified cost (Table~\ref{tab:transfer20}), and in \twPrev{} of \twTot{} the coarsest passing
 step of the smaller system, without the factor of two, already sufficed. This validates one size step of
 25\%; it does not validate the factor of three from $4\times4$ to $4\times12$.
