@@ -1665,7 +1665,7 @@ def ext_transfer():
         r["curve"] = AP.dedupe(r["curve"])
     Dd = {(r["kind"], r["size"], r["J2"], r["eps"], r["schedule"]): r for r in rows}
     E = load("ext_regime_cyl.json") + load("ext_regime_cyl_12.json")
-    lines, wins = [], {"qsd": 0, "ach": 0}
+    lines, wins, wins_lo, advs = [], {"qsd": 0, "ach": 0}, {"qsd": 0, "ach": 0}, []
     tot = only = 0
     for s in (6, 8, 12):
         for J2 in (0.0, 0.3):
@@ -1676,37 +1676,199 @@ def ext_transfer():
                 Q = [r for r in E if r["size"] == s and r["J2"] == J2 and r["eps"] == e and r["plan"]]
                 tot += 1
                 res = {}
+                # step factor relative to the 4x4 coarsest passing step: 1/2 is the rule; 1 (no safety factor) and
+                # (1/2) sqrt(16/N) (a further N^(-1/2) shrink, the energy-shift scaling of Sec. apost) bracket it
+                facs = {"mid": 0.5, "hi": 1.0, "lo": 0.5 * math.sqrt(16 / N)}
                 for model in ("qsd", "ach"):
                     alone = min([_mps_cnot(N, r["chi"], model) for r in Q if r["plan"]["m"] == 0] or [np.inf])
-                    best = np.inf
+                    best = {k: np.inf for k in facs}
                     for r in Q:
                         P = r["plan"]
                         if P["m"] == 0:
                             continue
                         sm = Dd[("cyl", 4, J2, e, r["schedule"])]
-                        dt = sm["curve"][AP.coarsest_pass(sm)]["dt"] / 2
-                        if r["schedule"] == "qetu":
-                            S = P["m"] * math.ceil(math.pi / 2 / P["W"] / dt - 1e-12)
-                        else:
-                            S = math.ceil(P["T_phys"] / dt) + P["m"]
-                        best = min(best, (S * (12 * Bn - 12) + 6 * P["m"] + _mps_cnot(N, r["chi"], model)) / P["p_g"])
-                    wins[model] += best < alone
+                        for k, fac in facs.items():
+                            dt = sm["curve"][AP.coarsest_pass(sm)]["dt"] * fac
+                            if r["schedule"] == "qetu":
+                                S = P["m"] * math.ceil(math.pi / 2 / P["W"] / dt - 1e-12)
+                            else:
+                                S = math.ceil(P["T_phys"] / dt) + P["m"]
+                            best[k] = min(best[k], (S * (12 * Bn - 12) + 6 * P["m"] + _mps_cnot(N, r["chi"], model)) / P["p_g"])
+                    wins[model] += best["mid"] < alone
+                    wins_lo[model] += best["lo"] < alone
                     res[model] = (alone, best)
                 only += not np.isfinite(res["qsd"][0])
                 a, b = res["ach"]
-                cells.append(f"${sci(b, 1)}$ & " + (f"{a / b:.2f}" if np.isfinite(a) else "only"))
+                if np.isfinite(a):
+                    adv = f"{a / b['mid']:.2f} ({a / b['lo']:.2f}--{a / b['hi']:.2f})"
+                    advs.append((a / b["lo"], a / b["hi"]))
+                else:
+                    adv = "only"
+                cells.append(f"${sci(b['mid'], 1)}$ & " + adv)
             lines.append(f"$4\\times{s}$, $J_2={J2:g}$ & " + " & ".join(cells) + " \\\\")
     with open(os.path.join(GEN, "tab_exttransfer.tex"), "w") as fh:
         fh.write("\n".join(lines) + "\n")
+    macro("extTrQlo", str(wins_lo["qsd"])); macro("extTrAlo", str(wins_lo["ach"]))
+    close = sum(1 for lo, hi in advs if lo < 1 < hi)
+    macro("extTrStraddle", str(close))
     macro("extTrQ", str(wins["qsd"])); macro("extTrA", str(wins["ach"])); macro("extTrTot", str(tot)); macro("extTrOnly", str(only))
-    print("ext transfer:", wins, tot, only)
+    print("ext transfer:", wins, wins_lo, tot, only, "straddle", close)
+
+
+def _iso_c(a, b):
+    """Isometry lower bound (Iten et al.) for dimensions a -> b, not only powers of two; equals _iso there."""
+    return max(0, int(np.ceil((2 * a * b - a * a - 3 * np.log2(b) - 1) / 4)))
+
+
+def _mps_lbd(N, chi):
+    """Lower bound for a chi-MPS circuit with the actual (any integer) bond dimensions D_k = min(chi, 2^k, 2^(N-k)):
+    the per-site isometry bound D_(k+1) -> 2 D_k, capped by the generic-state bound. Most generous to the MPS."""
+    D = [1] + [min(chi, 2 ** k, 2 ** (N - k)) for k in range(1, N)] + [1]
+    return float(min(sum(_iso_c(D[k + 1], 2 * D[k]) for k in range(N)), _iso(0, N)))
+
+
+def chi_mid():
+    """MPS-alone route with intermediate bond dimensions (results/chi_mid.json), against the measured filtered route
+    and the planned filter with the size-transfer step. Models: qsd and ach (cost set by ceil(log2 chi), so an
+    intermediate chi costs as much as the next power of two) and lbd (the dimension-resolved lower bound)."""
+    p = os.path.join(RES, "chi_mid.json")
+    if not os.path.exists(p):
+        return
+    import run_aposteriori as AP
+    import run_empirical as RE
+    INF = json.load(open(p))
+    A2 = load("emp_actual.json")
+    A1 = [json.loads(l) for l in open(os.path.join(RES, "emp_actual1d.jsonl"))] + [r for r in A2 if r["kind"] == "chain"]
+    rows = [json.loads(l) for l in open(os.path.join(RES, "aposteriori.jsonl"))]
+    for r in rows:
+        r["curve"] = AP.dedupe(r["curve"])
+    R = {(r["kind"], r["size"], r["J2"], r["eps"], r["schedule"]): r for r in rows}
+    grid = set(RE.ACT_CHIS)
+
+    def cost(model, N, chi):
+        return _mps_lbd(N, chi) if model == "lbd" else _mps_cnot(N, chi, model)
+
+    def gen(model, N):
+        return _generic(N, "lb" if model == "lbd" else model)
+
+    out, lines = {}, []
+    for model, mname in (("qsd", "uniform QSD bound"), ("ach", "bond-aware QSD"), ("lbd", "dimension lower bound")):
+        cells = {}
+        for allchi in (False, True):
+            for tag, A, S in (("One", A1, CHAINS9), ("Three", A2, CYLS[:2]), ("Four", A2, CYLS[2:])):
+                wm = wt = tot = ntr = 0
+                for sys_ in S:
+                    Rs = [r for r in A if (r["kind"], r["size"], r["J2"]) == sys_]
+                    N = Rs[0].get("N", Rs[0]["size"])
+                    inf = {int(c): v for c, v in INF[RE._act_key(*sys_)].items()}
+                    for e in sorted({r["eps"] for r in Rs}):
+                        ch = [c for c in inf if inf[c] <= e and (allchi or c in grid)]
+                        m = min([cost(model, N, c) for c in ch] + [gen(model, N)])
+                        trial = lambda c: _mps_cnot(N, c, "lb" if model == "lbd" else model)
+                        bm = np.inf
+                        for r in Rs:
+                            if r["eps"] != e or r["mps_alone"]:
+                                continue
+                            for k in ("dyadic", "optimized"):
+                                d = r.get(k)
+                                if d:
+                                    bm = min(bm, (d["cnot"] * d["p"] - r["trial_cnot"] + trial(r["chi"])) / d["p"])
+                        bt = np.inf
+                        for sch in ("auto", "qetu"):
+                            r = R.get(sys_ + (e, sch))
+                            dt = AP.transfer_dt(R, r) if r else None
+                            j = [q for q in r["curve"] if q["dt"] <= dt + 1e-12] if dt is not None else []
+                            if j:
+                                q = max(j, key=lambda q: q["dt"])
+                                if q["inf"] <= e:
+                                    bt = min(bt, (q["filter_cnot"] + trial(r["chi"])) / q["p"])
+                        tot += 1
+                        wm += bm < m
+                        if np.isfinite(bt):
+                            ntr += 1
+                            wt += bt < m
+                cells[(allchi, tag)] = (wm, tot, wt, ntr)
+                M = {"qsd": "Q", "ach": "A", "lbd": "L"}[model]
+                macro(f"cm{M}{tag}{'All' if allchi else 'Grid'}", str(wm))
+                macro(f"cm{M}{tag}{'All' if allchi else 'Grid'}T", str(wt))
+                if model == "qsd" and not allchi:
+                    macro(f"cm{tag}Tot", str(tot)); macro(f"cm{tag}Ttot", str(ntr))
+        for allchi in (False, True):
+            lab = mname + (", all $\\chi\\le64$" if allchi else ", $\\chi=2^k$")
+            lines.append(lab + " & " + " & ".join(f"{cells[(allchi, t)][0]} & "
+                                                  + (f"{cells[(allchi, t)][2]}" if cells[(allchi, t)][3] else "--")
+                                                  for t in ("One", "Three", "Four")) + " \\\\")
+        out[model] = cells
+    with open(os.path.join(GEN, "tab_chimid.tex"), "w") as fh:
+        fh.write("\n".join(lines) + "\n")
+    print("chi mid:", out)
+
+
+def transfer20():
+    """Size transfer one step beyond any earlier simulation: chain 16 -> 20 and cylinder 4x4 -> 4x5, simulated
+    (results/transfer20.jsonl). Also the cross-J2 test of the same rule on results/aposteriori.jsonl."""
+    import run_aposteriori as AP
+    rows = [json.loads(l) for l in open(os.path.join(RES, "aposteriori.jsonl"))]
+    for r in rows:
+        r["curve"] = AP.dedupe(r["curve"])
+    D = {(r["kind"], r["size"], r["J2"], r["eps"], r["schedule"]): r for r in rows}
+    ok = tot = beyond = changed = 0
+    for (k, s_, j, e, sc), r in D.items():
+        for (k2, s2, j2, e2, sc2), r2 in D.items():
+            if (k2, s2, e2, sc2) != (k, s_, e, sc) or j2 == j:
+                continue
+            dt = r2["curve"][AP.coarsest_pass(r2)]["dt"] / 2
+            changed += r["curve"][AP.coarsest_pass(r)]["dt"] != r2["curve"][AP.coarsest_pass(r2)]["dt"]
+            c = [q for q in r["curve"] if abs(q["dt"] - dt) < 1e-12]
+            if c:
+                tot += 1
+                ok += c[0]["inf"] <= e
+            else:
+                beyond += 1
+    macro("jtOk", str(ok)); macro("jtTot", str(tot)); macro("jtChanged", str(changed)); macro("jtBeyond", str(beyond))
+    # step versus size among the simulated sizes
+    sh = tt = 0
+    for k, a, b in (("chain", 12, 14), ("chain", 14, 16), ("cyl", 3, 4)):
+        for (kk, s_, j, e, sc), r in D.items():
+            if kk == k and s_ == a:
+                r2 = D[(k, b, j, e, sc)]
+                tt += 1
+                sh += r2["curve"][AP.coarsest_pass(r2)]["dt"] < r["curve"][AP.coarsest_pass(r)]["dt"]
+    macro("szShrink", str(sh)); macro("szTot", str(tt))
+    print("cross-J2 transfer:", ok, tot, "beyond", beyond, "step changed", changed, "| size shrink", sh, tt)
+    p = os.path.join(RES, "transfer20.jsonl")
+    if not os.path.exists(p):
+        return
+    T = [json.loads(l) for l in open(p)]
+    T = [t for t in T if t["curve"]]
+    lines = []
+    allok = allprev = alln = 0
+    cc = []
+    for kind, size, name in (("chain", 20, "chain, $N=20$ (from 16)"), ("cyl", 5, "$4\\times5$ (from $4\\times4$)")):
+        for sched, sn in (("auto", "SBC"), ("qetu", "QETU")):
+            G = [t for t in T if t["kind"] == kind and t["schedule"] == sched]
+            if not G:
+                continue
+            prev = sum(t["curve"][0]["inf"] <= t["eps"] for t in G)
+            tr = [next((q for q in t["curve"] if abs(q["dt"] - t["dt_prev"] / 2) < 1e-12), None) for t in G]
+            okc = sum(q is not None and q["inf"] <= t["eps"] for q, t in zip(tr, G))
+            rc = [q["cnot"] / t["cert_cnot"] for q, t in zip(tr, G) if q is not None]
+            worst = max(q["inf"] / t["eps"] for q, t in zip(tr, G) if q is not None)
+            cc += rc
+            allok += okc; allprev += prev; alln += len(G)
+            lines.append(f"{sn}, {name} & {len(G)} & {prev}/{len(G)} & {okc}/{len(G)} & {worst:.2f} & {np.median(rc):.2f} \\\\")
+    with open(os.path.join(GEN, "tab_transfer20.tex"), "w") as fh:
+        fh.write("\n".join(lines) + "\n")
+    macro("twOk", str(allok)); macro("twTot", str(alln)); macro("twPrev", str(allprev))
+    macro("twCert", f"{np.median(cc):.2f}")
+    print("transfer20:", lines)
 
 
 MEAS_OD = None
 
 
 if __name__ == "__main__":
-    for f in (inputs_table, validation, scaling, qetu, drivers, empirical, regime, fid_plane, crossover, actual_crossover, actual1d, gapov, gapov_filter, sens_wide, sensitivity, ansatz, oracle, meas_cert, baselines, qetu_tau, aposteriori, ext_transfer):
+    for f in (inputs_table, validation, scaling, qetu, drivers, empirical, regime, fid_plane, crossover, actual_crossover, actual1d, gapov, gapov_filter, sens_wide, sensitivity, ansatz, oracle, meas_cert, baselines, qetu_tau, aposteriori, ext_transfer, chi_mid, transfer20):
         f()
     with open(os.path.join(GEN, "macros.tex"), "w") as fh:
         fh.write("% generated by sbpipe_study/make_figures.py -- do not edit\n" + "\n".join(MACROS) + "\n")
