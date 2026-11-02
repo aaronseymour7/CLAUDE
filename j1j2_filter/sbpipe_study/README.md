@@ -20,11 +20,11 @@ tests. `JOBS` sets the number of worker processes (default 4). Approximate run t
 ## Headline results (from `paper/generated/macros.tex`)
 
 * The certificate held in all 96 simulated circuits (N = 8–14, three couplings, ε = 10⁻², 10⁻³, three
-  schedules, both Trotter orders); median looseness 17× in infidelity, mostly from the Trotter bound
-  (median 188×). Certified step counts are 9–39× the smallest step count that actually meets ε.
+  schedules, both Trotter orders); median looseness 14× in infidelity, mostly from the Trotter bound
+  (median 185×). Certified step counts are 9–39× the smallest step count that actually meets ε.
 * Second-order Trotter is a median 92× cheaper than first order; the optimized filter a median 2.9×
   cheaper than the closed-form dyadic schedule, but the optimizer fails for small overlaps (14 of 144
   scaling plans, all N ≥ 32), where the dyadic schedule still works.
-* Overestimating the gap by ≥ 50% breaks the target; underestimating it by 50% costs 2.8×.
-* N = 48, J2 = 0.2411, ε = 10⁻²: 8.8×10⁶ CNOTs per success from a χ = 4 trial. A χ = 8 MPS circuit alone
+* Overestimating the gap by ≥ 50% breaks the target; underestimating it by 50% costs 2.9×.
+* N = 48, J2 = 0.2411, ε = 10⁻²: 9.7×10⁶ CNOTs per success from a χ = 4 trial. A χ = 8 MPS circuit alone
   already meets ε = 10⁻² (4,500 CNOTs), so in 1D at this target direct MPS preparation wins.

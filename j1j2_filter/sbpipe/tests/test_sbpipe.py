@@ -90,7 +90,7 @@ def test_strang_counts_against_explicit_sequence():
     H = sbpipe.j1j2_chain(4, 1.0, 0.4)
     G = len(H.without_identity())
     for k in [1, 3]:
-        c = filter_counts(H, [k], 2)
+        c = filter_counts(H, [k], 2, compile="ladder")
         # explicit: k steps of forward+backward half sweeps, merge adjacent identical terms
         seq = []
         for _ in range(k):
@@ -101,6 +101,14 @@ def test_strang_counts_against_explicit_sequence():
                 merged.append(s)
         assert c["rotations"] == len(merged) + 1      # + merged ancilla Rz
         assert c["cnot"] == 4 * len(merged)           # weight-2 terms (x) Z_anc: 4 CNOT each
+        # bond compile: the same sweep over bonds, 6 CNOT and 3 Rz per controlled bond
+        B = G // 3
+        seq = []
+        for _ in range(k):
+            seq += list(range(B)) + list(range(B))[::-1]
+        merged = [seq[0]] + [b for a, b in zip(seq, seq[1:]) if a != b]
+        cb = filter_counts(H, [k], 2)
+        assert cb["cnot"] == 6 * len(merged) and cb["rotations"] == 3 * len(merged) + 1
 
 
 def test_cnot_count_against_qiskit():
@@ -116,11 +124,12 @@ def test_cnot_count_against_qiskit():
     qc = QuantumCircuit(5)
     qc.append(PauliEvolutionGate(op, time=0.3, synthesis=LieTrotter(reps=1)), range(5))
     ops = transpile(qc, basis_gates=["cx", "rz", "h", "sx", "x"], optimization_level=0).count_ops()
-    c = filter_counts(H, [1], 1)
+    c = filter_counts(H, [1], 1, compile="ladder")
     # the ladder model is an upper bound: qiskit shares CNOTs between consecutive terms of a bond
-    # (4 + 2 + 2 per bond instead of 3 x 4)
+    # (4 + 2 + 2 per bond instead of 3 x 4); the bond compile (6 per bond) is below both
     assert ops["cx"] <= c["cnot"]
     assert ops["cx"] == 8 * (len(H) // 3)
+    assert filter_counts(H, [1], 1)["cnot"] == 6 * (len(H) // 3) < ops["cx"]
 
 
 def test_end_to_end_certificate_holds():
@@ -139,3 +148,89 @@ def test_end_to_end_certificate_holds():
         val = sbpipe.validate(plan, H, sbpipe.Ansatz(gam, psi), g)
         assert val["bound_ok"]
         assert val["infidelity_trotter"] <= 1e-2
+
+
+def _qsp_phases(p, d, seed=0):
+    """Phases phi_0..phi_d with <0| e^{i phi_0 X} prod_j [e^{i theta Z} e^{i phi_j X}] |0> = p(cos theta)."""
+    from scipy.optimize import least_squares
+    xg = np.cos(np.linspace(0.02, np.pi / 2 - 0.02, 4 * d + 8))
+
+    def blk(ph, th):
+        c, s = np.cos(ph), 1j * np.sin(ph)
+        U = np.array([[c[0], s[0]], [s[0], c[0]]])
+        for j in range(1, len(ph)):
+            U = U @ np.diag([np.exp(1j * th), np.exp(-1j * th)]) @ np.array([[c[j], s[j]], [s[j], c[j]]])
+        return U[0, 0]
+
+    def res(ph):
+        r = np.array([blk(ph, np.arccos(x)) - p(x) for x in xg])
+        return np.r_[r.real, r.imag]
+    best = None
+    for s in range(30):
+        ph0 = np.random.default_rng(seed + s).normal(size=d + 1) * 0.5
+        o = least_squares(res, (ph0 + ph0[::-1]) / 2)
+        if best is None or o.cost < best.cost:
+            best = o
+        if best.cost < 1e-20:
+            break
+    return best.x, best.cost
+
+
+def test_qetu_certificate_and_circuit():
+    """The QETU design's closed-form eta and F_pass hold on a dense grid, and an explicit
+    ancilla circuit (QSP phases, Trotterised e^{-i tau H (x) Z}) reproduces p(X~) psi."""
+    from sbpipe.simulate import qetu_trotter
+    for delta, w0, eta_t in [(0.05, 1e-6, 1e-3), (0.2, 1e-3, 1e-2), (0.01, 0.0, 1e-5)]:
+        des = D.qetu(delta, w0, eta_t)
+        assert des.eta <= eta_t and des.m % 2 == 0
+        E = np.linspace(delta, 1.0, 200001)
+        assert np.max(np.abs(des.values(E))) <= des.eta * des.f_pass * (1 + 1e-9)
+        assert np.min(np.abs(des.values(np.linspace(0, w0, 101)))) >= des.f_pass * (1 - 1e-12)
+    # explicit circuit for a small degree on a random 3-qubit Hamiltonian scaled into [0, 1]
+    rng = np.random.default_rng(3)
+    H = random_paulisum(3, 6, rng)
+    w = np.linalg.eigvalsh(H.to_sparse().toarray())
+    Hs = PauliSum(H.labels + ["III"], np.r_[H.coeffs / (w[-1] - w[0]), -w[0] / (w[-1] - w[0])])
+    d, tau, x_s, k = 6, np.pi / 2, 0.8, 2
+    p = lambda x: D.qetu_values(d, 1.0, x_s, np.arccos(x))      # p as a function of x
+    ph, cost = _qsp_phases(p, d)
+    assert cost < 1e-14
+    psi = rng.normal(size=8) + 1j * rng.normal(size=8)
+    psi /= np.linalg.norm(psi)
+    # ancilla is the first tensor factor; query = S(tau) on |0>, S(-tau) on |1>
+    S = lambda t: np.column_stack([product_formula(Hs, e, t, k, 2) for e in np.eye(8)])
+    Q = np.kron(np.diag([1, 0]), S(tau)) + np.kron(np.diag([0, 1]), S(-tau))
+    rx = lambda a: np.kron(np.array([[np.cos(a), 1j * np.sin(a)], [1j * np.sin(a), np.cos(a)]]), np.eye(8))
+    U = rx(ph[0])
+    for j in range(1, d + 1):
+        U = U @ Q @ rx(ph[j])
+    out = (U @ np.kron([1, 0], psi))[:8]
+    ref = qetu_trotter(Hs, psi, d, tau, x_s, [k] * d)
+    assert np.allclose(out, ref, atol=1e-6)
+
+
+def test_bond_block_six_cnot_circuit():
+    """The 6-CNOT circuit counted for a controlled Heisenberg bond is exactly exp(-i th (XX+YY+ZZ) Z_a)."""
+    import numpy as np
+    from scipy.linalg import expm
+    I2, X = np.eye(2), np.array([[0, 1], [1, 0]])
+    Y, Z = np.array([[0, -1j], [1j, 0]]), np.diag([1.0, -1.0])
+    Hd = np.array([[1, 1], [1, -1]]) / np.sqrt(2)
+    k3 = lambda a, b, c: np.kron(np.kron(a, b), c)
+
+    def cx(c, t):
+        M = np.zeros((8, 8))
+        for i in range(8):
+            b = [(i >> (2 - q)) & 1 for q in range(3)]
+            if b[c]:
+                b[t] ^= 1
+            M[sum(v << (2 - q) for q, v in enumerate(b)), i] = 1
+        return M
+    rz = lambda a: k3(I2, I2, np.diag([np.exp(-1j * a / 2), np.exp(1j * a / 2)]))
+    for th in (0.37, -1.2):
+        U = expm(-1j * th * (k3(X, X, Z) + k3(Y, Y, Z) + k3(Z, Z, Z)))
+        V = k3(Hd, I2, I2) @ cx(0, 1)                      # Bell-basis change on the pair: 1 CNOT
+        M = cx(1, 2) @ rz(2 * th) @ cx(0, 2) @ rz(-2 * th) @ cx(1, 2) @ rz(2 * th) @ cx(0, 2)
+        W = V.conj().T @ M @ V                              # 1 + 4 + 1 CNOTs
+        ph = np.trace(U.conj().T @ W) / 8
+        assert abs(abs(ph) - 1) < 1e-12 and np.allclose(W, ph * U)
