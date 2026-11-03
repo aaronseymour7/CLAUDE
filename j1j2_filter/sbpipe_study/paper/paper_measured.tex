@@ -33,7 +33,8 @@ $1/\gamma$. The long, smooth SBC pulses tolerate Trotter steps of order $1/J_1$,
 grows only as $N^{\goMDN}\Delta^{-\goMDgap}$. Against a Chebyshev (QETU) filter under identical accounting, SBC is
 cheaper at $\epsilon\approx10^{-2}$, the two tie at $10^{-3}$, and QETU is cheaper from $10^{-4}$. Against compiling a
 better MPS, filtering wins on chains only as a last-mile polisher (\actOneWins{} of \actOneTot{} targets), but at 27
-of 28 targets on $4\times3$ and $4\times4$ cylinders, where a snake MPS needs a fast-growing bond dimension. Planned from
+of 28 targets on $4\times3$ and $4\times4$ cylinders, where a snake MPS needs a fast-growing bond dimension and the gap stays open (0.35 at $4\times12$, against 0.08 on
+the 48-site chain). Planned from
 DMRG alone, with converged DMRG energies, a low-bond-dimension MPS trial whose overlap motivates the filter, and the
 Trotter step set by energy convergence, the prepared state met the target in all \apEtot{} cases checked against exact
 diagonalization; of the inputs, an overestimated gap is the one that breaks a filter.
@@ -144,8 +145,29 @@ We study the open spin-$\frac12$ chain
 H=J_1\sum_{i=1}^{N-1}\mathbf S_i\cdot\mathbf S_{i+1}+J_2\sum_{i=1}^{N-2}\mathbf S_i\cdot\mathbf S_{i+2},
 \end{equation}
 $J_1=1$, which is gapless at $J_2=0$ and dimerized above $J_2\approx0.2411$~\cite{Okamoto1992,Eggert1996}; it has
-$B=2N-3$ bonds for $J_2\ne0$. Spectra are computed exactly per $S^z$ block. MPS trials are the variationally optimal
-MPS at fixed bond dimension, computed with quimb~\cite{Gray2018}.
+$B=2N-3$ bonds for $J_2\ne0$. We also study the same model on $4\times L_x$ cylinders, periodic around the four-site
+circumference and open along $L_x$, at $J_2=0$ and 0.3, with the MPS following a snake path. Spectra are computed
+exactly per $S^z$ block up to $N=16$. MPS trials are the variationally optimal MPS at fixed bond dimension, computed
+with quimb~\cite{Gray2018}; for larger systems the energies and overlaps come from DMRG with bond dimension up to 256.
+
+\emph{Why two dimensions.} Figure~\ref{fig:motivation} compares chains and cylinders at the same number of sites. Two
+differences favor a filter on cylinders. First, a snake MPS of fixed bond dimension is a far worse trial: at $N=48$ an
+MPS with $\chi=8$ leaves a residual weight $1-\gamma=10^{-2}$ on the chain but 0.69 on the $4\times12$ cylinder, and
+even $\chi=64$ leaves $5.5\times10^{-4}$ there. Reaching a tight target with the MPS alone therefore needs a large bond
+dimension, and its staircase circuit costs about four times more per doubling of $\chi$ (4\,500, 19\,536, 80\,324 and
+321\,720 CNOTs for $\chi=8$, 16, 32, 64 at $N=48$). Second, the cylinder's gap stays open: it falls from 0.66 at
+$4\times3$ to 0.35 at $4\times12$, while the chain's falls to 0.08 at $N=48$. The filter's depth is set by the gap and
+its overlap cost is only logarithmic (Sec.~\ref{sec:gapov}), so a large gap and a poor but cheap trial are the regime in
+which it should pay. Section~\ref{sec:crossover} tests this on the cylinders we can simulate.
+
+\begin{figure*}[t]
+\includegraphics[width=\textwidth]{figs/fig_motivation_meas.pdf}
+\caption{Chains (open squares, dashed) and $4\times N/4$ cylinders (filled circles, solid) at $J_2=0$, from DMRG
+(verified against ED for $N\le16$). (a) Residual weight $1-\gamma$ of the optimal MPS against its bond dimension;
+colors mark the number of sites. Chain trials were computed up to $\chi=8$. (b) Gap $E_1-E_0$ against $N$. Sources:
+\texttt{results/inputs.json}, \texttt{results/ext\_inputs2d.json}.}
+\label{fig:motivation}
+\end{figure*}
 
 %=====================================================================================================
 \section{Gap and overlap as independent inputs}
@@ -333,8 +355,8 @@ rather than to $N$ or $J_2$. The optimized design never wins, because suppressio
 needs $T\gtrsim\pi/\Delta$ where one dyadic pulse suffices, and QETU beats the MPS alone at 11 targets but is never the
 cheapest route.
 
-\emph{Cylinders.} On $4\times3$ and $4\times4$ cylinders (periodic around the four-site circumference) at $J_2=0$ and
-0.3, with snake-path MPS trials (Fig.~\ref{fig:actual}), the picture reverses. A snake MPS struggles here: at
+\emph{Cylinders.} On the $4\times3$ and $4\times4$ cylinders at $J_2=0$ and 0.3 (Fig.~\ref{fig:actual}), the picture
+reverses, as Fig.~\ref{fig:motivation} anticipates. A snake MPS struggles here: at
 $4\times4$, $J_2=0$, $\chi=16$ misses $\epsilon=10^{-2}$ ($1-\gamma=1.1\times10^{-2}$), $\chi=32$ stalls at
 $7\times10^{-4}$ and no $\chi\le64$ reaches $10^{-5}$, while the compile cost grows about fourfold per doubling (5\,328,
 20\,548 and 76\,600 CNOTs for $\chi=16$, 32, 64). The filtered route is cheaper at 27 of the 28 cylinder targets, by
@@ -444,7 +466,9 @@ at all.
 
 \emph{When filtering pays.} A filter pays where the trial is hard to improve. For chains the MPS infidelity falls
 quickly with $\chi$, so the filter helps only as a last-mile polisher; on small cylinders, where a snake MPS needs a
-fast-growing bond dimension, it wins almost everywhere.
+fast-growing bond dimension, it wins almost everywhere. DMRG on larger cylinders, up to $4\times12$, shows the
+same two conditions growing stronger with size: the snake MPS gets worse at fixed $\chi$ while the gap stays above 0.35,
+which makes two-dimensional systems the natural target for this workflow, beyond the sizes we could simulate.
 
 \emph{Measured costs and what an experiment pays.} The benchmarks use the exact ground state to pick the shortest
 sufficient filter and the coarsest sufficient Trotter step. Planned from DMRG alone, with the step set by energy

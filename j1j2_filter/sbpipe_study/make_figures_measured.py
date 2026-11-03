@@ -92,5 +92,47 @@ def fit_table():
         fh.write("".join(rows))
 
 
+def motivation_fig():
+    """Chains versus 4-leg cylinders at the same N (J2 = 0, DMRG): residual weight 1 - gamma of the optimal MPS
+    against bond dimension, and the gap against N. Sources: results/inputs.json, results/ext_inputs2d.json."""
+    ch = {r["N"]: r for r in M.load("inputs.json") if r["J2"] == 0.0}
+    cy = {r["N"]: r for r in M.load("ext_inputs2d.json") if r["J2"] == 0.0}
+    col = {12: "#7fb0e8", 16: "#4f8fd8", 24: "#2a6bc0", 32: "#14509e", 48: "#0b2f66"}
+    fig, axs = plt.subplots(1, 2, figsize=(7.2, 2.6))
+    a = axs[0]
+    for N, c in col.items():
+        for R, ls, mk in ((cy, "-", "o"), (ch, "--", "s")):
+            if N not in R:
+                continue
+            g = {int(k): 1 - v for k, v in R[N]["gamma"].items() if int(k) >= 2 and 1 - v > 1e-12}
+            x = sorted(g)
+            a.plot(x, [g[k] for k in x], ls=ls, marker=mk, color=c, ms=3.5, lw=1.5, mfc=c if ls == "-" else "white")
+    a.set_xscale("log", base=2); a.set_yscale("log")
+    a.set_xlabel(r"bond dimension $\chi$"); a.set_ylabel(r"residual weight $1-\gamma$")
+    a.yaxis.set_minor_formatter(M.matplotlib.ticker.NullFormatter())
+    h = [plt.Line2D([], [], color=c, lw=1.5, label=f"$N={N}$") for N, c in col.items()]
+    h += [plt.Line2D([], [], color=M.INK2, ls="-", marker="o", ms=3.5, label=r"cylinder $4\times N/4$"),
+          plt.Line2D([], [], color=M.INK2, ls="--", marker="s", mfc="white", ms=3.5, label="chain")]
+    a.legend(handles=h, fontsize=6.2, loc="lower left", ncol=2)
+    a.set_title("(a) MPS trial quality", loc="left", fontsize=7.5)
+    b = axs[1]
+    for R, ls, mk, lab in ((cy, "-", "o", r"cylinder $4\times N/4$"), (ch, "--", "s", "chain")):
+        N = sorted(R)
+        b.plot(N, [R[n]["gap"] for n in N], ls=ls, marker=mk, color=M.INK2, ms=3.5, lw=1.5,
+               mfc=M.INK2 if ls == "-" else "white", label=lab)
+    b.set_xscale("log", base=2); b.set_yscale("log")
+    b.set_xticks([8, 12, 16, 24, 32, 48]); b.set_xticklabels(["8", "12", "16", "24", "32", "48"])
+    b.xaxis.set_minor_formatter(M.matplotlib.ticker.NullFormatter())
+    b.yaxis.set_minor_formatter(M.matplotlib.ticker.NullFormatter())
+    b.set_yticks([0.1, 0.2, 0.3, 0.5]); b.set_yticklabels(["0.1", "0.2", "0.3", "0.5"])
+    b.set_xlabel(r"sites $N$"); b.set_ylabel(r"gap $E_1-E_0$ ($J_1$)")
+    b.legend(fontsize=6.5, loc="lower left")
+    b.set_title("(b) gap", loc="left", fontsize=7.5)
+    fig.tight_layout()
+    fig.savefig(os.path.join(M.FIG, "fig_motivation_meas.pdf"))
+    fig.savefig(os.path.join(M.FIG, "fig_motivation_meas.png"), dpi=150)
+    plt.close(fig)
+
+
 if __name__ == "__main__":
-    study_fig("A"); study_fig("B"); mechanism_fig(); fit_table()
+    study_fig("A"); study_fig("B"); mechanism_fig(); fit_table(); motivation_fig()
