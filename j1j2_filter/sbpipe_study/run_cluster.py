@@ -209,7 +209,8 @@ class Case:
             return None
         dt, k, inf, p = tr
         fc = filter_counts(self.Hs, k, 2)["cnot"]
-        return dict(extra, m=len(times), T=float(np.abs(times).sum()), steps=int(k.sum()), dt=dt,
+        return dict(extra, times=np.asarray(times).tolist(), phases=np.asarray(phases).tolist(), m=len(times),
+                    T=float(np.abs(times).sum()), steps=int(k.sum()), dt=dt,
                     dt_phys=dt / self.W, inf=inf, p=p, cnot_filter=fc, cnot=(fc + self.trial_cnot) / p)
 
     def dyadic(self, eps, n_cand=2):
