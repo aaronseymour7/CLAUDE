@@ -395,12 +395,18 @@ def mono():
     macro("monoCoarser", str(int(np.sum(ratio > 1.05))))
     print("mono:", mono_ok, "/", n, "SBC scans monotone;", qok, "/", qn, "QETU; dense/bisect", np.median(ratio), ratio.max(),
           "; worst finer infidelity/eps", worst.max())
-    txt = r"""We checked this on \monoCases{} cases ($N=8$, 10, 12; three overlaps at $\Delta=0.40$ and three gaps at
+    txt = r"""We checked this on \monoCases{} cases ($N=8$ and 10; three overlaps at $\Delta=0.40$ and three gaps at
 $\gamma=0.1$; all three targets) by scanning the common step on a dense logarithmic grid from one step per pulse down
-to an eighth of the bisected step. Passing was monotone, every step finer than the coarsest passing one also passing,
-in \monoOK{} of \monoN{} SBC scans, and in \monoQOK{} of \monoQN{} QETU scans over one to six steps per query. The
-coarsest passing step of the dense scan was a median \monoRatioMed{} times the bisected one (at most
-\monoRatioHi), so the bisection does not miss coarser passing steps."""
+to an eighth of the bisected step. For the dyadic filter and for QETU (one to six steps per query) passing was
+monotone in every scan: once a step passes, every finer step passes. The exceptions are all in the optimized SBC
+filter, \monoOK{} of \monoN{} SBC scans being monotone. Its pulse times are unequal, so the number of steps in each
+pulse is rounded separately and the realized error does not fall smoothly with the step. In four of the six exceptions
+the failing step lies above the bisected one, which only means the bisection could have stopped at a coarser step
+(the dense scan found a passing step up to \monoRatioHi{} times coarser; median ratio \monoRatioMed). In two
+($N=8$ and 10 at $\Delta=0.30$) a step finer than the bisected one fails, at 0.72 and 0.91 times it, with infidelity
+up to \monoWorst{}$\,\epsilon$. The step we report is always one that was evaluated and passed, so the tables are
+unaffected, but for the optimized filter a finer step is not automatically safe and the chosen step must be checked
+directly."""
     open(os.path.join(GEN, "sec_mono.tex"), "w").write(txt + "\n")
 
 
@@ -440,8 +446,8 @@ def sens2():
         for f in fs:
             tag = {-0.25: "mQ", -0.1: "mT", 0.1: "pT", 0.25: "pQ", 0.9: "Nine", 0.95: "NineFive", 1.0: "One",
                    1.25: "OneQ", 1.02: "OneOTwo", 1.05: "OneOFive", 1.1: "OneOne"}[f]
-            macro(f"sII{kind}{tag}Miss", str(miss(kind, f)))
-            macro(f"sII{kind}{tag}N", str(tot(kind, f)))
+            macro(f"sII{kind.replace('0', 'Zero')}{tag}Miss", str(miss(kind, f)))
+            macro(f"sII{kind.replace('0', 'Zero')}{tag}N", str(tot(kind, f)))
     macro("sIIrefused", str(sum(1 for r in json.load(open(p)) if not r.get("sim"))))
     print("sens2:", {(k, f): (miss(k, f), tot(k, f)) for k, fs, _ in spec for f in fs})
 
@@ -489,6 +495,31 @@ def eckart():
     print("eckart:", cert, "/", len(R), "certified;", ok, "within eps;", redesign, "redesigned; cost ratio SBC",
           np.median(ratio_s), "QETU", np.median(ratio_q), "max", max(ratio), "; shots median", np.median(shots))
 
+
+
+# ----------------------------------------------------------------------------- 8. SBC/QETU crossover target versus N
+def qcross():
+    from derive_gapov_filter import load_cases
+    Q = [json.loads(l) for l in open(os.path.join(RES, "qetu_tau.jsonl"))]
+    rows = {(r["N"], round(r["J2"], 7), r["gamma_target"], r["eps"]): r for r in load_cases()}
+    best = lambda q: min([x["cnot"] for x in (q["tau_pi2"], q["3pi/4"], q["pi/(1+delta)"]) if x] or [np.inf])
+    D = {}
+    for q in Q:
+        if q["src"] != "gapov":
+            continue
+        r = rows[(q["N"], round(q["J2"], 7), q["gamma_target"], q["eps"])]
+        s = min(r["meas_dyadic"]["cnot"], (r["meas_optimized"] or {}).get("cnot", np.inf))
+        D.setdefault((q["N"], q["eps"]), []).append(best(q) / s)
+    lines = []
+    names = {8: "Eight", 10: "Ten", 12: "Twelve", 14: "Fourteen", 16: "Sixteen"}
+    for N in sorted({k[0] for k in D}):
+        med = [np.median(D[(N, e)]) for e in (1e-2, 1e-3, 1e-4)]
+        a, b = np.polyfit([-2, -3, -4], np.log(med), 1)
+        xc = -b / a
+        macro("qx" + names[N], M.sci(10 ** xc, 1))
+        lines.append(f"{N} & " + " & ".join(f"{m:.2f}" for m in med) + f" & ${M.sci(10 ** xc, 1)}$ \\\\")
+        print("qcross", N, np.round(med, 2), 10 ** xc)
+    open(os.path.join(GEN, "tab_qcross.tex"), "w").write("\n".join(lines) + "\n")
 
 if __name__ == "__main__":
     what = sys.argv[1:] or ["fits", "bounds"]

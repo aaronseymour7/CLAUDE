@@ -54,3 +54,13 @@ checks that passing is monotone in the step.
 
 compares the matrix-free H|v>, Strang step and exact evolution with sbpipe on 10 and 8 qubits (all
 differences should be ~1e-14).
+
+## Optional: finish the Eckart (certified-step) study
+
+The DMRG-planning study resumes from `results/review_eckart.jsonl` (the committed file holds the
+N=12, 14 chains and 4x3 cylinders done so far) and only needs one node:
+
+    srun -c 16 --mem 32G -t 2-00:00:00 bash -c \
+      'source $HOME/venv-sbpipe/bin/activate; cd j1j2_filter/sbpipe_study; JOBS=16 PYTHONPATH=.. python run_review.py eckart'
+
+Send back `results/review_eckart.jsonl`.

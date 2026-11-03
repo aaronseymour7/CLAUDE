@@ -192,7 +192,7 @@ def _done(path, keyf):
 
 
 # ----------------------------------------------------------------------------- 1. truncation mechanism
-TR_N = [8, 10, 12, 14]
+TR_N = [int(x) for x in os.environ.get("TR_N", "8,10,12").split(",")]
 TR_GAPS = [0.40, 0.50]
 
 
@@ -289,7 +289,7 @@ def run_trunc():
 
 
 # ----------------------------------------------------------------------------- 2. monotonicity
-MONO_N = [8, 10, 12]
+MONO_N = [int(x) for x in os.environ.get("MONO_N", "8,10").split(",")]
 
 
 def _mono_case(args):
@@ -381,12 +381,6 @@ def run_bign():
                              for k in ("dyadic", "optimized", "qetu_pi2", "qetu_max"))
                   + f" ({r['time']:.0f}s)", flush=True)
 
-
-if __name__ == "__main__":
-    for k in (sys.argv[1] if len(sys.argv) > 1 else "mono").split(","):
-        t = time.time()
-        dict(trunc=run_trunc, mono=run_mono, bign=run_bign, sens2=run_sens2, eckart=run_eckart)[k]()
-        print(f"== {k} done in {time.time() - t:.0f}s", flush=True)
 
 
 # ----------------------------------------------------------------------------- 4. wider wrong-input study
@@ -537,3 +531,10 @@ def run_eckart():
             print(f"[eckart] {r['kind']}{r['size']} J2={r['J2']} eps={r['eps']:g} {r['schedule']} "
                   f"frac={a and a['frac']} bound={c.get('bound', float('nan')):.2e} inf={c.get('inf', float('nan')):.2e} "
                   f"({r['time']:.0f}s)", flush=True)
+
+
+if __name__ == "__main__":
+    for k in (sys.argv[1] if len(sys.argv) > 1 else "mono").split(","):
+        t = time.time()
+        dict(trunc=run_trunc, mono=run_mono, bign=run_bign, sens2=run_sens2, eckart=run_eckart)[k]()
+        print(f"== {k} done in {time.time() - t:.0f}s", flush=True)
