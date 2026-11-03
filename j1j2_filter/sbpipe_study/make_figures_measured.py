@@ -130,7 +130,6 @@ def motivation_fig():
     b.set_title("(b) gap", loc="left", fontsize=7.5)
     fig.tight_layout()
     fig.savefig(os.path.join(M.FIG, "fig_motivation_meas.pdf"))
-    fig.savefig(os.path.join(M.FIG, "fig_motivation_meas.png"), dpi=150)
     plt.close(fig)
 
 
