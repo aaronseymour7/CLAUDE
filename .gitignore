@@ -1,2 +1,7 @@
 __pycache__/
 *.pyc
+j1j2_filter/sbpipe_study/results/cache_review/
+j1j2_filter/sbpipe_study/results/cache_cluster/
+j1j2_filter/sbpipe_study/results/cluster/
+logs/
+j1j2_filter/sbpipe_study/results/cache_small/*.npz

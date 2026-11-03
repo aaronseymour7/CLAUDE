@@ -1,0 +1,17 @@
+The rotation lowers the overlap by spin flips, which put the missing weight mostly at high energy: the residual
+of a rotation trial has a mean excitation energy of \rotResLo--\rotResHi{} gaps. To check that the split between gap
+and overlap is not specific to that kind of residual, we repeat study A with a different mechanism. The trial is the
+exact ground state truncated to Schmidt rank one on a chosen set of bonds (at most five), an MPS of bond dimension at
+most 16 costed like the $\chi=16$ trial, whose error is an entanglement truncation and whose residual sits low in the
+spectrum, \trResLo--\trResHi{} gaps above $E_0$. For each $N$, $\Delta\in\{0.40,0.50\}$ and target $\gamma$ the bond
+set whose overlap lies closest to the target is used, giving $\gamma=\trGamLo$--\trGamHi{} (\trNcases{} cases with
+$1-\gamma>\epsilon$; \texttt{run\_review.py trunc}).
+
+The same law holds. Fitting Eq.~\eqref{eq:fit} to the truncation trials gives, for the dyadic filter, a per-shot
+overlap exponent $\nu=\trDShotgam$ $[\trDShotgamlo,\trDShotgamhi]$ and a per-success exponent \trDSuccgam{}
+$[\trDSuccgamlo,\trDSuccgamhi]$, against \ciDShotgam{} and \ciDSuccgam{} for the rotation trials, with
+$\lambda=\trDShoteps$ for the target. (The gap exponent is poorly constrained here, since only two gaps are used.)
+Predicting each truncation case's per-shot CNOTs from the rotation-trial fit of Table~\ref{tab:gofit} is off by a
+median factor \trPredMed{} (range \trPredLo--\trPredHi). The overlap therefore enters through its size, not through
+where in the spectrum the missing weight sits: the filter has to suppress every level above the gap, wherever the
+weight is.

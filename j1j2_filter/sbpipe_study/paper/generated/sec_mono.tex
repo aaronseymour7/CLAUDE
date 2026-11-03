@@ -1,0 +1,12 @@
+We checked this on \monoCases{} cases ($N=8$ and 10; three overlaps at $\Delta=0.40$ and three gaps at
+$\gamma=0.1$; all three targets) by scanning the common step on a dense logarithmic grid from one step per pulse down
+to an eighth of the bisected step. For the dyadic filter and for QETU (one to six steps per query) passing was
+monotone in every scan: once a step passes, every finer step passes. The exceptions are all in the optimized SBC
+filter, \monoOK{} of \monoN{} SBC scans being monotone. Its pulse times are unequal, so the number of steps in each
+pulse is rounded separately and the realized error does not fall smoothly with the step. In four of the six exceptions
+the failing step lies above the bisected one, which only means the bisection could have stopped at a coarser step
+(the dense scan found a passing step up to \monoRatioHi{} times coarser; median ratio \monoRatioMed). In two
+($N=8$ and 10 at $\Delta=0.30$) a step finer than the bisected one fails, at 0.72 and 0.91 times it, with infidelity
+up to \monoWorst{}$\,\epsilon$. The step we report is always one that was evaluated and passed, so the tables are
+unaffected, but for the optimized filter a finer step is not automatically safe and the chosen step must be checked
+directly.
