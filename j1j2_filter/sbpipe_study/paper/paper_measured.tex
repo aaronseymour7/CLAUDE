@@ -33,10 +33,10 @@ $1/\gamma$. The long, smooth SBC pulses tolerate Trotter steps of order $1/J_1$,
 grows only as $N^{\goMDN}\Delta^{-\goMDgap}$. Against a Chebyshev (QETU) filter under identical accounting, SBC is
 cheaper at $\epsilon\approx10^{-2}$, the two tie at $10^{-3}$, and QETU is cheaper from $10^{-4}$. Against compiling a
 better MPS, filtering wins on chains only as a last-mile polisher (\actOneWins{} of \actOneTot{} targets), but at 27
-of 28 targets on $4\times3$ and $4\times4$ cylinders, where a snake MPS needs a fast-growing bond dimension. Planning
-from DMRG alone, with the Trotter step set by energy convergence, met the target in all \apEtot{} cases checked against
-exact diagonalization, and DMRG error bars from the bond-dimension ladder covered the exact energies in all \mgN{} tests;
-a 10--25\% gap overestimate is the error that breaks a filter.
+of 28 targets on $4\times3$ and $4\times4$ cylinders, where a snake MPS needs a fast-growing bond dimension. Planned from
+DMRG alone, with converged DMRG energies, a low-bond-dimension MPS trial whose overlap motivates the filter, and the
+Trotter step set by energy convergence, the prepared state met the target in all \apEtot{} cases checked against exact
+diagonalization; of the inputs, an overestimated gap is the one that breaks a filter.
 \end{abstract}
 
 \maketitle
@@ -61,9 +61,9 @@ that reach a target infidelity $\epsilon$. We ask three questions. \emph{What se
 $\Delta$ and the trial overlap $\gamma$ normally change together with system size $N$; we decouple them, holding the
 gap fixed by tuning $J_2$ and the overlap fixed by a one-parameter rotation of the trial circuit. \emph{Which filter is
 cheaper?} We compare SBC with a Chebyshev polynomial filter (QETU)~\cite{Dong2022} under identical accounting.
-\emph{When does filtering pay?} We compare filtering a cheap MPS with compiling a better one. Finally, we check that
-the filter can be planned from DMRG alone, by running the whole workflow on DMRG inputs, with unconverged DMRG and with
-deliberately wrong inputs, on systems where exact diagonalization verifies the result.
+\emph{When does filtering pay?} We compare filtering a cheap MPS with compiling a better one. Finally, we run the
+whole workflow from DMRG alone, and test its sensitivity to wrong inputs, on systems where exact diagonalization
+verifies the result.
 
 \emph{Relation to prior work.} The filter is SBC's~\cite{Stetcu2023}; it shares its circuit with the rodeo
 algorithm~\cite{Choi2021,Qian2021}, which draws the times at random. Our ``dyadic'' schedule, a halving ladder of
@@ -370,48 +370,45 @@ filter CNOTs)$/p$ from exact simulation. Source: \texttt{results/emp\_actual.jso
 \section{Planning from DMRG alone, verified against exact diagonalization}
 \label{sec:dmrg}
 
-The measured costs above pick the filter and the Trotter step with the exact ground state. Here we use only what an
-experiment would have, DMRG, on systems small enough that exact diagonalization (ED) can check the outcome at the end.
-The DMRG front end supplies $E_0$, $E_1$ (the lowest $S^z=1$ state), an MPS trial and its overlap $\gamma$ with the
-reference MPS, each with an error bar equal to its change between the last two bond dimensions. The filter is designed
-from these estimates as in Sec.~\ref{sec:pipeline}, and ED enters only to compute the final infidelity.
+The benchmarks above pick the filter and the Trotter step with the exact ground state. Here we run the workflow as an
+experiment would, from DMRG alone, on systems small enough that exact diagonalization (ED) checks the outcome at the
+end. The workflow has two classical ingredients with different roles. A large-bond-dimension DMRG run ($\chi\le256$)
+converges the energies to machine level: it reproduces the ED values of $E_0$ and $E_1$ (the lowest $S^z=1$ state) to
+$\dmrgEzeroErr$ and $\dmrgEoneErr$ at every size checked, and it provides a reference MPS. The trial that is compiled
+into the circuit is a much smaller MPS, cheap enough to prepare, and its overlap $\gamma$ with the reference MPS, which
+agrees with its overlap with the ED ground state to $\dmrgGammaErr$, is what falls short of the target. The energies
+place the filter's window; the overlap is the reason a filter is needed and sets how much it must suppress.
 
 \emph{End to end.} For every chain ($N=12$, 14, 16) and cylinder ($4\times3$, $4\times4$) target of
 Sec.~\ref{sec:crossover}, $\epsilon=10^{-5}$--$10^{-2}$, with the SBC (dyadic or optimized) and QETU filters (\apN{}
-cases; \texttt{run\_aposteriori.py}), the filter is designed from the DMRG inputs and the Trotter step is chosen
+cases; \texttt{run\_aposteriori.py}), the trial is the low-$\chi$ MPS ($\chi=2$--64) that leads to the cheapest
+circuit. Its residual weight $1-\gamma$ ranges from $2\times10^{-5}$ to 0.4 and exceeds the target by a median factor
+of 7. The filter is designed from the DMRG energies and the DMRG estimate of $\gamma$, and the Trotter step is chosen
 without the ground state: starting from $\delta t=4/J_1$, halve it until the post-selected energy changes by at most
 $\epsilon\Delta/2$ between successive steps, and keep the finer one. Because the leaked weight sits at least $\Delta$
 above $E_0$, an infidelity $\epsilon$ moves the energy by at least $\epsilon\Delta$, so the rule errs on the safe side.
-Checked against ED, it met the target in \apEok{} of \apEtot{} cases, at a median \apEorS{} (SBC) and \apEorQ{} (QETU)
-times the cost with the coarsest step that passes. Its price is the calibration: resolving $\epsilon\Delta/2$ in the
-three measurement bases of the Heisenberg energy takes a median $\apShotsMed$ post-selected shots per case, about
-$10^{7}$ at $\epsilon=10^{-2}$ and growing as $\epsilon^{-2}$, which pays off only if the circuit is then reused many
-times. At these sizes converged DMRG reproduces the ED energies to $10^{-11}$, so this test checks the design and the
-step rule rather than DMRG errors; the next two tests target those.
+Checked against ED, the prepared state met the target in \apEok{} of \apEtot{} cases, at a median \apEorS{} (SBC) and
+\apEorQ{} (QETU) times the cost with the coarsest step that passes. The price is the calibration: resolving
+$\epsilon\Delta/2$ in the three measurement bases of the Heisenberg energy takes a median $\apShotsMed$ post-selected
+shots per case, about $10^{7}$ at $\epsilon=10^{-2}$ and growing as $\epsilon^{-2}$, which pays off only if the circuit
+is then reused many times.
 
-\emph{Unconverged DMRG.} To test the error bars themselves we stopped the DMRG ladder at each of $\chi=8$, 16, 32, 64
-and 128 on \mgSys{} systems with exact spectra (chains $N=12$--16, cylinders $4\times3$--$4\times5$, all $J_2$; \mgN{}
-cases; \texttt{run\_margin.py}). Without error bars the DMRG energies are consistent with ED in only \mgCovRaw{} of
-\mgN{} cases, and the DMRG gap is up to \mgOverMax\% too large, the dangerous direction, since both DMRG energies are
-variational upper bounds. With the error bars the intervals contain both exact energies in \mgCov{} of \mgN. Filters
-designed from each stopped ladder for the four cylinders with full spectra, at $\epsilon=10^{-2}$--$10^{-4}$ and every
-schedule, were applied exactly to the trial's spectral weights: all \mbPlans{} met the target. Once DMRG has
-converged ($\chi\ge64$) the error bars cost a median factor \mbHiMed{} (at most \mbHiMax); at $\chi=32$ a median
-\mbMidMed; at $\chi\le16$ they make the energy window inconsistent in \mbLoInf{} of \mbLoN{} cases, which the pipeline
-reports instead of returning a filter.
-
-\emph{Deliberately wrong inputs.} Finally we perturbed the inputs by hand for every $N\le14$, all three couplings and
-the dyadic, optimized and QETU filters at $\epsilon=10^{-2}$, with a conservative Trotter step so that only the filter
-design is tested, and simulated each circuit on the true trial state (Table~\ref{tab:senswide}). With exact inputs all
-\sensGapN{} filters meet the target. Overestimating the gap moves the stop-band edge above the first excitation: by
-10\% it breaks the target in \sensGapOneTenMiss{} of \sensGapN{} cases (marginally, worst \sensGapOneTenWorst), by 25\%
-in \sensGapOneQuarterMiss{} and by 50\% in \sensGapOneHalfMiss. The dyadic filter is the most tolerant
+\emph{Sensitivity to the inputs.} With converged DMRG the energies are not the limiting input, but a filter should
+still fail gracefully if they are off, for example when DMRG is not converged on a harder system. We therefore perturbed
+the inputs by hand for every $N\le14$, all three couplings and the dyadic, optimized and QETU filters at
+$\epsilon=10^{-2}$, with a conservative Trotter step so that only the filter design is tested, and simulated each
+circuit on the true trial state (Table~\ref{tab:senswide}). With exact inputs all \sensGapN{} filters meet the target.
+Overestimating the gap moves the stop-band edge above the first excitation: by 10\% it breaks the target in
+\sensGapOneTenMiss{} of \sensGapN{} cases (marginally, worst \sensGapOneTenWorst), by 25\% in
+\sensGapOneQuarterMiss{} and by 50\% in \sensGapOneHalfMiss. The dyadic filter is the most tolerant
 (\sensDyaQuarterMiss{} misses at 25\%), because its suppression is far below the target over most of the band; the
-optimized and Chebyshev filters, designed to sit right at the target, have no slack. Underestimating the gap is safe
-and cheap: assuming \gapMarginF{} of it costs \gapMarginCost$\times$. Overestimating $\gamma$ broke the target in
+optimized and Chebyshev filters, designed to sit right at the target, have no slack. Underestimating the gap is safe and
+cheap: assuming \gapMarginF{} of it costs \gapMarginCost$\times$. Overestimating $\gamma$ broke the target in
 \sensGammaMiss{} of \sensGammaN{} cases, every one because the inflated overlap crossed $1-\epsilon$ and the pipeline
-dropped the filter altogether. The gap is therefore the input to protect: a margin on $E_1$ costs little, and the
-DMRG error bars above supply one.
+dropped the filter altogether. When DMRG is not converged, its error bars catch it: taking each energy's change between
+the last two bond dimensions as its error, the intervals contained both exact energies in all \mgN{} tests on stopped
+bond-dimension ladders (\texttt{run\_margin.py}), and the energy window became inconsistent, so that the pipeline
+refused to plan, before the gap error grew large enough to matter.
 
 \begin{table*}[t]
 \caption{Gap and overlap overestimation for every $N\in\{8,10,12,14\}$ and $J_2$ (12 instances),
@@ -452,9 +449,9 @@ fast-growing bond dimension, it wins almost everywhere.
 \emph{Measured costs and what an experiment pays.} The benchmarks use the exact ground state to pick the shortest
 sufficient filter and the coarsest sufficient Trotter step. Planned from DMRG alone, with the step set by energy
 convergence, the filter met the target in every case we could check, at about twice the measured gate cost, but the
-calibration costs $\epsilon^{-2}$ shots. The input to protect is the gap: DMRG overestimates it, a 10--25\%
-overestimate breaks the optimized and Chebyshev filters, and the bond-dimension ladder supplies a margin that covered
-the exact energies in every test at little cost. All of this was verified at sizes where ED is available; at larger
+calibration costs $\epsilon^{-2}$ shots. Converged DMRG makes the energies essentially exact, and the
+small trial MPS's overlap is what the filter has to repair. If the energies were off, the gap is the input to protect:
+a 10--25\% overestimate breaks the optimized and Chebyshev filters, while an underestimate costs little. All of this was verified at sizes where ED is available; at larger
 sizes the same workflow runs, but its outcome can no longer be checked.
 
 \emph{Limitations.} Noiseless simulation; all-to-all connectivity; repeat-until-success rather than early abort; trial
