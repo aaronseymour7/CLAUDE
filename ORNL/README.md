@@ -13,6 +13,8 @@ python run_maps.py               # N = 8 10 12 14 16, eps = 1e-2 1e-3  -> result
 python analyze.py                # fits -> results/fits.csv, figures -> figs/
 ```
 
+To play: `pip install jupyter` and open `playground.ipynb` (runs in about 20 s).
+
 `python run_maps.py --N 8 10 12 --eps 1e-2` runs a subset. A run writes its JSON after every gap value and
 resumes where it stopped.
 
@@ -23,6 +25,7 @@ resumes where it stopped.
 | `filtercost.py` | The whole engine: model, the two knobs, Trotter simulation, measured search, CNOT count, RUS and AA cost |
 | `run_maps.py` | Runs the (gap, overlap) grid for each N and eps |
 | `analyze.py` | Power-law fits per N and over all N, and the figures |
+| `playground.ipynb` | Interactive notebook: knobs, one measured point, the filter on the spectrum with a gate-by-gate check, a small map with fits, the saved results. Regenerate with `make_notebook.py` |
 | `test_filtercost.py` | Checks the engine against direct simulation, `expm` and a Grover toy model |
 | `results/` | One JSON per N, and `fits.csv` |
 | `figs/` | `fig_knobs`, `fig_maps_eps*`, `fig_cuts_eps*`, `fig_exponents`, `fig_local_exponents` |
