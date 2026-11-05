@@ -8,13 +8,14 @@ code = lambda s: cells.append(nbf.v4.new_code_cell(s.strip()))
 md(r"""
 # Filter cost playground
 
-Interactive front end to `filtercost.py`. Change the parameters in each section and re-run it.
+Interactive front end to the `ornl` package. Change the parameters in each section and re-run it.
 
 1. Pick a chain and look at the two knobs (gap via dimerisation, overlap via staggered Rz)
 2. Measure the cheapest filter at one (gap, overlap) point, with repeat-until-success and amplitude amplification
 3. See what that filter does to the spectrum, and check it gate by gate
 4. Run a small (gap, overlap) map and fit the exponents
 5. Load the saved N = 8–16 results
+6. Check against real Qiskit circuits (noiseless state vector, small N)
 
 Small N (8–12) runs in seconds. N = 14 takes minutes per point, N = 16 about 10 minutes.
 """)
@@ -23,7 +24,7 @@ code(r"""
 import json, time
 import numpy as np
 import matplotlib.pyplot as plt
-import filtercost as fc
+from ornl import StudyConfig, Chain, chain_for_gap, delta_for_gap, measure_point, trotter, costs
 """)
 
 md(r"""
@@ -35,15 +36,16 @@ md(r"""
 
 code(r"""
 N, J1, J2 = 10, 1.0, 0.2411
+cfg = StudyConfig(J1=J1, J2=J2)          # every other knob of the study lives here too (see ornl/config.py)
 
 deltas = np.linspace(-0.4, 0.95, 40)
-gaps = [fc.Chain(N, d, J1, J2).gap for d in deltas]
+gaps = [Chain(N, d, J1, J2).gap for d in deltas]
 
 fig, ax = plt.subplots(1, 2, figsize=(11, 3.8))
 ax[0].semilogy(deltas, gaps, "o-", ms=3)
 ax[0].set(xlabel=r"dimerisation $\delta$", ylabel=r"gap $E_1-E_0$ ($J_1$)", title=f"gap knob, N={N}, J2={J2}")
 for d in (-0.2, 0.0, 0.5):
-    ch = fc.Chain(N, d, J1, J2)
+    ch = Chain(N, d, J1, J2)
     es = np.linspace(0, 0.6, 121)
     ax[1].semilogy(es, [ch.overlap(e) for e in es], label=f"delta={d:+.1f}, gap={ch.gap:.3f}")
 ax[1].set(xlabel=r"staggered $R_z$ angle $\epsilon$", ylabel=r"overlap $\gamma$", title="overlap knob")
@@ -64,17 +66,17 @@ GAP     = 0.1                       # physical gap (J1)
 GAMMAS  = [0.01, 0.1, 0.5, 0.9]     # target overlaps
 EPS     = [1e-2, 1e-3]              # target infidelities
 
-delta = fc.delta_for_gap(N, GAP, J1=J1, J2=J2)
-ch = fc.Chain(N, delta, J1, J2)
+ch = chain_for_gap(N, GAP, cfg)
+delta = ch.delta
 print(f"N={N}, delta={delta:+.4f}: gap {ch.gap:.4f}, bandwidth W {ch.W:.3f}, scaled gap {ch.gap_s:.5f}")
 
 t0 = time.time()
-rows, eps_knob = fc.measure_point(ch, GAMMAS, EPS)
+rows, eps_knob = measure_point(ch, GAMMAS, EPS, cfg)
 print(f"measured in {time.time() - t0:.1f} s\n")
 print(f"{'gamma':>6} {'eps':>6} {'prot':>4} {'K':>3} {'r':>3} {'n':>3} {'CNOT/attempt':>13} {'p':>7} {'1-F':>9} {'CNOT/success':>13}")
 for g, row in zip(GAMMAS, rows):
     for e in EPS:
-        for pr in fc.PROTOCOLS:
+        for pr in cfg.protocols:
             b = row[e][pr]
             print(f"{g:6.3g} {e:6.0e} {pr:>4} {b['K']:3d} {b['r']:3d} {b['n']:3d} {b['cnot']:13,d} {b['p']:7.4f} "
                   f"{b['infid']:9.2e} {b['cost']:13,.0f}")
@@ -112,15 +114,7 @@ ax.set(xlabel="scaled energy E", ylim=(1e-12, 2), xscale="log", xlim=(ch.gap_s /
 ax.legend(fontsize=8); ax.grid(alpha=0.3); plt.show()
 
 # gate-by-gate check: n Strang steps per tau, pulses (S^m + S^-m)/2
-v = psi[:, None].astype(complex)
-dt = tau / b["n"]
-for _ in range(b["r"]):
-    for k in range(b["K"]):
-        m = b["n"] * 2 ** k
-        v = 0.5 * (ch.strang(v, dt, m) + ch.strang(v, -dt, m))
-v = v[:, 0]
-p = np.vdot(v, v).real
-infid = 1 - abs(np.vdot(ch.g0, v)) ** 2 / p
+v, p, infid = trotter.dyadic_filter(ch, psi, b["K"], b["r"], b["n"])
 print(f"gate by gate:  p = {p:.6f}  1-F = {infid:.3e}")
 print(f"measured:      p = {b['p']:.6f}  1-F = {b['infid']:.3e}")
 """)
@@ -138,14 +132,14 @@ GAPS_MAP  = np.geomspace(0.01, 1.5, 8)
 GAMS_MAP  = [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 0.8, 0.95]
 EPS_MAP   = 1e-2
 
-C = {pr: np.full((len(GAPS_MAP), len(GAMS_MAP)), np.nan) for pr in ("attempt",) + fc.PROTOCOLS}
+C = {pr: np.full((len(GAPS_MAP), len(GAMS_MAP)), np.nan) for pr in ("attempt",) + tuple(cfg.protocols)}
 t0 = time.time()
 for i, g in enumerate(GAPS_MAP):
-    c_ = fc.Chain(N_MAP, fc.delta_for_gap(N_MAP, g, J1=J1, J2=J2), J1, J2)
-    rr, _ = fc.measure_point(c_, GAMS_MAP, [EPS_MAP])
+    c_ = chain_for_gap(N_MAP, g, cfg)
+    rr, _ = measure_point(c_, GAMS_MAP, [EPS_MAP], cfg)
     for j, r_ in enumerate(rr):
         C["attempt"][i, j] = r_[EPS_MAP]["rus"]["cnot"]
-        for pr in fc.PROTOCOLS:
+        for pr in cfg.protocols:
             C[pr][i, j] = r_[EPS_MAP][pr]["cost"]
 print(f"{len(GAPS_MAP)} x {len(GAMS_MAP)} map in {time.time() - t0:.0f} s")
 
@@ -183,6 +177,33 @@ for a, gam in zip(ax, (0.01, 0.1, 0.9)):
         a.loglog(G[:, j], Cs[:, j], "o-", ms=3, color=c, label=f"N={N_}")
     a.set(xlabel="gap (J1)", title=f"gamma = {gam}, {KIND}, eps = {EPS_SAVED:g}"); a.grid(alpha=0.3, which="both")
 ax[0].set_ylabel("CNOT"); ax[0].legend(); plt.tight_layout(); plt.show()
+""")
+
+md(r"""
+## 6. Check against real Qiskit circuits
+
+Builds the exact circuit for the filter chosen in section 2: the trial as a StatePreparation, one ancilla per pulse,
+each controlled bond as a Bell change (synthesised by Qiskit's KAK `TwoQubitBasisDecomposer`) plus a 4-CNOT parity
+network. It simulates it noiselessly, post-selects all ancillas on 0, and runs amplitude amplification on it.
+`compile="pauli"` instead hands each bond to Qiskit as a `PauliEvolutionGate` and transpiles at level 3.
+Needs `pip install qiskit`; keep N + K r under about 20 qubits. `python verify_qiskit.py` runs a whole table.
+""")
+
+code(r"""
+from ornl import qiskit_check as qk
+
+N_Q, GAP_Q, GAMMA_Q, EPS_Q = 6, 0.8, 0.1, 1e-2
+chq = chain_for_gap(N_Q, GAP_Q, cfg)
+rq, ekq = measure_point(chq, [GAMMA_Q], [EPS_Q], cfg)
+bq = rq[0][EPS_Q]["rus"]
+psi_q = chq.trial(ekq[0])
+print(f"engine:         p={bq['p']:.6f}  1-F={bq['infid']:.3e}  CNOT={bq['cnot']}   (K={bq['K']} r={bq['r']} n={bq['n']})")
+for compile in ("bond", "pauli"):
+    v = qk.verify(chq, psi_q, bq["K"], bq["r"], bq["n"], compile=compile, aa=(compile == "bond"))
+    print(f"qiskit ({compile:5s}): p={v['p']:.6f}  1-F={v['infid']:.3e}  CNOT={v['cnot_circuit']}   ({v['qubits']} qubits)")
+    if compile == "bond":
+        print(f"AA: k={v['aa_k']} rounds, simulated success {v['aa_success']:.4f}, formula {v['aa_success_formula']:.4f}; "
+              f"reflections {v['reflect_cnot_circuit']} CNOTs in Qiskit vs {v['reflect_cnot_model']} in the cost model")
 """)
 
 nb = nbf.v4.new_notebook(cells=cells, metadata={"kernelspec": {"name": "python3", "display_name": "Python 3",

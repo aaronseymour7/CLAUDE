@@ -1,6 +1,7 @@
 """Fits and figures from results/map_N*.json.
 
     python analyze.py                 # reads results/, writes figs/ and results/fits.csv
+    python analyze.py --gamma-fit-max 0.9 --results other_results --figs other_figs
 
 Cost kinds:  attempt  CNOTs of one attempt (the filter chosen for repeat-until-success)
              rus      expected CNOTs per success, repeat until success
@@ -187,8 +188,13 @@ def main(res_dir="results", fig_dir="figs"):
 
 
 if __name__ == "__main__":
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--results", default="results")
-    ap.add_argument("--figs", default="figs")
+    from ornl import StudyConfig
+    from ornl.config import add_cli
+    ap = add_cli(argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter))
+    ap.add_argument("--results", help="default: the config's out_dir")
+    ap.add_argument("--figs", help="default: the config's fig_dir")
+    ap.add_argument("--gamma-fit-max", type=float, default=GAMMA_FIT_MAX)
     a = ap.parse_args()
-    main(a.results, a.figs)
+    cfg = StudyConfig.from_cli(a.config, a.set)
+    GAMMA_FIT_MAX = a.gamma_fit_max
+    main(a.results or cfg.out_dir, a.figs or cfg.fig_dir)
