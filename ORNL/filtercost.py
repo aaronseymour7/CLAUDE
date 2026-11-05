@@ -124,9 +124,9 @@ class Chain:
         return np.exp(-1j * c0 * dt * steps) * V
 
 
-def delta_for_gap(N, gap, lo=-0.9, hi=0.95):
+def delta_for_gap(N, gap, lo=-0.9, hi=0.95, J1=J1, J2=J2):
     """Dimerisation that gives the target physical gap (units of J1)."""
-    return brentq(lambda d: Chain(N, d).gap - gap, lo, hi, xtol=1e-10)
+    return brentq(lambda d: Chain(N, d, J1, J2).gap - gap, lo, hi, xtol=1e-10)
 
 
 # ---------------------------------------------------------------- costs --------------------------------------------
