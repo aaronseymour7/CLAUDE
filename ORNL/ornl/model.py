@@ -19,6 +19,17 @@ from scipy.sparse import csr_matrix, identity
 from scipy.sparse.linalg import eigsh
 
 
+def chain_bonds(N, delta, J1=1.0, J2=0.2411):
+    """Bonds (i, j, J) in Trotter order: J1 even, J1 odd, J2 even, J2 odd."""
+    bonds = []
+    for r, J in ((1, J1), (2, J2)):
+        for par in (0, 1):
+            for i in range(par, N - r, 2):
+                f = (1 + delta if i % 2 == 0 else 1 - delta) if r == 1 else 1.0
+                bonds.append((i, i + r, J * f))
+    return bonds
+
+
 class Chain:
     """S^z = 0 sector of one chain: basis, bonds in Trotter order, spectrum, exact ground state, trial states.
 
@@ -32,12 +43,7 @@ class Chain:
         self.dim = len(self.states)
         bits = (self.states[:, None] >> (N - 1 - np.arange(N))[None, :]) & 1
         self.M = ((1 - 2 * bits) * (-1) ** np.arange(N)).sum(1).astype(float)       # sum_i (-1)^i Z_i
-        self.bonds = []                                     # Trotter order: J1 even, J1 odd, J2 even, J2 odd
-        for r, J in ((1, J1), (2, J2)):
-            for par in (0, 1):
-                for i in range(par, N - r, 2):
-                    f = (1 + delta if i % 2 == 0 else 1 - delta) if r == 1 else 1.0
-                    self.bonds.append((i, i + r, J * f))
+        self.bonds = chain_bonds(N, delta, J1, J2)
         index = np.full(1 << N, -1)
         index[self.states] = np.arange(self.dim)
         self.index_of = lambda s: index[s]

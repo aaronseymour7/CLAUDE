@@ -26,6 +26,7 @@ from qiskit.quantum_info import Operator, SparsePauliOp, Statevector
 from qiskit.synthesis import TwoQubitBasisDecomposer
 
 from .costs import aa_rounds, cnot_per_attempt, cnot_mcz
+from .trotter import strang_sequence
 
 warnings.filterwarnings("ignore", category=Warning, module="scipy.sparse")
 
@@ -51,19 +52,6 @@ def bond_block(qc, i, j, a, phi, compile="bond"):
     qc.cx(i, a); qc.rz(2 * phi, a)               # exp(-i phi Z_j Z_a)
     qc.cx(j, a)
     qc.compose(BELL_DG, [i, j], inplace=True)
-
-
-def strang_sequence(n_bonds, steps):
-    """Bond indices and weights (in half steps) of `steps` merged Strang steps: the middle half steps merge and
-    consecutive steps share their outer one, giving steps (2B - 2) + 1 blocks."""
-    one = list(range(n_bonds)) + list(range(n_bonds))[::-1]
-    out = []
-    for b in one * steps:
-        if out and out[-1][0] == b:
-            out[-1][1] += 1
-        else:
-            out.append([b, 1])
-    return out
 
 
 def append_pulse(qc, ch, a, dt, m, compile="bond"):

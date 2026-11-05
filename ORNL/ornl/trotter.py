@@ -81,3 +81,16 @@ def dyadic_filter(ch, psi, K, r, n):
             v = pulse(ch, v, tau / n, n * 2 ** k)
     p = float(np.vdot(v, v).real)
     return v, p, 1 - abs(np.vdot(ch.g0, v)) ** 2 / p
+
+
+def strang_sequence(n_bonds, steps):
+    """Bond indices and weights (in half steps) of `steps` merged Strang steps: the middle half steps merge and
+    consecutive steps share their outer one, giving steps (2B - 2) + 1 gates. Used by the circuit builders."""
+    one = list(range(n_bonds)) + list(range(n_bonds))[::-1]
+    out = []
+    for b in one * steps:
+        if out and out[-1][0] == b:
+            out[-1][1] += 1
+        else:
+            out.append([b, 1])
+    return out
