@@ -73,5 +73,6 @@ def test_config_overrides():
 
 def test_aa_cost_no_overflow_at_tiny_p():
     from ornl import costs
-    c = costs.cost(603979080, 1.5e-30, "aa", 1000)
-    assert 0 < c < 603979080 / 1.5e-30                              # positive, and below RUS (~ pi / (4 sqrt p) rounds)
+    for p in (1.5e-30, 1e-130, 1e-285):
+        c = costs.cost(603979080, p, "aa", 1000)
+        assert 0 < c < 603979080 / p                                # positive, and below RUS (~ pi / (4 sqrt p) rounds)
