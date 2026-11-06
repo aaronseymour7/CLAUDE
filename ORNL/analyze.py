@@ -3,7 +3,8 @@
     python analyze.py                 # reads results/, writes figs/ and results/fits.csv
     python analyze.py --gamma-fit-max 0.9 --results other_results --figs other_figs
 
-Cost kinds:  attempt  CNOTs of one attempt (the filter chosen for repeat-until-success)
+Cost kinds (filter CNOTs only; trial preparation is not counted; figures show rus and aa):
+             attempt  CNOTs of one attempt (the filter chosen for repeat-until-success)
              rus      expected CNOTs per success, repeat until success
              aa       expected CNOTs per success, amplitude amplification
 Fits (C0 = e^c in fits.csv): ln C = c + a ln(1/gap) + b ln(1/gamma)              per N
@@ -21,7 +22,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-KINDS = ("attempt", "rus", "aa")
+KINDS = ("attempt", "rus", "aa")                  # all three fitted (fits.csv)
+PLOT = ("rus", "aa")                               # figures: filter cost per success (no trial prep)
 LABEL = dict(attempt="CNOT per attempt", rus="CNOT per success (RUS)", aa="CNOT per success (AA)")
 GAMMA_FIT_MAX = 0.95
 
@@ -115,10 +117,10 @@ def main(res_dir="results", fig_dir="figs"):
 
     for eps in eps_list:
         # 2. cost maps
-        fig, ax = plt.subplots(len(KINDS), len(Ns), figsize=(3.2 * len(Ns), 2.8 * len(KINDS)), squeeze=False)
-        allC = np.concatenate([grid(maps[N], eps, k)[2].ravel() for N in Ns for k in KINDS])
+        fig, ax = plt.subplots(len(PLOT), len(Ns), figsize=(3.2 * len(Ns), 2.8 * len(PLOT)), squeeze=False)
+        allC = np.concatenate([grid(maps[N], eps, k)[2].ravel() for N in Ns for k in PLOT])
         vmin, vmax = np.log10(np.nanmin(allC)), np.log10(np.nanmax(allC))
-        for i, kind in enumerate(KINDS):
+        for i, kind in enumerate(PLOT):
             for j, N in enumerate(Ns):
                 G, Y, C = grid(maps[N], eps, kind)
                 m = ax[i, j].pcolormesh(G[:, 0], np.array(maps[N]["gammas"]), np.log10(C).T, shading="nearest",
@@ -134,7 +136,7 @@ def main(res_dir="results", fig_dir="figs"):
         gam_cut, gap_cut = (0.01, 0.1, 0.5, 0.9), (0.01, 0.1, 1.0)
         fig, ax = plt.subplots(2, len(gam_cut), figsize=(3.6 * len(gam_cut), 6.4), squeeze=False)
         for N, c in zip(Ns, colors):
-            for kind, ls in (("rus", "-"), ("aa", "--"), ("attempt", ":")):
+            for kind, ls in (("rus", "-"), ("aa", "--")):
                 G, Y, C = grid(maps[N], eps, kind)
                 gams = np.array(maps[N]["gammas"])
                 for j, gc in enumerate(gam_cut):
@@ -149,14 +151,14 @@ def main(res_dir="results", fig_dir="figs"):
         ax[0, 0].legend(fontsize=6, ncol=2)
         for a in ax.ravel():
             a.grid(alpha=0.3, which="both")
-        ax[0, 0].set_ylabel("CNOT"); ax[1, 0].set_ylabel("CNOT")
-        fig.suptitle(rf"$1-F\leq{eps:g}$: RUS solid, AA dashed, per attempt dotted")
+        ax[0, 0].set_ylabel("filter CNOT per success"); ax[1, 0].set_ylabel("filter CNOT per success")
+        fig.suptitle(rf"$1-F\leq{eps:g}$: filter cost per success, RUS solid, AA dashed")
         fig.tight_layout(); fig.savefig(os.path.join(fig_dir, f"fig_cuts_eps{eps:g}.pdf")); plt.close(fig)
 
     # 4. exponents vs N
     fig, ax = plt.subplots(1, 2, figsize=(10, 3.8))
     for eps, mk in zip(eps_list, ("o", "s", "^")):
-        for kind, c in zip(KINDS, ("C0", "C1", "C2")):
+        for kind, c in zip(PLOT, ("C1", "C2")):
             a = np.array([fits[eps, kind, N] for N in Ns])
             ax[0].errorbar(Ns, a[:, 0], a[:, 1], marker=mk, color=c, capsize=3, label=f"{kind}, eps={eps:g}")
             ax[1].errorbar(Ns, a[:, 2], a[:, 3], marker=mk, color=c, capsize=3, label=f"{kind}, eps={eps:g}")
@@ -170,7 +172,7 @@ def main(res_dir="results", fig_dir="figs"):
     fig, ax = plt.subplots(len(eps_list), 2, figsize=(10, 3.6 * len(eps_list)), squeeze=False)
     for row, eps in enumerate(eps_list):
         for N, c in zip(Ns, colors):
-            for kind, ls in (("rus", "-"), ("aa", "--"), ("attempt", ":")):
+            for kind, ls in (("rus", "-"), ("aa", "--")):
                 G, Y, C = grid(maps[N], eps, kind)
                 m = fit_mask(Y, C, eps)
                 xs, a_loc = [], []
@@ -193,7 +195,7 @@ def main(res_dir="results", fig_dir="figs"):
         for a in ax[row]:
             a.grid(alpha=0.3, which="both")
     ax[0, 0].legend(fontsize=6, ncol=3)
-    fig.suptitle("RUS solid, AA dashed, per attempt dotted")
+    fig.suptitle("filter cost per success, RUS solid, AA dashed")
     fig.tight_layout(); fig.savefig(os.path.join(fig_dir, "fig_local_exponents.pdf")); plt.close(fig)
     print(f"figures in {fig_dir}/")
 
