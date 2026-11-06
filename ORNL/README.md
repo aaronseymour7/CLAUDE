@@ -96,6 +96,17 @@ Results of `python verify_qiskit.py` (27 points, N = 4, 6, 8, up to 17 qubits, i
   model assumes. Constructions that use spare
   qubits get closer to linear; set `mcz_cnots_per_qubit` to see how the AA costs move.
 
+## Trial preparation for the application: one-layer MPS-to-circuit
+
+The study uses `trial = "exact"`: the staggered-Rz layer acts on the exact ground state and the preparation is not
+costed, so γ is set exactly and independently of the gap. For the application, `--set trial='"mps1"'` uses a real
+circuit instead: reference ground state (ED, or DMRG) → bond-dimension-2 truncation → a staircase of N − 1
+two-qubit gates (one layer, each compiled by KAK, 2–3 CNOTs) → the staggered-Rz layer. γ is measured on that final
+trial, so it includes the truncation loss: at ε = 0 it is γ₀ < 1, and higher targets are out of reach (at N = 12,
+γ₀ ≈ 0.99 at gap 1.7 but 0.18 at gap 0.01). The prep CNOTs are added to every attempt. The truncation conserves
+S^z, so the trial stays in the sector of the ground state (`ornl/prep.py`). `verify_qiskit.py` then builds this
+prep circuit gate by gate; it reproduces γ, p and 1 − F to 1e−12 and the prep CNOT count exactly.
+
 ## MPS mode (beyond exact diagonalisation)
 
 `ornl/mps.py` runs the same study on matrix product states with quimb, since the chain is 1D.

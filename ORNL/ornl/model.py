@@ -5,7 +5,10 @@ H = sum_i J1 (1 + (-1)^i delta) S_i.S_{i+1} + J2 sum_i S_i.S_{i+2}, even N.
 Gap knob      dimerisation delta. It keeps SU(2): the ground state is a singlet in S^z = 0 and the first
               excitation a triplet, also reachable in S^z = 0. delta < 0 closes the gap (weak end bonds, nearly
               free edge spins), delta -> 1 opens it to about 1.8 J1 (isolated dimers).
-Overlap knob  |trial> = exp(-i eps sum_i (-1)^i Z_i) |E0>: one layer of staggered Rz on the exact ground state.
+Overlap knob  |trial> = exp(-i eps sum_i (-1)^i Z_i) |base>: one layer of staggered Rz after the state preparation.
+              |base> is the one-layer MPS-to-circuit approximation of |E0> (cfg.trial = "mps1", application; see ornl.prep),
+              or |E0> itself (cfg.trial = "exact", the default for the study). gamma = |<E0|trial>|^2 includes the preparation loss, so at
+              eps = 0 it is gamma_0 = |<E0|base>|^2 and targets above gamma_0 are out of reach.
               It conserves S^z and moves the missing weight onto the low triplets, E1 included (the hard case).
 
 Basis convention: a state is an integer whose bit (N - 1 - i) is site i (site 0 = most significant bit).
@@ -77,10 +80,16 @@ class Chain:
         self.gap, self.W = E1 - E0, Emax - E0
         self.gap_s = self.gap / self.W
         self.g0 = g0 / np.linalg.norm(g0)
+        self.set_base(self.g0)
 
     # ---- overlap knob
+    def set_base(self, v, prep_cnot=0, label="exact"):
+        """State the overlap knob acts on (default: the exact ground state), and the CNOTs that prepare it."""
+        self.base, self.prep_cnot, self.trial_mode = v / np.linalg.norm(v), int(prep_cnot), label
+        self.gamma0 = float(abs(np.vdot(self.g0, self.base)) ** 2)
+
     def trial(self, eps):
-        return np.exp(-1j * eps * self.M) * self.g0
+        return np.exp(-1j * eps * self.M) * self.base
 
     def overlap(self, eps):
         return abs(np.vdot(self.g0, self.trial(eps))) ** 2
@@ -91,7 +100,7 @@ class Chain:
         g = np.array([self.overlap(e) for e in es])
         rise = np.flatnonzero(np.diff(g) > 0)
         stop = rise[0] if len(rise) else len(es) - 1
-        if not g[stop] <= gamma <= 1.0:
+        if not g[stop] <= gamma <= g[0]:                    # g[0] = gamma_0, the overlap of the prepared state
             return None
         return brentq(lambda e: self.overlap(e) - gamma, 0.0, es[stop], xtol=1e-14)
 
@@ -113,6 +122,15 @@ def delta_for_gap(N, gap, J1=1.0, J2=0.2411, lo=-0.9, hi=0.95):
 
 
 def chain_for_gap(N, gap, cfg):
-    """Chain at the target gap with the model settings of a StudyConfig."""
+    """Chain at the target gap with the model settings of a StudyConfig. cfg.trial = "mps1" prepares the trial
+    base with the one-layer MPS-to-circuit (ornl.prep); "exact" uses the exact ground state (no prep cost)."""
     d = delta_for_gap(N, gap, cfg.J1, cfg.J2, *cfg.delta_range)
-    return Chain(N, d, cfg.J1, cfg.J2)
+    ch = Chain(N, d, cfg.J1, cfg.J2)
+    if cfg.trial == "mps1":
+        from .prep import prepare
+        v, gates, c, _ = prepare(ch)
+        ch.set_base(v, c, "mps1")
+        ch.prep_gates = gates
+    elif cfg.trial != "exact":
+        raise ValueError("cfg.trial must be 'mps1' or 'exact'")
+    return ch

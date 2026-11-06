@@ -48,7 +48,7 @@ def main():
                 if nq > a.max_qubits:
                     print(f"{N:2d} {g:5.2f} {gam:5.2f}  skipped: {nq} qubits > --max-qubits {a.max_qubits}")
                     continue
-                v = qk.verify(ch, ch.trial(e), b["K"], b["r"], b["n"], compile=a.compile)
+                v = qk.verify(ch, ch.trial(e), b["K"], b["r"], b["n"], compile=a.compile, eps=e)
                 v.update(gap=g, gamma=gam, p_engine=b["p"], infid_engine=b["infid"])
                 v = {k: (float(x) if hasattr(x, "dtype") else x) for k, x in v.items()}
                 rows.append(v)

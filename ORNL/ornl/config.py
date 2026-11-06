@@ -24,6 +24,7 @@ class StudyConfig:
     gammas: tuple = (0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 0.8, 0.9, 0.95, 0.98, 0.99)
     eps: tuple = (1e-2, 1e-3)                                             # target infidelities 1 - F
     delta_range: tuple = (-0.9, 0.95)                                     # dimerisation search interval
+    trial: str = "exact"              # trial base: "exact" ground state (study) or "mps1" (one-layer MPS-to-circuit, application)
 
     # measured search over the dyadic filter: K ladder rungs, r repetitions, n Strang steps per tau
     n_grid: tuple = (1, 2, 3, 4, 6, 8, 12, 16)

@@ -18,10 +18,11 @@ from ornl.config import add_cli
 def run(N, cfg):
     os.makedirs(cfg.out_dir, exist_ok=True)
     path = os.path.join(cfg.out_dir, f"map_N{N}.json")
-    grid = dict(N=N, J1=cfg.J1, J2=cfg.J2, gaps=list(cfg.gaps), gammas=list(cfg.gammas), eps=list(cfg.eps))
+    grid = dict(N=N, J1=cfg.J1, J2=cfg.J2, gaps=list(cfg.gaps), gammas=list(cfg.gammas), eps=list(cfg.eps),
+                trial=cfg.trial)
     data = json.load(open(path)) if os.path.exists(path) else dict(grid, rows={})
-    for k in ("J1", "J2", "gammas", "eps"):
-        if data[k] != grid[k]:
+    for k in ("J1", "J2", "gammas", "eps", "trial"):
+        if data.get(k, "exact" if k == "trial" else None) != grid[k]:
             raise SystemExit(f"{path} was made with another {k}; use another out_dir or move it away")
     t0 = time.time()
     for g in cfg.gaps:
@@ -31,7 +32,7 @@ def run(N, cfg):
         ch = chain_for_gap(N, g, cfg)
         rows, eps_knob = measure_point(ch, cfg.gammas, cfg.eps, cfg)
         data["rows"][key] = dict(
-            gap=ch.gap, delta=ch.delta, W=ch.W, gap_scaled=ch.gap_s, E0=ch.E0, E1=ch.E1, Emax=ch.Emax,
+            gap=ch.gap, delta=ch.delta, W=ch.W, gamma0=ch.gamma0, prep_cnot=ch.prep_cnot, gap_scaled=ch.gap_s, E0=ch.E0, E1=ch.E1, Emax=ch.Emax,
             eps_knob=eps_knob, gamma=[None if e is None else ch.overlap(e) for e in eps_knob],
             best=[{f"{e:g}": v for e, v in r.items()} for r in rows])
         json.dump(data, open(path + ".tmp", "w"))

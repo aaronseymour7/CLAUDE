@@ -76,10 +76,25 @@ def filter_circuit(ch, K, r, n, compile="bond"):
     return qc
 
 
-def attempt_circuit(ch, psi, K, r, n, compile="bond"):
-    """A: prepare the trial (exact StatePreparation, not costed) and run the filter."""
+def trial_circuit(ch, eps):
+    """The real trial preparation: the one-layer MPS-to-circuit staircase (each gate compiled by KAK), then the
+    staggered Rz layer exp(-i eps sum_i (-1)^i Z_i)."""
+    qc = QuantumCircuit(ch.N)
+    for i, G in enumerate(ch.prep_gates):
+        qc.compose(KAK(G), [i + 1, i], inplace=True)       # G is indexed 2 s_i + s_{i+1}; Qiskit is little-endian
+    for i in range(ch.N):
+        qc.rz(2 * eps * (-1) ** i, i)
+    return qc
+
+
+def attempt_circuit(ch, psi, K, r, n, compile="bond", eps=None):
+    """A: prepare the trial and run the filter. With eps and a prepared chain (cfg.trial = "mps1") the trial is
+    the real circuit (`trial_circuit`); otherwise an exact StatePreparation of psi (not costed)."""
     qc = QuantumCircuit(ch.N + K * r)
-    qc.append(StatePreparation(ch.to_full(psi)), range(ch.N))
+    if eps is not None and getattr(ch, "prep_gates", None) is not None:
+        qc.compose(trial_circuit(ch, eps), range(ch.N), inplace=True)
+    else:
+        qc.append(StatePreparation(ch.to_full(psi)), range(ch.N))
     qc.compose(filter_circuit(ch, K, r, n, compile), inplace=True)
     return qc
 
@@ -122,16 +137,21 @@ def cnot_count(qc, transpile_first=True, seed=1):
     return int(qc.count_ops().get("cx", 0))
 
 
-def verify(ch, psi, K, r, n, compile="bond", aa=True, count_transpiled=False):
+def verify(ch, psi, K, r, n, compile="bond", aa=True, count_transpiled=False, eps=None):
     """Simulate the real circuits and return a dict to compare with the engine:
     p, 1-F, CNOTs (built vs formula); with aa: rounds k, success after k rounds vs sin^2((2k+1) theta),
     and the CNOTs of the two reflections vs the cost model."""
     m = K * r
-    A = attempt_circuit(ch, psi, K, r, n, compile)
+    A = attempt_circuit(ch, psi, K, r, n, compile, eps)
     _, p, infid = postselect(Statevector(A).data, ch, m)
     filt = filter_circuit(ch, K, r, n, compile)
     out = dict(N=ch.N, K=K, r=r, n=n, qubits=A.num_qubits, compile=compile, p=p, infid=infid,
                cnot_formula=cnot_per_attempt(ch.N, K, r, n),
+               prep_cnot_model=ch.prep_cnot,
+               prep_cnot_circuit=(cnot_count(trial_circuit(ch, eps), transpile_first=False)
+                                  if eps is not None and getattr(ch, "prep_gates", None) is not None else None),
+               gamma_circuit=(float(abs(np.vdot(ch.to_full(ch.g0), Statevector(trial_circuit(ch, eps)).data)) ** 2)
+                              if eps is not None and getattr(ch, "prep_gates", None) is not None else None),
                cnot_circuit=cnot_count(filt, transpile_first=(compile == "pauli" or count_transpiled)))
     if aa:
         k, th = aa_rounds(p)

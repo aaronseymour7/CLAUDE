@@ -51,7 +51,7 @@ def _select(ch, levels, ok, eps_list, cfg, unverified_last=False):
                     if not len(hit):
                         continue
                     r = hit[0] + 1                                 # fewest repetitions that work (and verify)
-                    c = cnot_per_attempt(ch.N, K, r, n, cfg.bond_cnots)
+                    c = cnot_per_attempt(ch.N, K, r, n, cfg.bond_cnots) + ch.prep_cnot   # filter + trial prep
                     refl = reflection_cnots(ch.N, K, r, cfg.mcz_cnots_per_qubit)
                     for pr in cfg.protocols:
                         cc = cost(c, p[r - 1, jj], pr, refl)

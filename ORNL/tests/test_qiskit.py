@@ -38,3 +38,15 @@ def test_circuit_matches_engine(compile):
         if compile == "bond":
             assert v["cnot_circuit"] == v["cnot_formula"]
             assert abs(v["aa_success"] - v["aa_success_formula"]) < 1e-9
+
+
+def test_mps1_trial_circuit_matches_engine():
+    cfg = StudyConfig(trial="mps1")
+    ch = chain_for_gap(6, 0.8, cfg)
+    assert 0.9 < ch.gamma0 < 1
+    rows, eps_knob = measure_point(ch, [0.3], [1e-2], cfg)
+    b, e = rows[0][1e-2]["rus"], eps_knob[0]
+    v = qk.verify(ch, ch.trial(e), b["K"], b["r"], b["n"], aa=False, eps=e)
+    assert abs(v["gamma_circuit"] - 0.3) < 1e-9
+    assert abs(v["p"] - b["p"]) < 1e-9 and abs(v["infid"] - b["infid"]) < 1e-9
+    assert v["prep_cnot_circuit"] == ch.prep_cnot
