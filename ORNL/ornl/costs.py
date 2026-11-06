@@ -38,6 +38,8 @@ def aa_rounds(p):
 
 def aa_cost(c_attempt, p, c_reflect=0.0):
     k, th = aa_rounds(p)
+    k = k.astype(float)                                   # int64 overflows at tiny p (k ~ 1e15) and the cost goes negative
+    c_attempt = float(c_attempt)
     aa = (c_attempt * (2 * k + 1) + c_reflect * k) / np.sin((2 * k + 1) * th) ** 2
     return np.minimum(aa, c_attempt / np.asarray(p, float))
 

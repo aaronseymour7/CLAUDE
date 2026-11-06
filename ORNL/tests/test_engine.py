@@ -69,3 +69,9 @@ def test_measured_point_meets_target_and_matches_gates():
 def test_config_overrides():
     cfg = StudyConfig.from_cli(None, ["Ns=[8,10]", "J2=0.3"])
     assert cfg.Ns == (8, 10) and cfg.J2 == 0.3
+
+
+def test_aa_cost_no_overflow_at_tiny_p():
+    from ornl import costs
+    c = costs.cost(603979080, 1.5e-30, "aa", 1000)
+    assert 0 < c < 603979080 / 1.5e-30                              # positive, and below RUS (~ pi / (4 sqrt p) rounds)
