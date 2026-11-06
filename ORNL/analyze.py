@@ -6,8 +6,9 @@
 Cost kinds:  attempt  CNOTs of one attempt (the filter chosen for repeat-until-success)
              rus      expected CNOTs per success, repeat until success
              aa       expected CNOTs per success, amplitude amplification
-Fits:        ln C = c + a ln(1/gap) + b ln(1/gamma)              per N
-             ln C = c + alpha ln N + a ln(1/gap) + b ln(1/gamma)  all N together
+Fits (C0 = e^c in fits.csv): ln C = c + a ln(1/gap) + b ln(1/gamma)              per N
+                            ln C = c + alpha ln N + a ln(1/gap) + b ln(1/gamma)  all N together
+Every measured point is also written flat to <results>/all_points.csv.
 over gamma <= GAMMA_FIT_MAX and 1 - gamma > 10 eps (near gamma = 1 the filter is barely needed).
 """
 import argparse
@@ -64,7 +65,7 @@ def main(res_dir="results", fig_dir="figs"):
     maps = load(res_dir)
     Ns = list(maps)
     eps_list = maps[Ns[0]]["eps"]
-    lines = ["eps,kind,N,a_gap,se_a,b_gamma,se_b,alpha_N,se_alpha,R2,points"]
+    lines = ["eps,kind,N,a_gap,se_a,b_gamma,se_b,alpha_N,se_alpha,R2,points,C0"]
     fits = {}
     for eps in eps_list:
         for kind in KINDS:
@@ -74,14 +75,24 @@ def main(res_dir="results", fig_dir="figs"):
                 m = fit_mask(Y, C, eps)
                 coef, se, r2 = fit([-np.log(G[m]), -np.log(Y[m])], np.log(C[m]))
                 fits[eps, kind, N] = (coef[1], se[1], coef[2], se[2])
-                lines.append(f"{eps:g},{kind},{N},{coef[1]:.3f},{se[1]:.3f},{coef[2]:.3f},{se[2]:.3f},,,{r2:.3f},{m.sum()}")
+                lines.append(f"{eps:g},{kind},{N},{coef[1]:.3f},{se[1]:.3f},{coef[2]:.3f},{se[2]:.3f},,,{r2:.3f},{m.sum()},{np.exp(coef[0]):.4g}")
                 allX.append(np.column_stack([np.log(np.full(m.sum(), N)), -np.log(G[m]), -np.log(Y[m])]))
                 ally.append(np.log(C[m]))
             if len(Ns) > 1:
                 X = np.vstack(allX)
                 coef, se, r2 = fit([X[:, 0], X[:, 1], X[:, 2]], np.concatenate(ally))
                 lines.append(f"{eps:g},{kind},all,{coef[2]:.3f},{se[2]:.3f},{coef[3]:.3f},{se[3]:.3f},"
-                             f"{coef[1]:.3f},{se[1]:.3f},{r2:.3f},{len(X)}")
+                             f"{coef[1]:.3f},{se[1]:.3f},{r2:.3f},{len(X)},{np.exp(coef[0]):.4g}")
+    flat = ["N,gap,delta,gamma,eps_knob,eps,protocol,K,r,n,cnot_per_attempt,p,infid,cost"]
+    for N in Ns:
+        for r in maps[N]["rows"].values():
+            for gam, ek, b in zip(r["gamma"], r["eps_knob"], r["best"]):
+                for eps in eps_list:
+                    for pr, x in ((b or {}).get(f"{eps:g}") or {}).items():
+                        if x:
+                            flat.append(f"{N},{r['gap']:.6g},{r['delta']:.6g},{gam:.6g},{ek:.6g},{eps:g},{pr},{x['K']},"
+                                        f"{x['r']},{x['n']},{x['cnot']},{x['p']:.6g},{x['infid']:.3e},{x['cost']:.6g}")
+    open(os.path.join(res_dir, "all_points.csv"), "w").write("\n".join(flat) + "\n")
     open(os.path.join(res_dir, "fits.csv"), "w").write("\n".join(lines) + "\n")
     print("\n".join(lines))
 
