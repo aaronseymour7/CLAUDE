@@ -1,3 +1,9 @@
 numpy>=2.0
 scipy>=1.13
 matplotlib>=3.8
+# optional
+qiskit>=2.0      # verify_qiskit.py, ornl/qiskit_check.py, tests/test_qiskit.py
+quimb>=1.8       # MPS mode: ornl/mps.py, run_mps.py, tests/test_mps.py
+networkx         # used by quimb to build the MPO
+pytest
+jupyter
