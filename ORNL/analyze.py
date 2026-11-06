@@ -10,6 +10,7 @@ Cost kinds (filter CNOTs only; trial preparation is not counted; figures show ru
 Fits (C0 = e^c in fits.csv): ln C = c + a ln(1/gap) + b ln(1/gamma)              per N
                             ln C = c + alpha ln N + a ln(1/gap) + b ln(1/gamma)  all N together
 Every measured point is also written flat to <results>/all_points.csv.
+gap = Delta / W, the gap the filter resolves (--gap physical: Delta in J1 -> fits_physical_gap.csv).
 over gamma <= GAMMA_FIT_MAX and 1 - gamma > 10 eps (near gamma = 1 the filter is barely needed).
 """
 import argparse
@@ -26,6 +27,7 @@ KINDS = ("attempt", "rus", "aa")                  # all three fitted (fits.csv)
 PLOT = ("rus", "aa")                               # figures: filter cost per success (no trial prep)
 LABEL = dict(attempt="CNOT per attempt", rus="CNOT per success (RUS)", aa="CNOT per success (AA)")
 GAMMA_FIT_MAX = 0.95
+GAP = "scaled"                                     # "scaled": Delta / W (what the filter resolves); "physical": Delta in J1
 
 
 def load(res_dir):
@@ -39,7 +41,7 @@ def load(res_dir):
 def grid(d, eps, kind):
     """Arrays (gap, gamma, cost) of shape (n_gap, n_gamma); NaN where missing."""
     rows = [d["rows"][k] for k in sorted(d["rows"], key=float)]
-    G = np.array([[r["gap"]] * len(d["gammas"]) for r in rows])
+    G = np.array([[r["gap_scaled" if GAP == "scaled" else "gap"]] * len(d["gammas"]) for r in rows])
     Y = np.array([[np.nan if g is None else g for g in r["gamma"]] for r in rows])
     C = np.full(G.shape, np.nan)
     for i, r in enumerate(rows):
@@ -63,6 +65,8 @@ def fit_mask(Y, C, eps):
 
 
 def main(res_dir="results", fig_dir="figs"):
+    global GAPLAB
+    GAPLAB = r"$\Delta/W$" if GAP == "scaled" else r"gap $\Delta$ ($J_1$)"
     os.makedirs(fig_dir, exist_ok=True)
     maps = load(res_dir)
     Ns = list(maps)
@@ -85,17 +89,17 @@ def main(res_dir="results", fig_dir="figs"):
                 coef, se, r2 = fit([X[:, 0], X[:, 1], X[:, 2]], np.concatenate(ally))
                 lines.append(f"{eps:g},{kind},all,{coef[2]:.3f},{se[2]:.3f},{coef[3]:.3f},{se[3]:.3f},"
                              f"{coef[1]:.3f},{se[1]:.3f},{r2:.3f},{len(X)},{np.exp(coef[0]):.4g}")
-    flat = ["N,gap,delta,gamma,eps_knob,eps,protocol,K,r,n,cnot_per_attempt,p,infid,cost"]
+    flat = ["N,gap,W,gap_scaled,delta,gamma,eps_knob,eps,protocol,K,r,n,cnot_per_attempt,p,infid,cost"]
     for N in Ns:
         for r in maps[N]["rows"].values():
             for gam, ek, b in zip(r["gamma"], r["eps_knob"], r["best"]):
                 for eps in eps_list:
                     for pr, x in ((b or {}).get(f"{eps:g}") or {}).items():
                         if x:
-                            flat.append(f"{N},{r['gap']:.6g},{r['delta']:.6g},{gam:.6g},{ek:.6g},{eps:g},{pr},{x['K']},"
+                            flat.append(f"{N},{r['gap']:.6g},{r['W']:.6g},{r['gap_scaled']:.6g},{r['delta']:.6g},{gam:.6g},{ek:.6g},{eps:g},{pr},{x['K']},"
                                         f"{x['r']},{x['n']},{x['cnot']},{x['p']:.6g},{x['infid']:.3e},{x['cost']:.6g}")
     open(os.path.join(res_dir, "all_points.csv"), "w").write("\n".join(flat) + "\n")
-    open(os.path.join(res_dir, "fits.csv"), "w").write("\n".join(lines) + "\n")
+    open(os.path.join(res_dir, "fits.csv" if GAP == "scaled" else "fits_physical_gap.csv"), "w").write("\n".join(lines) + "\n")
     print("\n".join(lines))
 
     colors = plt.cm.viridis(np.linspace(0, 0.9, len(Ns)))
@@ -127,13 +131,14 @@ def main(res_dir="results", fig_dir="figs"):
                                         vmin=vmin, vmax=vmax, cmap="magma")
                 ax[i, j].set_xscale("log"); ax[i, j].set_yscale("log")
                 ax[i, j].set_title(f"N={N}: {LABEL[kind]}", fontsize=8)
-                ax[i, j].set_xlabel("gap ($J_1$)"); ax[i, j].set_ylabel(r"$\gamma$")
+                ax[i, j].set_xlabel(GAPLAB); ax[i, j].set_ylabel(r"$\gamma$")
         fig.colorbar(m, ax=ax, label="log10 CNOT")
         fig.suptitle(rf"measured cost, $1-F\leq{eps:g}$")
         fig.savefig(os.path.join(fig_dir, f"fig_maps_eps{eps:g}.pdf")); plt.close(fig)
 
         # 3. cuts: cost vs gap at fixed gamma, cost vs gamma at fixed gap
-        gam_cut, gap_cut = (0.01, 0.1, 0.5, 0.9), (0.01, 0.1, 1.0)
+        gam_cut = (0.01, 0.1, 0.5, 0.9)
+        gap_cut = (0.002, 0.02, 0.2) if GAP == "scaled" else (0.01, 0.1, 1.0)
         fig, ax = plt.subplots(2, len(gam_cut), figsize=(3.6 * len(gam_cut), 6.4), squeeze=False)
         for N, c in zip(Ns, colors):
             for kind, ls in (("rus", "-"), ("aa", "--")):
@@ -142,11 +147,11 @@ def main(res_dir="results", fig_dir="figs"):
                 for j, gc in enumerate(gam_cut):
                     jj = np.argmin(abs(gams - gc))
                     ax[0, j].loglog(G[:, jj], C[:, jj], ls, color=c, label=f"N={N} {kind}" if j == 0 else None)
-                    ax[0, j].set_title(rf"$\gamma$ = {gams[jj]:g}", fontsize=9); ax[0, j].set_xlabel("gap ($J_1$)")
+                    ax[0, j].set_title(rf"$\gamma$ = {gams[jj]:g}", fontsize=9); ax[0, j].set_xlabel(GAPLAB)
                 for j, gc in enumerate(gap_cut):
                     ii = np.argmin(abs(G[:, 0] - gc))
                     ax[1, j].loglog(Y[ii], C[ii], ls, color=c)
-                    ax[1, j].set_title(f"gap = {G[ii, 0]:.3g}", fontsize=9); ax[1, j].set_xlabel(r"$\gamma$")
+                    ax[1, j].set_title(f"{GAPLAB} ≈ {gc:g}", fontsize=9); ax[1, j].set_xlabel(r"$\gamma$")
         ax[1, -1].axis("off")
         ax[0, 0].legend(fontsize=6, ncol=2)
         for a in ax.ravel():
@@ -162,7 +167,7 @@ def main(res_dir="results", fig_dir="figs"):
             a = np.array([fits[eps, kind, N] for N in Ns])
             ax[0].errorbar(Ns, a[:, 0], a[:, 1], marker=mk, color=c, capsize=3, label=f"{kind}, eps={eps:g}")
             ax[1].errorbar(Ns, a[:, 2], a[:, 3], marker=mk, color=c, capsize=3, label=f"{kind}, eps={eps:g}")
-    ax[0].set(xlabel="N", ylabel="a  (cost ~ gap^-a)", title="gap exponent")
+    ax[0].set(xlabel="N", ylabel=f"a  (cost ~ ({GAPLAB})^-a)", title="gap exponent")
     ax[1].set(xlabel="N", ylabel=r"b  (cost ~ $\gamma^{-b}$)", title="overlap exponent")
     for a in ax:
         a.grid(alpha=0.3); a.legend(fontsize=7)
@@ -190,7 +195,7 @@ def main(res_dir="results", fig_dir="figs"):
                     coef = fit([-np.log(G[w]), -np.log(Y[w])], np.log(C[w]))[0]
                     xs.append(np.exp(np.log(gams[j:j + 3]).mean())); b_loc.append(coef[2])
                 ax[row, 1].semilogx(xs, b_loc, ls, color=c)
-        ax[row, 0].set(xlabel="gap ($J_1$)", ylabel="local gap exponent a", title=rf"$1-F\leq{eps:g}$")
+        ax[row, 0].set(xlabel=GAPLAB, ylabel="local gap exponent a", title=rf"$1-F\leq{eps:g}$")
         ax[row, 1].set(xlabel=r"$\gamma$", ylabel="local overlap exponent b", title=rf"$1-F\leq{eps:g}$")
         for a in ax[row]:
             a.grid(alpha=0.3, which="both")
@@ -206,8 +211,10 @@ if __name__ == "__main__":
     ap = add_cli(argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter))
     ap.add_argument("--results", help="default: the config's out_dir")
     ap.add_argument("--figs", help="default: the config's fig_dir")
+    ap.add_argument("--gap", choices=["scaled", "physical"], default=GAP,
+                    help="fit and plot against Delta / W (default) or the physical gap in J1")
     ap.add_argument("--gamma-fit-max", type=float, default=GAMMA_FIT_MAX)
     a = ap.parse_args()
     cfg = StudyConfig.from_cli(a.config, a.set)
-    GAMMA_FIT_MAX = a.gamma_fit_max
+    GAMMA_FIT_MAX, GAP = a.gamma_fit_max, a.gap
     main(a.results or cfg.out_dir, a.figs or cfg.fig_dir)
