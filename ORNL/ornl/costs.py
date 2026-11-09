@@ -4,7 +4,7 @@ CNOTs of one attempt (filter only, trial preparation not counted):
   each ancilla-controlled Heisenberg bond is one block of `bond_cnots` (6: Bell change, 1 CNOT each side, and a
   4-CNOT parity network for exp(-i b (Z_i Z_a + Z_j Z_a - Z_i Z_j Z_a))). A Strang step has 2B - 1 blocks (the two
   middle half steps merge) and consecutive steps share their outer half step, so a pulse of k steps has
-  k (2B - 2) + 1 blocks, B = 2N - 3 bonds. `ornl.qiskit_check` builds this circuit and counts it.
+  k (2B - 2) + 1 blocks, B = 2N - 3 bonds. filter_walkthrough.ipynb builds this circuit in Qiskit and counts it.
 
 Protocols:
   rus  repeat until success: C_attempt / p

@@ -36,13 +36,6 @@ class StudyConfig:
     bond_cnots: int = 6               # one ancilla-controlled Heisenberg bond block (Bell change + parity network)
     mcz_cnots_per_qubit: int = 12     # n-qubit controlled Z ~ 2n Toffolis x 6 CNOTs (AA reflections)
 
-    # MPS mode (ornl.mps, run_mps.py; needs quimb): DMRG reference, filter on the system MPS
-    mps_Ns: tuple = (16, 20, 24, 32)
-    mps_reference: str = "auto"       # "ed", "dmrg", or "auto" = ED up to mps_ed_max_N, DMRG above
-    mps_ed_max_N: int = 16
-    mps_max_bond: int = 128
-    mps_cutoff: float = 1e-12
-    mps_dmrg_bonds: tuple = (16, 32, 64, 128)
 
     # output
     out_dir: str = "results"
