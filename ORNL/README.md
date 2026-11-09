@@ -34,7 +34,7 @@ The notebooks run top to bottom. `scaling_study.ipynb` takes about 25 minutes fo
 | `ornl/trotter.py` | Strang steps, the exact eigenphase form of a Trotterised pulse, the dyadic filter |
 | `ornl/costs.py` | CNOT per attempt and per reflection, RUS and AA cost per success |
 | `ornl/search.py` | Measured search for the cheapest (K, r, n) per protocol and target |
-| `ornl/prep.py` | S^z-conserving bond-dimension-2 truncation used for the mps-to-circuit trial |
+| `ornl/prep.py` | S^z-conserving bond-2 truncation and one-layer circuit (the `trial="mps1"` option of the maps) |
 | `tests/test_engine.py` | Eigenphase engine vs direct gate-by-gate simulation and `expm`, AA toy model, cost edge cases |
 
 ## Model and knobs
