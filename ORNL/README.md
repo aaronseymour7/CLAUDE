@@ -66,6 +66,7 @@ rows, eps_knob = measure_point(ch, [0.1, 0.5], [1e-2, 1e-3], cfg)   # cheapest f
 | `verify_qiskit.py` | Engine vs Qiskit, point by point |
 | `run_mps.py` | MPS runs: `search` (measured cheapest filter), `filter` (one fixed filter), `check` (vs engine) |
 | `playground.ipynb` | Interactive notebook; regenerate with `make_notebook.py` |
+| `filter_walkthrough.ipynb` | Self-contained walkthrough (no `ornl` import): ED, DMRG + 1-layer MPS-to-circuit, dyadic filter, AA, QETU |
 | `tests/` | `test_engine.py` (direct simulation, `expm`, Grover toy model), `test_qiskit.py` (circuits), `test_mps.py` |
 | `results/` | One JSON per N, `fits.csv`, `verify_qiskit.json` |
 | `figs/` | `fig_knobs`, `fig_maps_eps*`, `fig_cuts_eps*`, `fig_exponents`, `fig_local_exponents` |
