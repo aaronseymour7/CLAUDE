@@ -6,6 +6,7 @@ jupyter
 pytest
 # notebooks only (filter_walkthrough, workflow_study)
 qiskit>=2.0
+qiskit-aer      # workflow_study simulation
 quimb>=1.8       # DMRG
 networkx         # used by quimb
 # mps-to-circuit: pip install --ignore-requires-python git+https://github.com/qiskit-community/mps-to-circuit
