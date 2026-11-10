@@ -20,7 +20,7 @@ python -m pytest tests -q
 | 5. Filter-only scaling: SBC, SBC + AA, QETU, QETU + AA vs N, η = Δ/W and γ; trial population before the filter | `scaling_study.ipynb` | `results/scaling_study.csv`, `results/scaling_study_population.csv` |
 | 5. Gap-vs-overlap maps and the range dependence of the η exponent | `run_maps.py`, `analyze.py` | `results/map_N*.json`, `fits.csv`, `all_points.csv`, `figs/` |
 | 3. Gap knob: dimerisation vs J2 | `plot_gap_vs_delta.py` | `figs/gap_vs_delta.png` |
-| 6. Full workflow in Qiskit Aer: DMRG spectral estimates, default mps-to-circuit trial, filter circuits | `workflow_study.ipynb` | `results/workflow_study.csv`, `workflow_prep.csv`, `workflow_qetu_check.csv` |
+| 6. Full workflow in Qiskit Aer: DMRG spectral estimates, default mps-to-circuit trial, SBC S^z projection, filter circuits | `workflow_study.ipynb` | `results/workflow_study.csv`, `workflow_prep.csv`, `workflow_qetu_check.csv` |
 
 The notebooks run top to bottom. `scaling_study.ipynb` takes about 25 minutes for N = 6..16;
 `workflow_study.ipynb` takes about 5 minutes.
