@@ -104,17 +104,29 @@ def test_paper_heisenberg_numbers(heis4x4):
     assert abs(core.Operator(Hs).expect(r.state) - 0.06) < 0.005          # paper: E ~0.06
 
 
-def test_design_matches_paper_description():
-    q = design.optimize(0.15, 0.05, 6, phases=True)
-    z = design.optimize(0.15, 0.05, 6, phases=False)
-    assert abs(q["times"].sum() - np.pi / 0.15) < 1e-9
-    assert q["loss"] < z["loss"]                                           # phases help the objective
-    assert q["f0"] > 0.9                                                   # small phases, success slightly lower
-    long = q["times"] > 1.0
-    assert (q["phases"][long] > 0).all()                                   # "all positive and larger for longer times"
-    E, target = design.pseudo_spectrum(0.15, 0.05)
-    assert len(E) == 1000 and int(target.sum()) == 50 and E[target == 0].min() >= 0.15
-    t, d = design.constant(np.pi / 0.15, 6)
-    assert design.mse(E, target, t, d) > z["loss"]                         # optimised beats constant
+def test_design_reproduces_authors_notebook():
+    """reference/optimize_times_phases.ipynb, its example cell (method v3, 8-10 pulses): fun = 1.319e-01,
+    fdiff = 2.498529e-03 at overlap 0.34, total time pi/gap = 8.183140."""
+    wmin, wmax = -3.90983149, 7.92112829
+    gap = (0.63219691 - wmin) / abs(wmax - wmin)
+    for m in (8, 9, 10):
+        r = design.optimize(gap, m, method="v3")
+        assert abs(r["T"] - 8.183140) < 1e-6 and abs(r["times"].sum() - r["T"]) < 1e-8
+        assert abs(r["cost"] - 1.319e-01) < 5e-4
+        fd, _ = design.evaluate(r["times"], r["phases"], r["E"], design.notebook_trial(0.34, 1000))
+        assert abs(fd - 2.498529e-03) < 1e-8
+
+
+def test_design_paper_properties():
+    q = design.optimize(0.15, 6, method="v3")
+    z = design.optimize(0.15, 6, method="v4")
+    assert q["cost"] < z["cost"]                                           # phases help
+    assert q["f0"] ** 2 >= 0.9 - 1e-9                                      # success kept within 10%
+    assert (q["phases"] > 0).all()                                         # paper: phases all positive
+    o = np.argsort(q["times"])
+    assert (np.diff(q["phases"][o]) > 0).all()                             # ... and larger for longer times
+    assert q["times"].max() <= q["T"] / 3 + 1e-9
+    E = design.baroni_spectrum(0.15)
+    assert design.baroni_cost(*design.constant(np.pi / 0.15, 6), E) > z["cost"]   # optimised beats constant
     g, _ = design.gaussian(np.pi / 0.15, 7, seed=3)
     assert abs(np.abs(g).sum() - np.pi / 0.15) < 1e-9

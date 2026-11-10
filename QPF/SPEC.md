@@ -2,7 +2,7 @@
 
 Source: I. Stetcu, A. Baroni, J. Carlson, "Projection algorithm for state preparation on quantum computers",
 Phys. Rev. C 108, L031306 (2023), [arXiv:2211.10545](https://arxiv.org/abs/2211.10545) (main text and Supplemental
-Material). Every rule below is the paper's unless it is marked **choice**. Choices only cover points the paper
+Material). Every rule below is the paper's (or, for the design step, the authors' notebook) unless it is marked **choice**. Choices only cover points the paper
 leaves open.
 
 ## The step (`qpf/core.py`)
@@ -28,20 +28,27 @@ leaves open.
 
 ## Energy projection design (`qpf/design.py`)
 
-| Paper | Code |
-|--|--|
-| Inputs: target near 0, gap estimate Δe, overlap estimate αe | `optimize(gap, alpha, m, T, phases)` |
-| Supplement: 1000 levels, equal amplitudes, fraction αe at zero energy (50 of 1000), the rest on a grid from the gap to 1, "randomly displaced within a grid spacing" | `pseudo_spectrum(gap, alpha, 1000)`; **choice**: uniform displacement inside each grid cell |
-| Supplement: minimise the mean squared difference between the filtered state and the target (1 at zero energy, 0 from the gap to 1) | `mse` = mean_k (f(E_k) − target_k)² |
-| Total time limited to π/Δe (Fig. 1, Heisenberg) | `T = π/gap`; **choice**: the total is used in full, Σ t_i = T, t_i ≥ 0 |
-| Six (t_i, δ_i) for the Heisenberg case | `m = 6` |
-| Steps applied shortest time first | `optimize` returns times sorted ascending |
-| **choice**: L-BFGS-B with 30 random restarts; phases in (−π/2, π/2) | `optimize(..., restarts=30)` |
-| Constant times, "similar to Ge et al.", number of steps chosen for the lowest energy at fixed T | `constant(T, m)`; the example scans m = 1..30 |
-| Gaussian times (Rodeo), 7 draws from a normal distribution scaled to T, averaged over draws; negative times allowed, total = Σ\|t_i\| | `gaussian(T, 7, seed)`; **choice**: N(0, 1), 20 draws |
+Reference: the authors' design notebook (A. Baroni, `reference/optimize_times_phases.ipynb`). `design.optimize`
+is a line-by-line port and reproduces the notebook's example output exactly (cost 1.319e−01,
+fdiff 2.498529e−03; see the tests).
 
-With these definitions the optimiser reproduces what the paper reports about its phases: small, positive, larger
-for the longer times, about 0 for the shortest one, and f(0) close to 1 (0.96 for Δe = 0.15, αe = 0.05).
+| Notebook | Code |
+|--|--|
+| Design spectrum: E = [0, linspace(gap, 1, N − 1)], N = 1000, one ground level, uniform trial | `baroni_spectrum(gap, 1000)` |
+| Objective v3: C = \|1 − ∏cos δ_i / sqrt(Σ_n ∏cos²(t_i E_n + δ_i))\| (1 − ground amplitude of the normalised filtered uniform state) | `baroni_cost` |
+| Σ t_i = T = π/gap (equality); 0 ≤ t_i ≤ T/3; −π/2 ≤ δ_i ≤ π/2 | `optimize(gap, m, T)` |
+| v3: ∏cos²δ_i ≥ 0.9 (keeps the success within 10% of the zero-phase value); v3b: ∏cos²(E_0 t_i + δ_i) ≥ 0.9; v4: no phases | `method="v3" / "v3b" / "v4"`, `p_min=0.9` |
+| Start: halving times scaled to T, zero phases; SLSQP, maxiter 5000, ftol 1e−12, tol 1e−13 | same |
+| Evaluation: trial with amplitude γ on level 0, the rest uniform; filtered, normalised; fdiff = Σ(gs − f)² | `evaluate`, `notebook_trial` |
+
+From the paper (not in the notebook): steps applied shortest time first (used in the example's trajectories);
+comparison schedules **constant** (m equal times, m chosen for the lowest energy at fixed T) and **gaussian**
+(7 normal draws scaled to Σ\|t_i\| = T, averaged; **choice**: N(0, 1), 20 draws).
+
+Where the notebook differs from the paper's text: no random displacement of the levels and no αe in the design
+(the overlap only enters the evaluation), one ground level instead of a fraction αe of 1000, and the 0.9
+constraint on f(0)², which the text does not mention. That constraint is why the phases are small. The text's
+reading is kept as `optimize_supplement` for comparison only.
 
 ## Reproduction of the paper's Heisenberg example (`examples/heisenberg_4x4.py`)
 
@@ -54,8 +61,9 @@ for the longer times, about 0 for the shortest one, and f(0) close to 1 (0.96 fo
 | J² projection steps | 3 | 3 (π/4, π/8, π/16) |
 | J² projection success | ≈ 11% | 11.1% (exactly 1/9) |
 | Energy after J² projection | ≈ 0.06 | 0.064 |
-| Ordering after energy projection at T = π/Δ | constant worst, QPF(t_i, δ_i) best | constant 1.7e−3, Gaussian 1.0e−3, QPF(t_i) 5.5e−5, QPF(t_i, δ_i) 1.5e−5 |
-| Effect of phases on success | slightly lower | 0.0826 → 0.0766 |
+| Ordering after energy projection at T = π/Δ | constant worst, QPF(t_i, δ_i) best | constant 1.7e−3, Gaussian 1.0e−3, QPF(t_i) 3.6e−4, QPF(t_i, δ_i) 1.4e−5 |
+| Effect of phases on success | slightly lower | 0.0828 → 0.0743 |
+| Phases | small, positive, larger for longer times | 0.06 … 0.23 rad, increasing with t_i |
 
 The paper only gives the energies after the energy projection as a plot, so this comparison is by ordering and
 order of magnitude.
@@ -63,7 +71,4 @@ order of magnitude.
 ## Known ambiguities in the paper
 
 - The supplement says the Fig. 1 filter assumes a gap of 0.2, while the main text says 0.15. We use 0.15.
-- The main text reads the optimisation as "maximize the squared overlap of the final state with the ground
-  state", while the supplement specifies the mean-squared-error objective. We use the supplement's version,
-  because maximising the normalised overlap alone drives f(0)² down to about 0.1, which contradicts the paper's
-  "small non-zero phases" and "typically close to one".
+- The objective and constraints are only fully defined by the authors' notebook (above), not by the text.

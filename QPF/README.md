@@ -6,7 +6,7 @@ choices the paper leaves open, and compares our numbers with the paper's 4 × 4 
 
 ```
 pip install -r requirements.txt
-python -m pytest tests -q                 # 7 tests, ~5 s
+python -m pytest tests -q                 # 8 tests, ~6 s
 python examples/heisenberg_4x4.py         # paper's example, ~20 s -> figs/, results/heisenberg_4x4.json
 ```
 
@@ -14,6 +14,7 @@ python examples/heisenberg_4x4.py         # paper's example, ~20 s -> figs/, res
 |--|--|
 | `qpf/core.py` | the ancilla step exp(−i(tO + δ) ⊗ Y), post-selected runs, filter function, success probability, scaling of H |
 | `qpf/symmetry.py` | quantum-number projection: zero phases, halving times from t1 (J² ladder, shifted targets) |
-| `qpf/design.py` | energy projection: the supplement's pseudo-spectrum and objective, optimised (t_i) and (t_i, δ_i); constant and Gaussian schedules |
+| `qpf/design.py` | energy projection: port of the authors' design notebook (`reference/`), optimised (t_i) and (t_i, δ_i); constant and Gaussian schedules |
+| `reference/optimize_times_phases.ipynb` | the authors' design notebook (shared by A. Baroni), the reference for `design.optimize` |
 | `qpf/models.py` | the paper's test system: Heisenberg model on a periodic square lattice, J_z sectors, J², Néel state |
 | `examples/heisenberg_4x4.py` | J² projection then energy projection, as in the paper's Figs. 1-2 |

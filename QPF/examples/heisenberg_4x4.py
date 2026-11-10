@@ -7,8 +7,8 @@ Steps, as in the paper:
   1. J^2 projection onto J = 0: halving ladder from t1 = pi/4, zero phases (three steps for J <= 8).
   2. Energy projection on the scaled H (spectrum 0..1, target at 0), total time pi/Delta with Delta = 0.15:
      constant times (m chosen for the lowest final energy), Gaussian-sampled times (7 steps, averaged over draws),
-     QPF optimised times, QPF optimised times and phases (six steps each, designed for Delta_e = 0.15 and a 5%
-     ground-state probability).
+     QPF optimised times, QPF optimised times and phases (six steps each, designed with the authors' notebook
+     for Delta_e = 0.15: method v4 and v3).
 Paper values to compare: Neel scaled energy ~0.17; J^2 projection needs three steps, succeeds with ~11% and
 lowers the energy to ~0.06; the relevant gap goes from ~0.03 to ~0.15.
 """
@@ -26,7 +26,7 @@ from scipy.sparse.linalg import eigsh
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from qpf import core, design, models, symmetry  # noqa: E402
 
-DELTA_E, ALPHA_E, M_QPF, M_GAUSS, N_GAUSS = 0.15, 0.05, 6, 7, 20
+DELTA_E, M_QPF, M_GAUSS, N_GAUSS = 0.15, 6, 7, 20
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -78,14 +78,16 @@ def main():
     best_m = min(range(1, 31), key=lambda m: Hop.expect(core.run(s["Hs"], psiJ, *design.constant(T, m)).state))
     sched["Constant"] = [design.constant(T, best_m)]
     sched["Gaussian"] = [design.gaussian(T, M_GAUSS, seed=k) for k in range(N_GAUSS)]
-    q_t = design.optimize(DELTA_E, ALPHA_E, M_QPF, T, phases=False)
-    q_td = design.optimize(DELTA_E, ALPHA_E, M_QPF, T, phases=True)
+    q_t = design.optimize(DELTA_E, M_QPF, T, method="v4")          # authors' notebook: times only
+    q_td = design.optimize(DELTA_E, M_QPF, T, method="v3")         # times and phases, f(0)^2 >= 0.9
+    for q in (q_t, q_td):                                           # paper: shortest time first
+        o = np.argsort(q["times"]); q["times"], q["phases"] = q["times"][o], q["phases"][o]
     sched["QPF (t_i)"] = [(q_t["times"], q_t["phases"])]
     sched["QPF (t_i, δ_i)"] = [(q_td["times"], q_td["phases"])]
     out["constant_m"] = best_m
-    out["qpf_t"] = dict(times=list(q_t["times"]), design_loss=q_t["loss"], design_fraction=q_t["fraction"])
-    out["qpf_td"] = dict(times=list(q_td["times"]), phases=list(q_td["phases"]), design_loss=q_td["loss"], design_fraction=q_td["fraction"],
-                         f0=float(np.prod(np.cos(q_td["phases"]))))
+    out["qpf_t"] = dict(times=list(q_t["times"]), design_cost=q_t["cost"])
+    out["qpf_td"] = dict(times=list(q_td["times"]), phases=list(q_td["phases"]), design_cost=q_td["cost"],
+                         f0=q_td["f0"])
 
     traj = {}
     for name, runs in sched.items():
@@ -110,7 +112,7 @@ def main():
         ax.plot(E, core.filter_function(E, t, d), color=style[name][1], label=name, lw=1.2)
     ax.axvline(DELTA_E, color="gray", ls=":", lw=0.8)
     ax.set_xlabel("Energy (scaled)"); ax.set_ylabel("f"); ax.legend(fontsize=8)
-    ax.set_title(f"Filter functions, Δe = {DELTA_E}, αe = {ALPHA_E}, total time π/Δe", fontsize=9)
+    ax.set_title(f"Filter functions, Δe = {DELTA_E}, total time π/Δe", fontsize=9)
     fig.tight_layout(); fig.savefig(os.path.join(HERE, "figs", "fig1_filters.png"), dpi=150); plt.close(fig)
 
     # Fig. 2: success probability and energy vs t Delta / pi
