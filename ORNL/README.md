@@ -1,76 +1,62 @@
-# ORNL: measured cost of a ground-state filter vs. gap and overlap
+# ORNL: filter costs for J1-J2 ground states
 
-A small, standalone study of what a Trotterised cosine filter costs, and how the spectral gap and the
-trial-state overlap drive that cost. The example is the open 1D J1-J2 chain. Everything is measured by exact
-simulation of the circuit; there are no bounds or certificates.
-
-It needs only numpy, scipy and matplotlib, and nothing outside this folder.
+Code and data for the manuscript draft "Filter costs for J1-J2 ground states". We benchmark the fault-tolerant
+hardware costs (CNOT and non-Clifford Rz) of ground-state preparation with two cosine filters, the
+Stetcu-Baroni-Carlson (SBC) projection algorithm with a dyadic scheduler and QETU, each with and without
+amplitude amplification. The testbed is the open 1D J1-J2 chain up to N = 16, in an ideal noiseless simulation
+with second-order Trotter evolution.
 
 ```
 pip install -r requirements.txt
-python test_filtercost.py        # 6 checks, a few seconds
-python run_maps.py               # N = 8 10 12 14 16, eps = 1e-2 1e-3  -> results/map_N*.json
-python analyze.py                # fits -> results/fits.csv, figures -> figs/
+pip install --ignore-requires-python git+https://github.com/qiskit-community/mps-to-circuit
+python -m pytest tests -q
 ```
 
-To play: `pip install jupyter` and open `playground.ipynb` (runs in about 20 s).
+## What is in the paper and where it comes from
 
-`python run_maps.py --N 8 10 12 --eps 1e-2` runs a subset. A run writes its JSON after every gap value and
-resumes where it stopped.
+| Paper section | File | Output |
+|--|--|--|
+| 2. Filters (worked example of SBC, AA, QETU, and the Qiskit circuits that set the cost model) | `filter_walkthrough.ipynb` | printed tables |
+| 5. Filter-only scaling: SBC, SBC + AA, QETU, QETU + AA vs N, η = Δ/W and γ; trial population before the filter | `scaling_study.ipynb` | `results/scaling_study.csv`, `results/scaling_study_population.csv` |
+| 5. Gap-vs-overlap maps and the range dependence of the η exponent | `run_maps.py`, `analyze.py` | `results/map_N*.json`, `fits.csv`, `all_points.csv`, `figs/` |
+| 3. Gap knob: dimerisation vs J2 | `plot_gap_vs_delta.py` | `figs/gap_vs_delta.png` |
+| 6. Full workflow in Qiskit Aer: DMRG spectral estimates, default mps-to-circuit trial, SBC S^z projection, filter circuits | `workflow_study.ipynb` | `results/workflow_study.csv`, `workflow_prep.csv`, `workflow_study_seed_stats.csv`, `workflow_qetu_check.csv` (5 seeded DMRG draws per N) |
+| All of it in one place (standalone, no `ornl` import): both Hamiltonians, ED + DMRG, gap vs overlap study, SBC + S^z projection, AA and QETU in Aer, summary | `final_filters.ipynb` | printed tables |
 
-## Files
+The notebooks run top to bottom. `scaling_study.ipynb` takes about 25 minutes for N = 6..16;
+`workflow_study.ipynb` takes about 20 minutes (5 DMRG seeds).
+
+## The `ornl` package
 
 | File | What it does |
 |--|--|
-| `filtercost.py` | The whole engine: model, the two knobs, Trotter simulation, measured search, CNOT count, RUS and AA cost |
-| `run_maps.py` | Runs the (gap, overlap) grid for each N and eps |
-| `analyze.py` | Power-law fits per N and over all N, and the figures |
-| `playground.ipynb` | Interactive notebook: knobs, one measured point, the filter on the spectrum with a gate-by-gate check, a small map with fits, the saved results. Regenerate with `make_notebook.py` |
-| `test_filtercost.py` | Checks the engine against direct simulation, `expm` and a Grover toy model |
-| `results/` | One JSON per N, and `fits.csv` |
-| `figs/` | `fig_knobs`, `fig_maps_eps*`, `fig_cuts_eps*`, `fig_exponents`, `fig_local_exponents` |
+| `ornl/config.py` | `StudyConfig`: every setting for the maps, plus `--config` / `--set` parsing |
+| `ornl/model.py` | `Chain`: dimerised J1-J2 Hamiltonian in the S^z = 0 sector, spectrum, the two knobs |
+| `ornl/trotter.py` | Strang steps, the exact eigenphase form of a Trotterised pulse, the dyadic filter |
+| `ornl/costs.py` | CNOT per attempt and per reflection, RUS and AA cost per success |
+| `ornl/search.py` | Measured search for the cheapest (K, r, n) per protocol and target |
+| `ornl/prep.py` | S^z-conserving bond-2 truncation and one-layer circuit (the `trial="mps1"` option of the maps) |
+| `tests/test_engine.py` | Eigenphase engine vs direct gate-by-gate simulation and `expm`, AA toy model, cost edge cases |
 
-## What is computed
+## Model and knobs
 
-**Model.** H = Σ J1 (1 + (−1)^i δ) S_i·S_{i+1} + J2 Σ S_i·S_{i+2}, open chain, J1 = 1, J2 = 0.2411.
+H = J1 Σ (1 + (−1)^i δ) S_i·S_{i+1} + J2 Σ S_i·S_{i+2}, open chain, J1 = 1, J2 = 0.2411, S^z = 0 sector.
 
-**Gap knob: dimerisation δ.** It keeps SU(2), so the ground state is a singlet and E1 a triplet, both in
-S^z = 0. δ is solved for each target gap. The reachable range is from about 0 (δ < 0, where weak end bonds
-leave nearly free edge spins) up to about 1.8 J1 (δ → 1, isolated dimers). The grid uses 14 gaps from
-0.005 to 1.7 J1, the same physical gaps at every N.
+- Gap: dimerisation δ keeps SU(2) and sets the scaled gap η = Δ/W, W = Emax − E0.
+- Overlap: exp(−iε Σ(−1)^i Z_i) on the exact ground state; ε is solved for each target γ. It commutes with
+  S^z, so the trial stays in the sector.
 
-**Overlap knob: one layer of staggered Rz.** The trial is exp(−iε Σ(−1)^i Z_i)|E0⟩, with ε solved for each
-target γ = |⟨E0|trial⟩|². It conserves S^z and moves the missing weight onto the low triplets, E1 included,
-which is the hard case for a filter. The grid uses 14 overlaps from 0.005 to 0.99.
+## Cost model
 
-**Filter.** One ancilla. Pulse t applies cos(t H_s) on success, with H_s = (H − E0)/(Emax − E0). The dyadic
-schedule uses t = τ 2^k for k < K, the ladder repeated r times, τ = π/(1 + Δ_s). Time evolution is
-second-order Strang with n steps per τ.
+Each ancilla-controlled bond is a Clifford Bell change plus a 4-CNOT parity network: 6 CNOT, 3 Rz. Strang steps
+merge their end bonds, so m steps take (2B − 2)m + 1 blocks, B = 2N − 3. Reflections for AA are counted from a
+Qiskit transpile of `mcx` to {CX, Rz, SX, X}. RUS costs C_attempt / p; AA costs
+((2k + 1) C_A + k C_R) / sin²((2k + 1)θ), sin θ = √p, and is used only where it beats RUS. A filter counts only if
+it reaches 1 − F ≤ ε at n Strang steps per τ and also at the next finer n.
 
-**Measured cost.** For each (gap, γ, ε) the code finds the cheapest (K, r, n) whose simulated 1 − F ≤ ε,
-where F is the fidelity with the exact ground state. A choice only counts if the same (K, r) still meets ε
-at the next finer n, so a lucky Trotter cancellation is not counted. n is raised until finer steps stop
-helping.
+## Speed
 
-**CNOTs.** Each ancilla-controlled Heisenberg bond is one 6-CNOT block, and Strang merges the outer half
-steps: a pulse of k steps costs 6(2k(B − 1) + 1) CNOTs, with B = 2N − 3 bonds.
-
-**Protocols.** Both are optimised separately, so each picks its own cheapest filter.
-- RUS, repeat until success: cost = CNOT per attempt / p.
-- AA, amplitude amplification: k Grover rounds, (2k + 1) uses of the attempt, success sin²((2k+1)θ) with
-  sin θ = √p. It needs a coherent attempt (no mid-circuit measurement) and an invertible trial circuit.
-  It is used only where it beats RUS.
-
-`attempt` in the fits is the CNOT count of one attempt of the RUS-optimal filter.
-
-## How it is fast enough for N = 16
-
-The Trotterised filter is never time-stepped. One Strang step S is complex symmetric and unitary, so
-S = O e^{−iφ} O^T with O real orthogonal. A Trotterised pulse of m steps is then exactly O cos(mφ) O^T,
-and every (K, r) at a given n costs one vector product. O comes from a real symmetric eigensolver. Spin flip
-commutes with S, which splits it into two blocks of half the size. At N = 16 the S^z = 0 sector has 12870
-states, each block 6435, and one decomposition takes about 2 minutes. The test file checks this against a
-direct gate-by-gate simulation to 1e−12.
-
-Rough run times on 4 cores: N ≤ 12 under a minute each, N = 14 a few minutes, N = 16 a few hours.
-Memory peaks at about 4 GB at N = 16.
+A Trotterised pulse is never time-stepped. One Strang step S is complex symmetric and unitary, so
+S = O e^{−iφ} O^T with O real orthogonal, and a pulse of m steps is O cos(mφ) O^T. Every (K, r) at a given n
+then costs one vector product. At N = 16 the S^z = 0 sector has 12870 states and one decomposition takes about
+2 minutes.
