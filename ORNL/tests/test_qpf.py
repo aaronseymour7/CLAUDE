@@ -1,5 +1,5 @@
 """Checks of the QPF engine against the paper's definitions and its 4 x 4 Heisenberg numbers.
-Run from QPF/: python -m pytest tests -q"""
+Run from ORNL/: python -m pytest tests -q"""
 import os
 import sys
 
