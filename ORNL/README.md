@@ -6,8 +6,10 @@ choices the paper leaves open, and compares our numbers with the paper's 4 × 4 
 
 ```
 pip install -r requirements.txt
-python -m pytest tests -q                 # 8 tests, ~6 s
+pip install --ignore-requires-python git+https://github.com/qiskit-community/mps-to-circuit   # j1j2 only
+python -m pytest tests -q                 # 9 tests, ~15 s
 python examples/heisenberg_4x4.py         # paper's example, ~20 s -> figs/, results/heisenberg_4x4.json
+python j1j2/run_pipeline.py               # J1-J2 chain, N = 8..16 -> figs/j1j2_pipeline.png, results/j1j2_pipeline.json
 ```
 
 | File | Content |
@@ -17,4 +19,6 @@ python examples/heisenberg_4x4.py         # paper's example, ~20 s -> figs/, res
 | `qpf/design.py` | energy projection: port of the authors' design notebook (`reference/`), optimised (t_i) and (t_i, δ_i); constant and Gaussian schedules |
 | `reference/optimize_times_phases.ipynb` | the authors' design notebook (shared by A. Baroni), the reference for `design.optimize` |
 | `qpf/models.py` | the paper's test system: Heisenberg model on a periodic square lattice, J_z sectors, J², Néel state |
+| `j1j2/inputs.py` | J1-J2 chain: operators, DMRG spectral estimates (E0, Emax, first excited singlet), mps-to-circuit trial, ED reference |
+| `j1j2/run_pipeline.py` | the paper's pipeline on the open J1-J2 chain (J² projection, designed energy filter iterated to convergence) |
 | `examples/heisenberg_4x4.py` | J² projection then energy projection, as in the paper's Figs. 1-2 |
