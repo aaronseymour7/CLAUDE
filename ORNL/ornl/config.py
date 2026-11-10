@@ -25,6 +25,12 @@ class StudyConfig:
     eps: tuple = (1e-2, 1e-3)                                             # target infidelities 1 - F
     delta_range: tuple = (-0.9, 0.95)                                     # dimerisation search interval
     trial: str = "exact"              # trial base: "exact" ground state (study) or "mps1" (one-layer MPS-to-circuit, application)
+    knob: str = "staggered_z"         # overlap knob: "staggered_z" (Rz layer, adds S > 0 weight) or "singlet_bond" (SU(2) brick layer)
+    gap_kind: str = "triplet"         # which gap the `gaps` grid targets: "triplet" (E1 in S^z = 0) or "singlet" (first excited singlet)
+
+    # SBC S^2 projection stage before the energy filter (Stetcu et al. step 1)
+    s2_stage: bool = False
+    s2_n_grid: tuple = (1, 2, 3, 4, 6, 8, 12, 16, 24, 32)   # Strang steps of the longest S^2 pulse (searched, like n)
 
     # measured search over the dyadic filter: K ladder rungs, r repetitions, n Strang steps per tau
     n_grid: tuple = (1, 2, 3, 4, 6, 8, 12, 16)

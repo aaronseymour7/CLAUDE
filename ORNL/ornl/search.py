@@ -4,6 +4,10 @@ For every target overlap, eps and protocol: the cheapest (K, r, n) whose simulat
 fidelity of the post-selected state with the exact ground state. A choice only counts if the same (K, r) still
 meets eps at the next finer n (no lucky Trotter cancellations). n is raised along cfg.n_grid until a level brings
 no cheaper choice.
+
+With cfg.s2_stage the trial first goes through the SBC S^2 projection (ornl.symmetry); the energy filter then acts
+on the unnormalised stage output, so p and 1 - F are those of the whole two-stage circuit, and the stage's CNOTs
+and ancillas are added to every attempt and AA reflection.
 """
 import numpy as np
 
@@ -33,7 +37,9 @@ def scan(ch, trials, n, cfg):
     return out
 
 
-def _select(ch, levels, ok, eps_list, cfg, unverified_last=False):
+def _select(ch, levels, cols, eps_list, cfg, unverified_last=False):
+    """cols[c] = (jj, stage): trial column c belongs to overlap index jj; stage is None or dict(n, cnot, anc) of the
+    S^2 stage that produced it. The cheapest column wins for each (jj, eps, protocol)."""
     best = {}
     last = len(levels) - 1
     tau = np.pi / (1 + ch.gap_s)
@@ -42,41 +48,73 @@ def _select(ch, levels, ok, eps_list, cfg, unverified_last=False):
         if check is None and not unverified_last:
             continue
         for K, (p, inf) in data.items():
-            for jj in range(len(ok)):
+            for c_i, (jj, st) in enumerate(cols):
+                x_cnot, x_anc = (0, 0) if st is None else (st["cnot"], st["anc"])
                 for e in eps_list:
-                    good = inf[:, jj] <= e
+                    good = inf[:, c_i] <= e
                     if check is not None:
-                        good &= check[K][1][:, jj] <= e
+                        good &= check[K][1][:, c_i] <= e
                     hit = np.flatnonzero(good)
                     if not len(hit):
                         continue
                     r = hit[0] + 1                                 # fewest repetitions that work (and verify)
-                    c = cnot_per_attempt(ch.N, K, r, n, cfg.bond_cnots) + ch.prep_cnot   # filter + trial prep
-                    refl = reflection_cnots(ch.N, K, r, cfg.mcz_cnots_per_qubit)
+                    c = (cnot_per_attempt(ch.N, K, r, n, cfg.bond_cnots) + ch.prep_cnot + ch.knob_cnot
+                         + x_cnot)                                         # filter + trial prep + knob + S^2 stage
+                    refl = reflection_cnots(ch.N, K, r, cfg.mcz_cnots_per_qubit, x_anc)
                     for pr in cfg.protocols:
-                        cc = cost(c, p[r - 1, jj], pr, refl)
+                        cc = cost(c, p[r - 1, c_i], pr, refl)
                         key = (jj, e, pr)
                         if key not in best or cc < best[key]["cost"]:
-                            best[key] = dict(K=K, r=int(r), n=n, cnot=c, p=float(p[r - 1, jj]),
-                                             infid=float(inf[r - 1, jj]), cost=float(cc),
+                            best[key] = dict(K=K, r=int(r), n=n, cnot=c, p=float(p[r - 1, c_i]),
+                                             infid=float(inf[r - 1, c_i]), cost=float(cc),
                                              trotter_steps=int(n * r * (2 ** K - 1)),
                                              T_scaled=float(tau * r * (2 ** K - 1)))
+                            if st is not None:
+                                best[key].update(s2_n=st["n"], s2_cnot=st["cnot"], s2_p=st["p"][jj])
     return best
 
 
+def s2_columns(ch, trials, cfg):
+    """Trial columns after the Trotterised S^2 stage, one block per n in cfg.s2_n_grid (stopping once the stage
+    matches the exact J = 0 projection to 1e-8). Returns (stacked columns, cols, info)."""
+    from .symmetry import ladder, pair_perms, project_singlet, stage, stage_cnots, _infid
+    ideal = project_singlet(ch, trials)
+    perms = pair_perms(ch)
+    outs, cols, info = [], [], dict(pulses=len(ladder(ch.N)), n=[], stage_infid=[],
+                                    p_exact=[float(x) for x in np.sum(abs(ideal) ** 2, 0)])
+    for n in cfg.s2_n_grid:
+        out = stage(ch, trials, n, perms=perms)
+        st = dict(n=int(n), cnot=stage_cnots(ch.N, n, cfg.bond_cnots), anc=len(ladder(ch.N)),
+                  p=[float(x) for x in np.sum(abs(out) ** 2, 0)])
+        outs.append(out)
+        cols += [(jj, st) for jj in range(trials.shape[1])]
+        inf = _infid(out, ideal)
+        info["n"].append(int(n)); info["stage_infid"].append(inf)
+        if inf < 1e-8:
+            break
+    return np.concatenate(outs, axis=1), cols, info
+
+
 def measure_point(ch, gammas, eps_list, cfg, verbose=False):
-    """Returns (rows, eps_knob): rows[j][eps][protocol] = dict(K, r, n, cnot, p, infid, cost, trotter_steps,
-    T_scaled) or None if the overlap is out of reach; eps_knob[j] is the staggered-Rz angle for gammas[j]."""
+    """Returns (rows, eps_knob, s2): rows[j][eps][protocol] = dict(K, r, n, cnot, p, infid, cost, trotter_steps,
+    T_scaled [, s2_n, s2_cnot, s2_p]) or None if the overlap is out of reach; eps_knob[j] is the knob angle for
+    gammas[j]. With cfg.s2_stage the number of Strang steps of the S^2 stage is searched too (each candidate is one
+    more set of trial columns), cnot includes the stage, and s2 = dict(pulses, n, stage_infid, p_exact) describes
+    the candidates (stage_infid: worst infidelity with the exact J = 0 projection; p_exact[j]: J = 0 weight)."""
     eps_knob = [ch.eps_for_overlap(g) for g in gammas]
     ok = [j for j, e in enumerate(eps_knob) if e is not None]
     trials = np.stack([ch.trial(eps_knob[j]) for j in ok], axis=1)
+    cols, s2 = [(jj, None) for jj in range(len(ok))], None
+    if cfg.s2_stage:
+        trials, cols, s2 = s2_columns(ch, trials, cfg)
+        s2["p_exact"] = [s2["p_exact"][ok.index(j)] if j in ok else None for j in range(len(gammas))]
     nkeys = len(ok) * len(eps_list) * len(cfg.protocols)
     levels, best = [], {}
     for i, n in enumerate(cfg.n_grid):
         levels.append((n, scan(ch, trials, n, cfg)))
-        new_best = _select(ch, levels, ok, eps_list, cfg)
+        new_best = _select(ch, levels, cols, eps_list, cfg)
         improved = any(k not in best or new_best[k]["cost"] < best[k]["cost"] for k in new_best)
-        level_best = _select(ch, levels, ok, eps_list, cfg, unverified_last=True)
+        level_best = _select(ch, levels, cols, eps_list, cfg, unverified_last=True)
         could_improve = any(k not in new_best or level_best[k]["cost"] < new_best[k]["cost"] for k in level_best)
         best = new_best
         if verbose:
@@ -86,4 +124,4 @@ def measure_point(ch, gammas, eps_list, cfg, verbose=False):
     rows = [{e: {pr: None for pr in cfg.protocols} for e in eps_list} for _ in gammas]
     for (jj, e, pr), b in best.items():
         rows[ok[jj]][e][pr] = b
-    return rows, eps_knob
+    return rows, eps_knob, s2

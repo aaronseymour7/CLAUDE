@@ -26,8 +26,8 @@ def cnot_mcz(n, per_qubit=12):
     return 0 if n <= 1 else per_qubit * n
 
 
-def reflection_cnots(N, K, r, per_qubit=12):
-    m = K * r
+def reflection_cnots(N, K, r, per_qubit=12, extra_ancillas=0):
+    m = K * r + extra_ancillas
     return cnot_mcz(m, per_qubit) + cnot_mcz(N + m, per_qubit)
 
 

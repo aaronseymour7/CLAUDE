@@ -55,7 +55,7 @@ def test_aa_cost_matches_grover():
 def test_measured_point_meets_target_and_matches_gates():
     cfg = StudyConfig()
     ch = Chain(8, 0.0)
-    rows, eps_knob = measure_point(ch, [0.1, 0.9], [1e-2, 1e-3], cfg)
+    rows, eps_knob, _ = measure_point(ch, [0.1, 0.9], [1e-2, 1e-3], cfg)
     for r, e_k in zip(rows, eps_knob):
         for e, v in r.items():
             for pr in cfg.protocols:
@@ -76,3 +76,65 @@ def test_aa_cost_no_overflow_at_tiny_p():
     for p in (1.5e-30, 1e-130, 1e-285):
         c = costs.cost(603979080, p, "aa", 1000)
         assert 0 < c < 603979080 / p                                # positive, and below RUS (~ pi / (4 sqrt p) rounds)
+
+
+# ---- total spin: S^2 stage and the singlet knob
+from ornl import symmetry  # noqa: E402
+
+
+def test_s2_ladder_and_projector():
+    ch = Chain(8, 0.1)
+    S2 = symmetry.s2_matrix(ch).toarray()
+    w = np.linalg.eigvalsh(S2)
+    J = (-1 + np.sqrt(1 + 4 * w)) / 2
+    assert np.allclose(J, np.round(J), atol=1e-9) and abs(np.vdot(ch.g0, S2 @ ch.g0)) < 1e-10   # singlet ground state
+    assert symmetry.ladder(16) == (np.pi / 4, np.pi / 8, np.pi / 16)
+    for N in (8, 10, 12, 14, 16):                                      # the ladder zeroes every J > 0
+        t = np.array(symmetry.ladder(N))
+        for Jv in range(1, N // 2 + 1):
+            assert abs(np.prod(np.cos(t * Jv * (Jv + 1)))) < 1e-12
+    v = ch.trial(0.4)
+    P = symmetry.project_singlet(ch, v)
+    assert np.linalg.norm(S2 @ P) < 1e-9 and abs(np.vdot(ch.g0, P) - np.vdot(ch.g0, v)) < 1e-12
+
+
+def test_s2_stage_trotter_converges_and_counts():
+    ch = Chain(8, 0.0)
+    v = ch.trial(0.5)
+    ideal = symmetry.project_singlet(ch, v)
+    inf = [symmetry._infid(symmetry.stage(ch, v, n), ideal) for n in (4, 8, 16)]
+    assert inf[0] > 8 * inf[1] > 64 * inf[2] and inf[2] < 1e-3          # infidelity ~ dt^4 (second order)
+    # gate count: (2P - 2) m + 1 blocks per pulse, P = 28 pairs at N = 8; J <= 4 needs two pulses (8 and 4 steps)
+    assert len(symmetry.ladder(8)) == 2
+    assert symmetry.stage_cnots(8, 8) == 6 * ((54 * 8 + 1) + (54 * 4 + 1))
+
+
+def test_singlet_knob_keeps_singlet_and_hits_target():
+    ch = Chain(10, 0.0, knob="singlet_bond")
+    e = ch.eps_for_overlap(0.01)
+    v = ch.trial(e)
+    assert abs(ch.overlap(e) - 0.01) < 1e-10
+    assert abs(symmetry.singlet_weight(ch, v) - 1) < 1e-10           # all weight stays in J = 0
+    assert ch.knob_cnot == 27
+
+
+def test_singlet_gap_grid():
+    cfg = StudyConfig(knob="singlet_bond", gap_kind="singlet")
+    ch = chain_for_gap(10, 0.6, cfg)
+    assert abs(ch.singlet_gap() - 0.6) < 1e-8 and ch.gap_kind == "singlet" and abs(ch.gap - 0.6) < 1e-8
+    assert ch.delta > chain_for_gap.__globals__["singlet_dip"](10)[0]
+    assert chain_for_gap(10, 0.05, cfg) is None                       # below the singlet dip
+
+
+def test_measured_point_with_s2_stage_matches_gates():
+    cfg = StudyConfig(s2_stage=True)
+    ch = Chain(8, 0.0)
+    ch.use_gap("singlet")
+    rows, eps_knob, s2 = measure_point(ch, [0.1], [1e-2], cfg)
+    b = rows[0][1e-2]["rus"]
+    v = symmetry.stage(ch, ch.trial(eps_knob[0]), b["s2_n"])
+    assert abs(np.sum(abs(v) ** 2) - b["s2_p"]) < 1e-12
+    _, p, inf = trotter.dyadic_filter(ch, v, b["K"], b["r"], b["n"])
+    assert abs(p - b["p"]) < 1e-10 and abs(inf - b["infid"]) < 1e-10 and inf <= 1e-2
+    assert b["cnot"] == costs.cnot_per_attempt(8, b["K"], b["r"], b["n"]) + symmetry.stage_cnots(8, b["s2_n"])
+    assert s2["stage_infid"] == sorted(s2["stage_infid"], reverse=True)

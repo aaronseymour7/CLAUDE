@@ -1,0 +1,18 @@
+{
+ "gap_kind": "singlet",
+ "gaps": [
+  0.3,
+  0.394159,
+  0.51787,
+  0.680409,
+  0.893964,
+  1.174544,
+  1.543189,
+  2.027537,
+  2.663903,
+  3.5
+ ],
+ "knob": "singlet_bond",
+ "out_dir": "results/su2_C_singlet_knob",
+ "fig_dir": "figs/su2_C_singlet_knob"
+}

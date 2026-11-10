@@ -19,6 +19,7 @@ python -m pytest tests -q
 | 2. Filters (worked example of SBC, AA, QETU, and the Qiskit circuits that set the cost model) | `filter_walkthrough.ipynb` | printed tables |
 | 5. Filter-only scaling: SBC, SBC + AA, QETU, QETU + AA vs N, η = Δ/W and γ; trial population before the filter | `scaling_study.ipynb` | `results/scaling_study.csv`, `results/scaling_study_population.csv` |
 | 5. Gap-vs-overlap maps and the range dependence of the η exponent | `run_maps.py`, `analyze.py` | `results/map_N*.json`, `fits.csv`, `all_points.csv`, `figs/` |
+| Total spin: current knob vs + S² stage (Stetcu et al. step 1) vs singlet knob, same Hamiltonians | `run_maps.py --config configs/su2_*.json`, `compare_su2.py` | `results/su2_*/`, `results/su2_compare.csv`, `su2_fits.csv`, `figs/su2_cuts_N*.png` |
 | 3. Gap knob: dimerisation vs J2 | `plot_gap_vs_delta.py` | `figs/gap_vs_delta.png` |
 | 6. Full workflow in Qiskit Aer: DMRG spectral estimates, default mps-to-circuit trial, SBC S^z projection, filter circuits | `workflow_study.ipynb` | `results/workflow_study.csv`, `workflow_prep.csv`, `workflow_study_seed_stats.csv`, `workflow_qetu_check.csv` (5 seeded DMRG draws per N) |
 | All of it in one place (standalone, no `ornl` import): both Hamiltonians, ED + DMRG, gap vs overlap study, SBC + S^z projection, AA and QETU in Aer, summary | `final_filters.ipynb` | printed tables |
@@ -35,6 +36,7 @@ The notebooks run top to bottom. `scaling_study.ipynb` takes about 25 minutes fo
 | `ornl/trotter.py` | Strang steps, the exact eigenphase form of a Trotterised pulse, the dyadic filter |
 | `ornl/costs.py` | CNOT per attempt and per reflection, RUS and AA cost per success |
 | `ornl/search.py` | Measured search for the cheapest (K, r, n) per protocol and target |
+| `ornl/symmetry.py` | S² in the sector, singlet gap, the SBC S² projection stage (Trotterised, with its CNOT count) |
 | `ornl/prep.py` | S^z-conserving bond-2 truncation and one-layer circuit (the `trial="mps1"` option of the maps) |
 | `tests/test_engine.py` | Eigenphase engine vs direct gate-by-gate simulation and `expm`, AA toy model, cost edge cases |
 
@@ -60,3 +62,23 @@ A Trotterised pulse is never time-stepped. One Strang step S is complex symmetri
 S = O e^{−iφ} O^T with O real orthogonal, and a pulse of m steps is O cos(mφ) O^T. Every (K, r) at a given n
 then costs one vector product. At N = 16 the S^z = 0 sector has 12870 states and one decomposition takes about
 2 minutes.
+
+## Total spin (S²) options
+
+Stetcu et al. first project the trial onto the target total spin and only then filter in energy. The default study
+skips that step, and its overlap knob (staggered Rz) puts 90-95% of the missing weight in S > 0, so the energy
+filter has to resolve the triplet gap. Three `StudyConfig` fields change this:
+
+- `knob = "singlet_bond"`: the trial is one brick layer of SU(2)-invariant gates on the base,
+  e^{-iε SWAP} on even bonds and e^{+iε SWAP} on odd bonds (3 CNOT each, counted per attempt). The trial stays a
+  singlet, all missing weight sits on excited singlets, and γ reaches ~0 at ε = π/2.
+- `s2_stage = True`: the SBC S² projection before the energy filter: pulses cos(t S²), t = π/4, π/8, ...
+  (two pulses up to N = 8 and three up to N = 16 remove every J > 0), each Trotterised over all N(N-1)/2 pairs with
+  the same 6-CNOT controlled block. Its Strang step count is searched (`s2_n_grid`) together with the energy filter,
+  and p, 1 - F and CNOTs are those of the whole two-stage circuit.
+- `gap_kind = "singlet"`: the `gaps` grid targets the first excited singlet. The dimerisation knob has a singlet
+  dip at small negative δ (two dimer patterns cross), so only the branch to its right is used; at J2 = 0.2411 the
+  reachable singlet gap is about 0.31-3.5 J1 (N = 14) or 0.5-3.6 J1 (N = 8).
+
+The energy filter always resolves the gap the trial actually sees: the singlet gap with the singlet knob or the
+S² stage, the triplet gap otherwise (`ch.gap`, `ch.gap_s`; both gaps are stored in the maps).

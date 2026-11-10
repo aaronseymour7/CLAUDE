@@ -19,10 +19,11 @@ def run(N, cfg):
     os.makedirs(cfg.out_dir, exist_ok=True)
     path = os.path.join(cfg.out_dir, f"map_N{N}.json")
     grid = dict(N=N, J1=cfg.J1, J2=cfg.J2, gaps=list(cfg.gaps), gammas=list(cfg.gammas), eps=list(cfg.eps),
-                trial=cfg.trial)
+                trial=cfg.trial, knob=cfg.knob, gap_kind=cfg.gap_kind, s2_stage=cfg.s2_stage)
+    legacy = dict(trial="exact", knob="staggered_z", gap_kind="triplet", s2_stage=False)   # files made before these existed
     data = json.load(open(path)) if os.path.exists(path) else dict(grid, rows={})
-    for k in ("J1", "J2", "gammas", "eps", "trial"):
-        if data.get(k, "exact" if k == "trial" else None) != grid[k]:
+    for k in ("J1", "J2", "gammas", "eps", "trial", "knob", "gap_kind", "s2_stage"):
+        if data.get(k, legacy.get(k)) != grid[k]:
             raise SystemExit(f"{path} was made with another {k}; use another out_dir or move it away")
     t0 = time.time()
     for g in cfg.gaps:
@@ -30,14 +31,19 @@ def run(N, cfg):
         if key in data["rows"]:
             continue
         ch = chain_for_gap(N, g, cfg)
-        rows, eps_knob = measure_point(ch, cfg.gammas, cfg.eps, cfg)
+        if ch is None:
+            print(f"N={N:2d} {cfg.gap_kind} gap {g:.4g} out of reach of the dimerisation knob, skipped", flush=True)
+            continue
+        rows, eps_knob, s2 = measure_point(ch, cfg.gammas, cfg.eps, cfg)
         data["rows"][key] = dict(
+            gap_triplet=ch.gap_triplet, gap_singlet=ch.singlet_gap(), gap_filter_kind=ch.gap_kind, knob_cnot=ch.knob_cnot,
+            s2=s2,
             gap=ch.gap, delta=ch.delta, W=ch.W, gamma0=ch.gamma0, prep_cnot=ch.prep_cnot, gap_scaled=ch.gap_s, E0=ch.E0, E1=ch.E1, Emax=ch.Emax,
             eps_knob=eps_knob, gamma=[None if e is None else ch.overlap(e) for e in eps_knob],
             best=[{f"{e:g}": v for e, v in r.items()} for r in rows])
         json.dump(data, open(path + ".tmp", "w"))
         os.replace(path + ".tmp", path)
-        print(f"N={N:2d} gap {ch.gap:.4f} (delta {ch.delta:+.4f}): {time.time() - t0:.0f} s", flush=True)
+        print(f"N={N:2d} filter gap {ch.gap:.4f} (delta {ch.delta:+.4f}): {time.time() - t0:.0f} s", flush=True)
     return data
 
 
