@@ -84,6 +84,23 @@ def steps_for(t, dt):
     return max(1, int(np.ceil(abs(t) / dt - 1e-12)))
 
 
+def uniform_steps(times, n_max):
+    """One step size per stage, set by the longest pulse: dt = max|t_i| / n_max and pulse i gets
+    n_i = max(1, round(|t_i| / dt)) steps of exactly dt, i.e. its time is snapped to sign(t_i) n_i dt.
+    Returns (n_i, snapped times, dt)."""
+    times = np.asarray(times, float)
+    dt = float(np.max(np.abs(times))) / n_max
+    ns = [max(1, int(np.floor(abs(t) / dt + 0.5 + 1e-9))) for t in times]
+    return ns, [float(np.sign(t) * n * dt) for t, n in zip(times, ns)], dt
+
+
+def run_steps(op, index, V, times, phases, ns, order):
+    """All steps with given Trotter step counts n_i."""
+    for t, d, n in zip(times, phases, ns):
+        V = pulse(op, index, V, t, d, n, order)
+    return V
+
+
 def run(op, index, V, times, phases, dt, order):
     """All steps, n_i = ceil(|t_i| / dt) Trotter steps each. Returns (unnormalised state, list of n_i)."""
     ns = []

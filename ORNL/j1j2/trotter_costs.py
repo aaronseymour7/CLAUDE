@@ -15,7 +15,11 @@ the number of blocks R are chosen to minimise CNOTs per success = CNOTs per atte
 1 - F <= eps with the chosen steps AND with the next finer k_J and the next finer dt_E (so the choice is not a lucky
 cancellation of Trotter errors). Fidelity F is to the exact ground state, simulated exactly (full 2^N space, no
 symmetry restriction) with the same Trotter product as the circuits (checked against the transpiled circuits in
-tests/test_trotter.py). CNOTs per success assume the whole circuit is rerun after a failed ancilla readout; aborting
+tests/test_trotter.py). With --uniform each stage instead has one Trotter step size set by its longest pulse, dt = max|t_i| / n_max, and every
+pulse is an integer number of those steps: n_i = max(1, round(|t_i| / dt)), with t_i snapped to n_i dt (the J^2
+ladder pi/4, pi/8, ... stays exact when k_J is a multiple of 2^(steps-1)). The grid is then over k_J = n_max of the
+pi/4 pulse and N_MAX for the energy stage; results go to results/j1j2_trotter_uniform.{json,md}.
+CNOTs per success assume the whole circuit is rerun after a failed ancilla readout; aborting
 at the first failed readout makes it cheaper, so these are upper bounds of the expected cost.
 """
 import argparse
@@ -34,6 +38,8 @@ from qpf import design  # noqa: E402
 
 K_J = [1, 2, 3, 4, 6, 8, 12, 16]
 DT_E = [32 * 2 ** (-h / 2) for h in range(18)]           # 32 ... 0.088 (dt_E >= max t_i means one Trotter step)
+N_MAX = [1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24, 32, 40, 48, 64]   # --uniform: steps of the longest pulse
+UNIFORM = False
 EPS = (1e-2, 1e-3)
 SCHEDULES = ("QPF (t_i, δ_i)", "QPF (t_i)", "Constant")
 
@@ -72,11 +78,16 @@ def run_N(N, r, seed=0):
         # J^2 stage for every k_J, kept as the columns of one array
         VJ, pJ, cJ = [], [], []
         for k in K_J:
-            v, ns = trotter.run(Jop, idx, psi, tJ, [0.0] * len(tJ), (np.pi / 4) / k, order)
+            if UNIFORM:                                       # dt_J = (pi/4) / k, pulse times snapped to n_i dt_J
+                ns, tJs, _ = trotter.uniform_steps(tJ, k)
+                v = trotter.run_steps(Jop, idx, psi, tJs, [0.0] * len(tJ), ns, order)
+            else:
+                tJs = tJ
+                v, ns = trotter.run(Jop, idx, psi, tJ, [0.0] * len(tJ), (np.pi / 4) / k, order)
             pJ.append(float(np.linalg.norm(v) ** 2))
             VJ.append(v / np.sqrt(pJ[-1]))
-            c = [trotter.step_counts(Jop, ("J", N), t, 0.0, n, order) for t, n in zip(tJ, ns)]
-            cJ.append(dict(ns=ns, cx=sum(x[0] for x in c), nonclifford_rz=sum(x[1] for x in c)))
+            c = [trotter.step_counts(Jop, ("J", N), t, 0.0, n, order) for t, n in zip(tJs, ns)]
+            cJ.append(dict(ns=ns, times=tJs, cx=sum(x[0] for x in c), nonclifford_rz=sum(x[1] for x in c)))
         VJ = np.stack(VJ, axis=1)
         jstage = [dict(k=k, dt=(np.pi / 4) / k, p=pJ[i], infid=float(1 - abs(np.vdot(g0, VJ[:, i])) ** 2), **cJ[i])
                   for i, k in enumerate(K_J)]
@@ -85,20 +96,26 @@ def run_N(N, r, seed=0):
             grid = []                                         # grid[d][b] = per-k arrays after block b + 1
             prev = None
             seen = set()
-            for dt in DT_E:
-                ns_dt = tuple(trotter.steps_for(t, dt) for t in times)
+            for g in (N_MAX if UNIFORM else DT_E):
+                if UNIFORM:
+                    ns_dt, ts, dt = trotter.uniform_steps(times, g)
+                    ns_dt = tuple(ns_dt)
+                else:
+                    dt, ts = g, times
+                    ns_dt = tuple(trotter.steps_for(t, dt) for t in times)
                 if ns_dt in seen:                             # same circuit as a coarser dt_E already on the grid
                     continue
                 seen.add(ns_dt)
                 d = len(grid)
                 V, P, rows = VJ.copy(), np.ones(len(K_J)), []
                 for b in range(blocks[label]):
-                    V, ns = trotter.run(Hop, idx, V, times, phases, dt, order)
+                    V, ns = trotter.run_steps(Hop, idx, V, ts, phases, ns_dt, order), list(ns_dt)
                     q = np.sum(abs(V) ** 2, axis=0)
                     V, P = V / np.sqrt(q), P * q
                     rows.append(dict(p=P.copy(), infid=1 - abs(g0.conj() @ V) ** 2))
-                c = [trotter.step_counts(Hop, ("H", N), t, dl, n, order) for t, dl, n in zip(times, phases, ns)]
-                grid.append(dict(dt=dt, ns=ns, cx=sum(x[0] for x in c), nonclifford_rz=sum(x[1] for x in c),
+                c = [trotter.step_counts(Hop, ("H", N), t, dl, n, order) for t, dl, n in zip(ts, phases, ns)]
+                grid.append(dict(dt=dt, ns=ns, times=list(ts),
+                                 max_time_shift=float(np.max(np.abs(np.asarray(ts) - times))), cx=sum(x[0] for x in c), nonclifford_rz=sum(x[1] for x in c),
                                  rows=rows))
                 cur = np.array([x["infid"] for x in rows])
                 conv = prev is not None and np.all(abs(cur - prev) <= 0.01 * np.maximum(prev, 1e-6))
@@ -129,6 +146,7 @@ def choose(grid, jstage, trial_cx, trial_nc):
                     nc = trial_nc + jstage[i]["nonclifford_rz"] + R * grid[d]["nonclifford_rz"]
                     if best is None or cx / P < best["cx_per_success"]:
                         best = dict(k_J=jstage[i]["k"], n_J=jstage[i]["ns"], dt_E=grid[d]["dt"], n_E=grid[d]["ns"],
+                                    times_E=grid[d].get("times"), max_time_shift=grid[d].get("max_time_shift"),
                                     blocks=R, infid=float(grid[d]["rows"][b]["infid"][i]), success=float(P),
                                     cx_attempt=int(cx), nonclifford_rz_attempt=int(nc),
                                     cx_per_success=cx / P, nonclifford_rz_per_success=nc / P,
@@ -152,7 +170,7 @@ def _clean(x):
 
 
 def table(res):
-    L = ["| N | order | ε | schedule | k_J, dt_E | blocks | success | 1−F | CNOT / attempt (trial + J² + blocks) "
+    L = ["| N | order | ε | schedule | k_J, dt_E (energy steps per pulse) | blocks | success | 1−F | CNOT / attempt (trial + J² + blocks) "
          "| non-Clifford Rz / attempt | CNOT / success | non-Clifford Rz / success |",
          "|--|--|--|--|--|--|--|--|--|--|--|--|"]
     for r in res:
@@ -163,24 +181,34 @@ def table(res):
                     if c is None:
                         L.append(f"| {r['N']} | {order} | {eps:g} | {label} | not reached | | | | | | | |")
                         continue
-                    L.append(f"| {r['N']} | {order} | {eps:g} | {label} | {c['k_J']}, {c['dt_E']:.3g} | {c['blocks']} "
+                    L.append(f"| {r['N']} | {order} | {eps:g} | {label} | {c['k_J']}, {c['dt_E']:.3g} {tuple(c['n_E'])} | {c['blocks']} "
                              f"| {c['success']:.3f} | {c['infid']:.1e} | {c['cx_attempt']} ({c['cx_trial']} + {c['cx_j2']} + "
                              f"{c['blocks']}×{c['cx_block']}) | {c['nonclifford_rz_attempt']} | {c['cx_per_success']:.0f} "
                              f"| {c['nonclifford_rz_per_success']:.0f} |")
     return "\n".join(L)
 
 
+def _set_uniform(u):
+    global UNIFORM
+    UNIFORM = u
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--N", type=int, nargs="+", default=[8, 10, 12, 14, 16])
     ap.add_argument("--workers", type=int, default=3)
+    ap.add_argument("--uniform", action="store_true",
+                    help="one Trotter step per stage, set by the longest pulse (others snapped to integer steps)")
     a = ap.parse_args()
+    global UNIFORM
+    UNIFORM = a.uniform
+    tag = "j1j2_trotter_uniform" if a.uniform else "j1j2_trotter"
     pipe = {x["N"]: x for x in json.load(open(os.path.join(HERE, "results", "j1j2_pipeline.json")))}
-    with ProcessPoolExecutor(a.workers) as ex:
+    with ProcessPoolExecutor(a.workers, initializer=_set_uniform, initargs=(a.uniform,)) as ex:
         res = list(ex.map(run_N, a.N, [pipe[N] for N in a.N]))
     res = _clean(res)
-    json.dump(res, open(os.path.join(HERE, "results", "j1j2_trotter.json"), "w"), indent=1)
-    open(os.path.join(HERE, "results", "j1j2_trotter.md"), "w").write(table(res) + "\n")
+    json.dump(res, open(os.path.join(HERE, "results", tag + ".json"), "w"), indent=1)
+    open(os.path.join(HERE, "results", tag + ".md"), "w").write(table(res) + "\n")
     print(table(res))
 
 
