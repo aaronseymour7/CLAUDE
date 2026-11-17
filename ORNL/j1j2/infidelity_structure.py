@@ -36,6 +36,8 @@ from j1j2 import inputs  # noqa: E402
 J1, J2 = 1.0, 0.2411
 DELTAS = (0.0, 0.2, 0.4, 0.6, 0.8)
 GAMMAS = (0.8, 0.5, 0.2, 0.05)
+M_H = 6                     # steps of the H filter block: QPF(t) design (v4, no phases) for the triplet gap. (v3 at
+                            # m = 6 can return an infeasible, all-pi/2-phase solution for these gaps.)
 A = 1e-3 * np.pi
 TOL = 1e-7
 
@@ -68,7 +70,7 @@ class Spectrum:
             self.sectors.append((idx, V, E, S))
         allE = np.concatenate([s[2] for s in self.sectors])
         allS = np.concatenate([s[3] for s in self.sectors])
-        self.E0 = float(allE.min())
+        self.E0, self.Emax = float(allE.min()), float(allE.max())
         k = np.argmin(allE)
         for idx, V, E, S in self.sectors:                           # ground state (S^z = 0 member)
             j = np.flatnonzero(abs(E - self.E0) < TOL)
@@ -130,6 +132,49 @@ def analyse(sp_, psi):
     return out
 
 
+def spin_spread(L, E0):
+    """Spread of the S != 0 part of a state's levels L = [(S, E, w)]: weight, by S, # S values and # multiplets for
+    90% / 99%, participation ratio over S values and over multiplets."""
+    m = L[:, 0] > 0
+    w, S = L[m, 2], L[m, 0]
+    tot = float(w.sum())
+    byS = np.array([w[S == s].sum() for s in np.unique(S)]) if tot > 0 else np.zeros(1)
+    return dict(weight=tot, by_S={f"{s:g}": float(w[S == s].sum()) for s in np.unique(S) if w[S == s].sum() > 1e-8},
+                nS90=count_for(byS, 0.9), nS99=count_for(byS, 0.99),
+                PR_S=float(tot ** 2 / np.sum(byS ** 2)) if tot > 0 else 0.0,
+                n90=count_for(w, 0.9), n99=count_for(w, 0.99), PR=float(tot ** 2 / np.sum(w ** 2)) if tot > 0 else 0.0)
+
+
+def energy_filter(Spec, design_):
+    """f(E) of one block of the designed energy filter on H_s = (H - E0) / (Emax - E0)."""
+    t, d = np.asarray(design_["times"]), np.asarray(design_["phases"])
+    return lambda E: np.prod(np.cos(np.outer((E - Spec.E0) / (Spec.Emax - Spec.E0), t) + d), axis=1)
+
+
+def routes(Spec, psi, f):
+    """The four spreads. Q1: S^2 infidelity (S != 0 part) of the trial. Q2: excited states (all S) of the trial.
+    Q3: excited states after an exact S^2 projection (= singlet part). Q4: S^2 infidelity after one H filter block."""
+    L = Spec.levels(psi)
+    ground = (L[:, 0] == 0) & (abs(L[:, 1] - Spec.E0) < 1e-6)
+    q1 = spin_spread(L, Spec.E0)
+    ex = L[~ground, 2]
+    q2 = dict(weight=float(ex.sum()), n90=count_for(ex, 0.9), n99=count_for(ex, 0.99),
+              PR=float(ex.sum() ** 2 / np.sum(ex ** 2)))
+    sing = L[(L[:, 0] == 0) & ~ground, 2]
+    p_s2 = float(L[L[:, 0] == 0, 2].sum())
+    q3 = dict(success=p_s2, weight=float(sing.sum() / p_s2), n90=count_for(sing, 0.9), n99=count_for(sing, 0.99),
+              PR=float(sing.sum() ** 2 / np.sum(sing ** 2)))
+    L2 = L.copy()
+    L2[:, 2] = L[:, 2] * f(L[:, 1]) ** 2
+    p_h = float(L2[:, 2].sum())
+    L2[:, 2] /= p_h
+    g2 = ground
+    q4 = dict(success=p_h, gamma=float(L2[g2, 2].sum()), **spin_spread(L2, Spec.E0))
+    ex2 = L2[~g2, 2]
+    q4["excited_n90"], q4["excited_PR"] = count_for(ex2, 0.9), float(ex2.sum() ** 2 / np.sum(ex2 ** 2))
+    return dict(q1=q1, q2=q2, q3=q3, q4=q4)
+
+
 def mps1(g0, N):
     import quimb.tensor as qtn
     from mps_to_circuit import mps_to_circuit
@@ -171,15 +216,19 @@ def run(N):
     for d in DELTAS:
         S = Spectrum(N, d)
         base = mps1(S.g0, N)
-        row = dict(N=N, delta=d, gap_triplet=S.gap_triplet, gap_singlet=S.gap_singlet, trials=[])
-        row["trials"].append(dict(trial="mps1", eps=0.0, **analyse(S, base)))
-        for knob, f, hi in (("staggered Rz", lambda e: np.exp(-1j * e * M) * base, 1.5),
+        from qpf import design
+        dz = design.optimize(S.gap_triplet / (S.Emax - S.E0), M_H, method="v4")
+        f = energy_filter(S, dz)
+        row = dict(H_filter=dict(m=M_H, gap_scaled=S.gap_triplet / (S.Emax - S.E0), times=list(dz["times"]),
+                                 phases=list(dz["phases"]), f_gap=float(np.prod(np.cos(np.asarray(dz["times"]) * S.gap_triplet / (S.Emax - S.E0))))),N=N, delta=d, gap_triplet=S.gap_triplet, gap_singlet=S.gap_singlet, trials=[])
+        row["trials"].append(dict(trial="mps1", eps=0.0, **analyse(S, base), routes=routes(S, base, f)))
+        for knob, fk, hi in (("staggered Rz", lambda e: np.exp(-1j * e * M) * base, 1.5),
                             ("singlet bond", lambda e: singlet_layer(N, base, e), np.pi / 2)):
             for gt in GAMMAS:
-                e = eps_for(f, S.g0, gt, hi)
+                e = eps_for(fk, S.g0, gt, hi)
                 if e is None:
                     continue
-                row["trials"].append(dict(trial=knob, eps=e, **analyse(S, f(e))))
+                row["trials"].append(dict(trial=knob, eps=e, **analyse(S, fk(e)), routes=routes(S, fk(e), f)))
         res.append(row)
         t0 = row["trials"][0]
         print(f"N={N} delta={d}: gaps T {S.gap_triplet:.3f} S {S.gap_singlet:.3f}; mps1 gamma {t0['gamma']:.3f} "
@@ -203,6 +252,24 @@ def table(res):
     return "\n".join(L)
 
 
+def routes_table(res):
+    L = ["| N | δ | trial | γ | Q1 S² infidelity: weight, by S, # S 90%, # multiplets 90% (PR) "
+         "| Q2 excited states: weight, # levels 90% (PR) | Q3 S² first → excited: success, 1−γ, # levels 90% (PR) "
+         "| Q4 H first (1 block) → S² infidelity: success, γ, S≠0 weight, by S, # S 90%, # multiplets 90% (PR) |",
+         "|--|--|--|--|--|--|--|--|"]
+    fmt = lambda d: " ".join(f"{k}:{v:.3f}" for k, v in d.items())
+    for row in res:
+        for t in row["trials"]:
+            q = t["routes"]
+            L.append(f"| {row['N']} | {row['delta']:g} | {t['trial']} | {t['gamma']:.3f} "
+                     f"| {q['q1']['weight']:.3f}, {fmt(q['q1']['by_S'])}, {q['q1']['nS90']}, {q['q1']['n90']} ({q['q1']['PR']:.1f}) "
+                     f"| {q['q2']['weight']:.3f}, {q['q2']['n90']} ({q['q2']['PR']:.1f}) "
+                     f"| {q['q3']['success']:.3f}, {q['q3']['weight']:.3f}, {q['q3']['n90']} ({q['q3']['PR']:.1f}) "
+                     f"| {q['q4']['success']:.3f}, {q['q4']['gamma']:.3f}, {q['q4']['weight']:.3f}, {fmt(q['q4']['by_S'])}, "
+                     f"{q['q4']['nS90']}, {q['q4']['n90']} ({q['q4']['PR']:.1f}) |")
+    return "\n".join(L)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--N", type=int, nargs="+", default=[8, 10, 12, 14])
@@ -211,8 +278,9 @@ def main():
     for N in a.N:
         res += run(N)
         json.dump(res, open(os.path.join(HERE, "results", "j1j2_infidelity_structure.json"), "w"), indent=1)
-        open(os.path.join(HERE, "results", "j1j2_infidelity_structure.md"), "w").write(table(res) + "\n")
-    print(table(res))
+        open(os.path.join(HERE, "results", "j1j2_infidelity_structure.md"), "w").write(
+            "## Levels\n\n" + table(res) + "\n\n## Four routes\n\n" + routes_table(res) + "\n")
+    print(routes_table(res))
 
 
 if __name__ == "__main__":
