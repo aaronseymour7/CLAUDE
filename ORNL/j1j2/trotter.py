@@ -132,6 +132,22 @@ def step_circuit(op, t, delta, n, order):
     return qc
 
 
+def run_transpiled(qc, tq, state):
+    """Statevector of a transpiled circuit with the output qubits relabelled back. Optimization level 3 may absorb
+    SWAPs into a final qubit permutation (tq.layout.final_layout); that is free (it only renames qubits) but has to be
+    undone before comparing states."""
+    from qiskit.quantum_info import Statevector
+    out = Statevector(state).evolve(tq).data
+    fl = tq.layout.final_layout if tq.layout is not None else None
+    if fl is None:
+        return out
+    s = np.arange(len(out))
+    src = np.zeros_like(s)
+    for i, q in enumerate(qc.qubits):
+        src |= ((s >> i) & 1) << fl[q]
+    return out[src]
+
+
 def counts(qc):
     """(CNOT, non-Clifford Rz) after transpiling to {cx, rz, sx, x} at optimization level 3."""
     from qiskit import transpile

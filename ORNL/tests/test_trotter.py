@@ -14,7 +14,7 @@ from qpf import core  # noqa: E402
 def test_circuit_matches_simulator(order):
     from qiskit import transpile
     from qiskit.quantum_info import Statevector
-    N = 5
+    N = 10
     ex = inputs.exact(N)
     rng = np.random.default_rng(1)
     v = rng.normal(size=1 << N) + 1j * rng.normal(size=1 << N)
@@ -23,9 +23,9 @@ def test_circuit_matches_simulator(order):
     for op, t, d in ((trotter.scaled_hamiltonian(N, inputs.bonds(N), ex["E0"], ex["Emax"]), 4.3, 0.3),
                      (trotter.total_spin_sq(N), np.pi / 4, 0.0)):
         for n in (1, 3):
-            tq = transpile(trotter.step_circuit(op, t, d, n, order), basis_gates=["cx", "rz", "sx", "x"],
-                           optimization_level=3, seed_transpiler=0)
-            out = Statevector(np.kron([1, 0], v)).evolve(tq).data[: 1 << N]      # ancilla (qubit N) reads 0
+            qc = trotter.step_circuit(op, t, d, n, order)
+            tq = transpile(qc, basis_gates=["cx", "rz", "sx", "x"], optimization_level=3, seed_transpiler=0)
+            out = trotter.run_transpiled(qc, tq, np.kron([1, 0], v))[: 1 << N]  # ancilla (qubit N) reads 0
             assert np.allclose(out, trotter.pulse(op, idx, v, t, d, n, order), atol=1e-10)
 
 
