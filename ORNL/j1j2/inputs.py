@@ -126,11 +126,14 @@ def mps_statevector(psi):
     return v.reshape([2] * N).transpose(list(range(N))[::-1]).ravel()
 
 
-def trial(psi0, num_layers=1):
-    """The default mps-to-circuit circuit for psi0 and its statevector (Qiskit ordering)."""
+def trial(psi0, num_layers=1, seed=0):
+    """The default mps-to-circuit circuit for psi0 and its statevector (Qiskit ordering). mps-to-circuit completes
+    isometries to unitaries with np.random columns, so the global numpy RNG is seeded for reproducibility (this
+    matters for num_layers > 1: at N = 16, three layers give gamma between 0.83 and 0.87 across unseeded runs)."""
     from mps_to_circuit import mps_to_circuit
     from qiskit.quantum_info import Statevector
     mps = psi0.copy()
     mps.permute_arrays("lrp")
+    np.random.seed(seed)
     qc = mps_to_circuit(list(mps.arrays), method="approximate", shape="lrp", num_layers=num_layers)
     return qc, np.asarray(Statevector(qc).data)
