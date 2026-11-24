@@ -1,0 +1,3 @@
+N=10 v4: m=7 T=65.58 max f2=7.9e-02
+N=10 v5 same T no cap: m=6 T=65.58 max f2=1.3e-02
+N=10 v5 1.5T no cap: m=8 T=98.37 max f2=5.2e-04

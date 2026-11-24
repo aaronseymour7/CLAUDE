@@ -1,0 +1,6 @@
+N=12 J2=0: E_dmrg=-5.14209063 trial CX=33
+N=12 J2=0.1: E_dmrg=-4.96490000 trial CX=33
+N=12 J2=0.2: E_dmrg=-4.80051062 trial CX=33
+N=12 J2=0.2411: E_dmrg=-4.73807703 trial CX=33
+N=12 J2=0.4: E_dmrg=-4.54562616 trial CX=33
+N=12 J2=0.5: E_dmrg=-4.50000000 trial CX=18

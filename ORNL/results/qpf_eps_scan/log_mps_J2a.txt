@@ -1,0 +1,9 @@
+N=12 v4: m=8 T=88.25 max f2=8.3e-02
+N=12 v5 same T no cap: m=6 T=88.25 max f2=1.3e-02
+N=12 v5 1.5T no cap: m=8 T=132.38 max f2=5.5e-04
+N=12 v4: m=8 T=90.90 max f2=8.2e-02
+N=12 v5 same T no cap: m=6 T=90.90 max f2=1.3e-02
+N=12 v5 1.5T no cap: m=8 T=136.35 max f2=5.5e-04
+N=12 v4: m=8 T=93.01 max f2=8.1e-02
+N=12 v5 same T no cap: m=6 T=93.01 max f2=1.3e-02
+N=12 v5 1.5T no cap: m=8 T=139.52 max f2=5.5e-04
