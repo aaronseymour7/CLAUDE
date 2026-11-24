@@ -1,5 +1,5 @@
 """Plots for qpf_design_eps_scan.py: CNOT per block, Trotter steps and CNOT per success vs eps, per design and N.
-Usage: python j1j2/qpf_design_eps_fig.py RESULTS_DIR OUT_PNG"""
+Usage: python j1j2/qpf_design_eps_fig.py RESULTS_DIR OUT_PNG [GLOB, default eps_scan_N*.json]"""
 import glob
 import json
 import os
@@ -10,7 +10,8 @@ import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 d, out = sys.argv[1], sys.argv[2]
-runs = sorted((json.load(open(f)) for f in glob.glob(os.path.join(d, "eps_scan_N*.json"))), key=lambda r: r["N"])
+pat = sys.argv[3] if len(sys.argv) > 3 else "eps_scan_N*.json"
+runs = sorted((json.load(open(f)) for f in glob.glob(os.path.join(d, pat))), key=lambda r: r["N"])
 COL = {"v4": "#2a78d6", "v5 same T no cap": "#eb6834", "v5 1.5T no cap": "#1baf7a"}
 MK = {8: "o", 10: "s", 12: "^", 14: "D"}
 LS = {8: ":", 10: "--", 12: "-", 14: "-."}
@@ -31,6 +32,7 @@ h = [plt.Line2D([], [], color=c, lw=2, label=n) for n, c in COL.items()]
 h += [plt.Line2D([], [], color="#52514e", ls=LS[r["N"]], marker=MK[r["N"]], label=f"N = {r['N']} "
       f"(γ = {r['gamma']:.2f}, Δ/W = {r['gap_scaled']:.3f}, {r['cx_per_step']} CNOT/step)") for r in runs]
 fig.legend(handles=h, loc="lower center", ncol=3, fontsize=8, frameon=False)
-fig.suptitle(f"Uniform J1-J2 chain, J2 = {runs[0]['J2']}, Néel trial, energy filter only, 2nd-order Trotter, "
+trial = "Néel trial" if runs[0].get("trial", "neel") == "neel" else "DMRG MPS → mps_to_circuit (L = 1) trial"
+fig.suptitle(f"Uniform J1-J2 chain, J2 = {runs[0]['J2']}, {trial}, energy filter only, 2nd-order Trotter, "
              "analytic 6-CNOT model", fontsize=10)
 fig.tight_layout(rect=(0, 0.1, 1, 1)); fig.savefig(out, dpi=150)
