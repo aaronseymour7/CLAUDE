@@ -64,13 +64,24 @@ def softmax_obj(t, E, beta):
     return val, grad
 
 
+def logmean_obj(t, E, floor):
+    """mean_k log(f(E_k)^2 + floor) and its gradient: the log-average (geometric-mean) leakage. Every level counts
+    in decibels, so it rewards pushing many levels deep; the floor (e.g. 1e-12) stops exact zeros from going to -inf."""
+    ell, tan = log_f2(E, t)
+    f2 = np.exp(ell)
+    val = np.mean(np.log(f2 + floor))
+    w = f2 / (f2 + floor) / len(E)
+    grad = (w[:, None] * (-2.0 * E[:, None] * tan)).sum(0)
+    return val, grad
+
+
 def _starts(T, m, n_random, rng):
     out = [1.0 / 2.0 ** np.arange(m), np.ones(m)]
     out += [rng.dirichlet(np.ones(m)) for _ in range(n_random)]
     return [T * s / s.sum() for s in out]
 
 
-def _solve(E, T, m, cap, betas, starts):
+def _solve(E, T, m, cap, betas, starts, fun=softmax_obj):
     bnds = [(0.0, cap)] * m
     cons = [{"type": "eq", "fun": lambda t: np.sum(t) - T, "jac": lambda t: np.ones_like(t)}]
     best = None
@@ -78,10 +89,10 @@ def _solve(E, T, m, cap, betas, starts):
         t = np.clip(t, 0, cap)
         t = t * T / t.sum()
         for b in betas:
-            r = minimize(softmax_obj, t, args=(E, b), jac=True, method="SLSQP", bounds=bnds, constraints=cons,
+            r = minimize(fun, t, args=(E, b), jac=True, method="SLSQP", bounds=bnds, constraints=cons,
                          options=dict(maxiter=500, ftol=1e-12))
             t = np.clip(r.x, 0, cap)
-        val = softmax_obj(t, E, betas[-1])[0]
+        val = fun(t, E, betas[-1])[0]
         if best is None or val < best[0]:
             best = (val, t)
     return best[1]
@@ -103,10 +114,12 @@ def v4_cost(gap, t, n_levels=1000):
     return abs(1 - 1 / np.sqrt(1 + (n_levels - 1) * mean_leak(gap, t, n_levels)))
 
 
-def design(gap, objective="minimax", c=1.0, m=None, cap_frac=1.0 / 3.0, n_random=22, seed=0, drop=1e-3):
+def design(gap, objective="minimax", c=1.0, m=None, cap_frac=1.0 / 3.0, n_random=22, seed=0, drop=1e-3,
+           floor=1e-12):
     """Times for prod_i cos(t_i H) on the scaled spectrum [0] U [gap, 1].
 
-    objective  "minimax" (worst-case leakage over [gap, 1]) or "v4" (the authors' objective, multistart).
+    objective  "minimax" (worst-case leakage over [gap, 1]), "v4" (the authors' objective, multistart; optimised as
+               log mean f^2, which has the same minimiser), or "logmean" (mean of log(f^2 + floor) over [gap, 1]).
     c          total time T = c pi / gap (the authors use c = 1).
     m          number of pulses; None scans 4..12 (best by the objective's own figure of merit).
     Returns dict(times (sorted, shortest first), phases (zeros), m, T, max_leak, mean_leak, v4_cost, objective, c).
@@ -122,13 +135,19 @@ def design(gap, objective="minimax", c=1.0, m=None, cap_frac=1.0 / 3.0, n_random
         E = np.linspace(gap, 1, 999)
         betas = (1.0,)
         score = lambda t: mean_leak(gap, t)
+    elif objective == "logmean":
+        E = np.linspace(gap, 1, int(max(999, 10 * T * (1 - gap))))
+        betas = (floor,)
+        Ef = np.linspace(gap, 1, 20001)
+        score = lambda t: np.exp(logmean_obj(t, Ef, floor)[0])
     else:
-        raise ValueError("objective must be 'minimax' or 'v4'")
+        raise ValueError("objective must be 'minimax', 'v4' or 'logmean'")
+    fun = logmean_obj if objective == "logmean" else softmax_obj
     best = None
     for mm in ([m] if m else M_RANGE):
         if mm * cap < T - 1e-12:                       # cap makes sum t = T infeasible
             continue
-        t = _solve(E, T, mm, cap, betas, _starts(T, mm, n_random, rng))
+        t = _solve(E, T, mm, cap, betas, _starts(T, mm, n_random, rng), fun)
         t = np.sort(t[t > drop * T])
         t = t * T / t.sum()
         s = score(t)
@@ -136,7 +155,8 @@ def design(gap, objective="minimax", c=1.0, m=None, cap_frac=1.0 / 3.0, n_random
             best = (s, t)
     t = best[1]
     return dict(times=t, phases=np.zeros(len(t)), m=len(t), T=T, c=c, objective=objective,
-                max_leak=max_leak(gap, t), mean_leak=mean_leak(gap, t), v4_cost=v4_cost(gap, t))
+                max_leak=max_leak(gap, t), mean_leak=mean_leak(gap, t), v4_cost=v4_cost(gap, t),
+                logmean_leak=float(np.exp(logmean_obj(t, np.linspace(gap, 1, 20001), floor)[0])))
 
 
 # ---------------------------------------------------------------- with phases

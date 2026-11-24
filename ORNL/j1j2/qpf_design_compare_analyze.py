@@ -17,11 +17,14 @@ KEY = ["N", "gap_target", "knob", "gamma_target", "eps", "route", "protocol"]
 MM_CAP = ["minimax c=1", "minimax c=1.25", "minimax c=1.5", "minimax c=2"]
 PH = ["minimax+ph p0=0.9 c=1", "minimax+ph p0=0.9 c=1.25", "minimax+ph p0=0.9 c=1.5", "minimax+ph p0=0.7 c=1",
       "minimax+ph p0=0.7 c=1.25"]
+LM = ["logmean1e-4 c=1", "logmean1e-4 c=1.25", "logmean1e-4 c=1.5", "logmean1e-4 c=2"]
+V4C = ["QPF (t_i) v4", "v4 c=1.25", "v4 c=1.5", "v4 c=2"]
 
 
 def load(raw):
     rows, designs = [], []
-    for f in sorted(glob.glob(os.path.join(raw, "cmp_N*_gap*.json")) + glob.glob(os.path.join(raw, "cmpph_N*_gap*.json"))):
+    for f in sorted(glob.glob(os.path.join(raw, "cmp_N*_gap*.json")) + glob.glob(os.path.join(raw, "cmpph_N*_gap*.json")) + glob.glob(os.path.join(raw, "cmplog_N*_gap*.json"))
+                    + glob.glob(os.path.join(raw, "cmpv4nc_N*_gap*.json"))):
         r = json.load(open(f))
         for x in r["results"]:
             if not x.get("reached"):
@@ -59,13 +62,18 @@ def main():
     if ph:
         piv["minimax+ph best"] = piv[ph].min(axis=1)
         piv["all options"] = piv[MM_CAP + ["minimax c=1 nocap"] + ph].min(axis=1)
+    if all(c in piv for c in LM):
+        piv["logmean best c"] = piv[LM].min(axis=1)
+    if all(c in piv for c in V4C):
+        piv["v4 best c"] = piv[V4C].min(axis=1)
     piv = piv.reset_index()
     piv.to_csv(os.path.join(a.out, "design_compare_wide.csv"), index=False)
 
     out = []
     for (route, proto, eps), g in piv.groupby(["route", "protocol", "eps"]):
         rep = (g["QPF (t_i) v4"] / g["ms v4"]).dropna()
-        extra = [c for c in PH + ["minimax+ph best", "all options"] if c in g]
+        extra = [c for c in PH + ["minimax+ph best", "all options"] + LM + ["logmean best c"] + V4C[1:] + ["v4 best c", "v4 nocap c=1"]
+                 if c in g]
         for col in MM_CAP + ["minimax c=1 nocap", "minimax best c", "minimax any"] + extra:
             for base in ("QPF (t_i) v4", "ms best"):
                 r = (g[col] / g[base]).replace([np.inf, -np.inf], np.nan).dropna()
@@ -78,7 +86,7 @@ def main():
     s = pd.DataFrame(out)
     s.to_csv(os.path.join(a.out, "design_compare_summary.csv"), index=False)
     pd.set_option("display.width", 250)
-    show = ["minimax c=1", "minimax best c", "minimax any", "minimax+ph best", "all options"]
+    show = ["minimax c=1", "minimax best c", "minimax any", "logmean1e-4 c=1", "logmean best c", "v4 best c", "v4 nocap c=1", "minimax c=1 nocap"]
     print(s[s.option.isin(show)][["route", "protocol", "eps", "option", "baseline", "n", "median", "q10", "q90", "frac_cheaper"]].round(3).to_string())
     print(piv.groupby(["route", "protocol", "eps"])["which c"].value_counts().unstack().fillna(0).astype(int))
 

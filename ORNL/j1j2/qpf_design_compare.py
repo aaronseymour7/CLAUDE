@@ -15,6 +15,11 @@ Schedules (all zero phases, prod_i cos(t_i H)):
   minimax c=1 nocap        same at the authors' T = pi / gap, without the T / 3 cap
   --set phases:
   minimax+ph p0=P c=X      qpf.design_plus.design_phases: minimax of f(E)^2 / f(0)^2 with phases, f(0)^2 >= P
+  --set log:
+  logmean1e-4 c=X          qpf.design_plus.design(objective="logmean", floor=1e-4): mean_E log(f^2 + 1e-4)
+  v4 c=X                   the authors' v4 design and SLSQP at the longer T = c pi / gap (time knob alone)
+  --set v4nocap:
+  v4 nocap c=1             the v4 objective (multistart, qpf.design_plus objective "v4") at T = pi / gap, no T/3 cap
 """
 import argparse
 import json
@@ -43,7 +48,30 @@ SCHEDS_PHASES = {
     "minimax+ph p0=0.7 c=1": "ph|1.0|0.7",
     "minimax+ph p0=0.7 c=1.25": "ph|1.25|0.7",
 }
+SCHEDS_LOG = {
+    "logmean1e-4 c=1": "lm|1.0|1e-4",
+    "logmean1e-4 c=1.25": "lm|1.25|1e-4",
+    "logmean1e-4 c=1.5": "lm|1.5|1e-4",
+    "logmean1e-4 c=2": "lm|2.0|1e-4",
+    "v4 c=1.25": "v4c|1.25",
+    "v4 c=1.5": "v4c|1.5",
+    "v4 c=2": "v4c|2.0",
+}
+SCHEDS_V4NOCAP = {"v4 nocap c=1": "v4nc|1.0"}
 _CACHE = {}
+
+
+def authors_pick_T(gap, c):
+    """The authors' v4 design (their SLSQP, cap T/3, m = 4..12 by design cost) at T = c pi / gap."""
+    import numpy as np
+    from qpf import design
+    best = None
+    for m in range(4, 13):
+        q = design.optimize(gap, m, T=c * np.pi / gap, method="v4")
+        if best is None or q["cost"] < best["cost"] - 1e-9:
+            best = dict(q, m=m)
+    o = np.argsort(best["times"])
+    return dict(times=best["times"][o], phases=best["phases"][o], m=best["m"], cost=best["cost"], f0=1.0)
 
 
 def pick(gap, method):
@@ -51,6 +79,15 @@ def pick(gap, method):
     if key not in _CACHE:
         if method == "v4":
             _CACHE[key] = authors_pick(gap, "v4")
+        elif method.startswith("lm|"):
+            _, c, fl = method.split("|")
+            d = design_plus.design(gap, "logmean", float(c), floor=float(fl), n_random=10)
+            _CACHE[key] = dict(times=d["times"], phases=d["phases"], m=d["m"], cost=d["logmean_leak"], f0=1.0)
+        elif method.startswith("v4nc|"):
+            d = design_plus.design(gap, "v4", float(method.split("|")[1]), cap_frac=1.0)
+            _CACHE[key] = dict(times=d["times"], phases=d["phases"], m=d["m"], cost=d["v4_cost"], f0=1.0)
+        elif method.startswith("v4c|"):
+            _CACHE[key] = authors_pick_T(gap, float(method.split("|")[1]))
         elif method.startswith("ph|"):
             _, c, p0 = method.split("|")
             d = design_plus.design_phases(gap, float(c), float(p0))
@@ -68,11 +105,11 @@ def main():
     ap.add_argument("--gaps", type=float, nargs="+", default=list(qm.GAPS))
     ap.add_argument("--grid-dir", required=True, help="directory with the manuscript's grid_N*.json (delta per gap)")
     ap.add_argument("--out", required=True)
-    ap.add_argument("--set", choices=("times", "phases"), default="times")
+    ap.add_argument("--set", choices=("times", "phases", "log", "v4nocap"), default="times")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
-    qm.SCHEDS = SCHEDS if a.set == "times" else SCHEDS_PHASES
-    prefix = "cmp" if a.set == "times" else "cmpph"
+    qm.SCHEDS = {"times": SCHEDS, "phases": SCHEDS_PHASES, "log": SCHEDS_LOG, "v4nocap": SCHEDS_V4NOCAP}[a.set]
+    prefix = {"times": "cmp", "phases": "cmpph", "log": "cmplog", "v4nocap": "cmpv4nc"}[a.set]
     qm.pick = pick
     qm.robust_counts = lambda *args: (0, 0)                # analytic model only
     deltas = json.load(open(os.path.join(a.grid_dir, f"grid_N{a.N}.json")))["deltas"]
